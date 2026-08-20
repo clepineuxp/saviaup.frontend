@@ -7,7 +7,7 @@ interface ErrorPayload {
   readonly error?: {
     readonly code?: string;
     readonly message?: string;
-    readonly details?: Readonly<Record<string, readonly string[]>>;
+    readonly details?: Readonly<Record<string, readonly string[]>> | null;
   };
 }
 
@@ -39,6 +39,7 @@ export const mapHttpError = (error: unknown): ApiError => {
     kind,
     error.status,
     payload.error?.message ?? payload.message ?? defaultMessage,
-    payload.error?.details ?? payload.errors,
+    payload.error?.details ?? payload.errors ?? {},
+    payload.error?.code ?? null,
   );
 };

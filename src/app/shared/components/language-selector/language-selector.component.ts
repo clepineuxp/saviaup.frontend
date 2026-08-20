@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
 import { LocalizationService } from '../../i18n/localization.service';
 import { LanguageOption, SupportedLanguage } from '../../i18n/translation.types';
 import { TranslatePipe } from '../../pipes/translate.pipe';
@@ -43,12 +43,16 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 })
 export class LanguageSelectorComponent {
   readonly localization = inject(LocalizationService);
+  readonly languageChanged = output<SupportedLanguage>();
   readonly languages: readonly LanguageOption[] = [
     { code: 'es', label: 'Español', shortLabel: 'ES' },
     { code: 'en', label: 'English', shortLabel: 'EN' },
   ];
 
   changeLanguage(event: Event): void {
-    this.localization.setLanguage((event.target as HTMLSelectElement).value as SupportedLanguage);
+    const language = (event.target as HTMLSelectElement).value as SupportedLanguage;
+    if (language === this.localization.language()) return;
+    this.localization.setLanguage(language);
+    this.languageChanged.emit(language);
   }
 }

@@ -13,7 +13,13 @@ import { AUTH_REPOSITORY, AuthRepository } from './core/auth/auth-repository';
 import { TOKEN_STORAGE } from './core/auth/token-storage';
 import { WebTokenStorage } from './core/auth/web-token-storage.service';
 import { APP_ENVIRONMENT } from './core/config/app-environment';
+import {
+  AUTHENTICATED_CONTEXT_REPOSITORY,
+  AuthenticatedContextRepository,
+} from './core/context/authenticated-context.repository';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { HttpAuthenticatedContextRepository } from './features/app/data-access/http-authenticated-context.repository';
+import { MockAuthenticatedContextRepository } from './features/app/data-access/mock-authenticated-context.repository';
 import { HttpAuthRepository } from './features/auth/data-access/http-auth.repository';
 import { MockAuthRepository } from './features/auth/data-access/mock-auth.repository';
 import { HttpTenantRepository } from './features/tenant/data-access/http-tenant.repository';
@@ -42,6 +48,11 @@ const translationRepositoryFactory = (): TranslationRepository =>
     ? inject(MockTranslationRepository)
     : inject(HttpTranslationRepository);
 
+const authenticatedContextRepositoryFactory = (): AuthenticatedContextRepository =>
+  inject(APP_ENVIRONMENT).useMockApi
+    ? inject(MockAuthenticatedContextRepository)
+    : inject(HttpAuthenticatedContextRepository);
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -55,11 +66,17 @@ export const appConfig: ApplicationConfig = {
     { provide: TOKEN_STORAGE, useClass: WebTokenStorage },
     HttpAuthRepository,
     MockAuthRepository,
+    HttpAuthenticatedContextRepository,
+    MockAuthenticatedContextRepository,
     HttpTenantRepository,
     MockTenantRepository,
     HttpTranslationRepository,
     MockTranslationRepository,
     { provide: AUTH_REPOSITORY, useFactory: authRepositoryFactory },
+    {
+      provide: AUTHENTICATED_CONTEXT_REPOSITORY,
+      useFactory: authenticatedContextRepositoryFactory,
+    },
     { provide: TENANT_REPOSITORY, useFactory: tenantRepositoryFactory },
     { provide: TRANSLATION_REPOSITORY, useFactory: translationRepositoryFactory },
     provideAppInitializer(() => inject(LocalizationService).initialize()),

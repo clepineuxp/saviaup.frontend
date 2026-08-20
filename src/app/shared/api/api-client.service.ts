@@ -1,4 +1,4 @@
-import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
 import { APP_ENVIRONMENT } from '../../core/config/app-environment';
@@ -7,6 +7,7 @@ import { mapHttpError } from '../http/http-error.mapper';
 export interface ApiRequestOptions {
   readonly params?: HttpParams | Readonly<Record<string, string | number | boolean>>;
   readonly context?: HttpContext;
+  readonly headers?: HttpHeaders | Record<string, string | string[]>;
 }
 
 @Injectable({ providedIn: 'root' })

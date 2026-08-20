@@ -9,6 +9,10 @@ export const API_ENDPOINTS = {
   },
   users: {
     me: '/api/users/me',
+    info: '/api/users/me/info',
+  },
+  modules: {
+    available: '/api/modules/available',
   },
   tenants: {
     root: '/api/tenants',

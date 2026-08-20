@@ -68,6 +68,23 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'app.placeholder.description':
       'Tu espacio está preparado. Los módulos de operación llegarán en la siguiente fase.',
     'app.placeholder.changeTenant': 'Cambiar organización',
+    'app.context.loadingTitle': 'Preparando tu espacio',
+    'app.context.loadingDescription': 'Estamos cargando tu perfil y los módulos disponibles.',
+    'app.context.errorTitle': 'No pudimos cargar tu espacio',
+    'app.context.errorDescription': 'Revisa tu conexión e intenta nuevamente.',
+    'app.context.retry': 'Reintentar',
+    'app.navigation.label': 'Módulos disponibles',
+    'app.navigation.scrollLeft': 'Desplazar navegación a la izquierda',
+    'app.navigation.scrollRight': 'Desplazar navegación a la derecha',
+    'app.navigation.empty': 'No hay módulos operativos para mostrar.',
+    'app.empty.eyebrow': 'Acceso configurado',
+    'app.empty.title': 'Aún no tienes módulos disponibles',
+    'app.module.eyebrow': 'Módulo de Savia Up',
+    'app.module.description':
+      'Este módulo está habilitado y su experiencia llegará en una próxima fase.',
+    'app.module.unavailableTitle': 'Módulo no disponible',
+    'app.module.unavailableDescription':
+      'Este módulo no forma parte de la navegación disponible para tu contexto actual.',
   },
   en: {
     'common.continue': 'Continue',
@@ -135,5 +152,22 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'app.placeholder.description':
       'Your workspace is ready. Operation modules will arrive in the next phase.',
     'app.placeholder.changeTenant': 'Switch organization',
+    'app.context.loadingTitle': 'Preparing your workspace',
+    'app.context.loadingDescription': 'We are loading your profile and available modules.',
+    'app.context.errorTitle': 'We could not load your workspace',
+    'app.context.errorDescription': 'Check your connection and try again.',
+    'app.context.retry': 'Try again',
+    'app.navigation.label': 'Available modules',
+    'app.navigation.scrollLeft': 'Scroll navigation left',
+    'app.navigation.scrollRight': 'Scroll navigation right',
+    'app.navigation.empty': 'There are no operation modules to display.',
+    'app.empty.eyebrow': 'Access configured',
+    'app.empty.title': 'You do not have available modules yet',
+    'app.module.eyebrow': 'Savia Up module',
+    'app.module.description':
+      'This module is enabled and its experience will arrive in a future phase.',
+    'app.module.unavailableTitle': 'Module unavailable',
+    'app.module.unavailableDescription':
+      'This module is not part of the navigation available for your current context.',
   },
 };

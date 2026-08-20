@@ -1,10 +1,19 @@
-<section class="success-card">
-  <div class="success-card__mark" aria-hidden="true">
-    <span>✓</span>
-    <i></i><i></i><i></i>
-  </div>
-  <p class="eyebrow">{{ 'app.placeholder.eyebrow' | translate }}</p>
-  <h1 class="page-title">{{ 'app.placeholder.title' | translate }}</h1>
-  <p class="tenant-name">{{ tenantContext.activeTenant()?.name }}</p>
-  <p class="page-subtitle">{{ 'app.placeholder.description' | translate }}</p>
-</section>
+@if (authenticatedContext.sections().length === 0) {
+  <section class="empty-card" role="status" aria-live="polite">
+    <div class="empty-card__mark" aria-hidden="true">◇</div>
+    <p class="eyebrow">{{ 'app.empty.eyebrow' | translate }}</p>
+    <h1 class="page-title">{{ 'app.empty.title' | translate }}</h1>
+    <p class="page-subtitle">{{ authenticatedContext.emptyStateMessage() }}</p>
+  </section>
+} @else {
+  <section class="success-card">
+    <div class="success-card__mark" aria-hidden="true">
+      <span>✓</span>
+      <i></i><i></i><i></i>
+    </div>
+    <p class="eyebrow">{{ 'app.placeholder.eyebrow' | translate }}</p>
+    <h1 class="page-title">{{ 'app.placeholder.title' | translate }}</h1>
+    <p class="tenant-name">{{ authenticatedContext.userInfo()?.organization?.name }}</p>
+    <p class="page-subtitle">{{ 'app.placeholder.description' | translate }}</p>
+  </section>
+}
