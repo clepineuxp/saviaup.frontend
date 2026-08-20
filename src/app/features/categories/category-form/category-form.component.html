@@ -1,0 +1,165 @@
+<div class="modal-backdrop">
+  <button
+    class="modal-backdrop__close"
+    type="button"
+    tabindex="-1"
+    [attr.aria-label]="'categories.form.close' | translate"
+    (click)="close()"
+  ></button>
+  <section
+    class="category-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="category-form-title"
+  >
+    <header class="category-modal__header">
+      <div>
+        <p class="eyebrow">{{ 'categories.form.eyebrow' | translate }}</p>
+        <h2 id="category-form-title">
+          {{
+            (category() ? 'categories.form.editTitle' : 'categories.form.createTitle') | translate
+          }}
+        </h2>
+      </div>
+      <button
+        class="modal-close"
+        type="button"
+        [disabled]="submitting()"
+        [attr.aria-label]="'categories.form.close' | translate"
+        (click)="close()"
+      >
+        ×
+      </button>
+    </header>
+
+    @if (serverError(); as error) {
+      @if (error.code !== 'CATEGORY_NAME_ALREADY_EXISTS' && error.code !== 'VALIDATION_ERROR') {
+        <app-ui-alert [message]="error.message" />
+      }
+    }
+
+    <form class="category-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label class="field">
+        <span class="field__label">{{ 'categories.form.name' | translate }}</span>
+        <input
+          class="field__input"
+          type="text"
+          formControlName="name"
+          maxlength="120"
+          autocomplete="off"
+          [placeholder]="'categories.form.namePlaceholder' | translate"
+          [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched"
+          aria-describedby="category-name-error"
+        />
+        @if (form.controls.name.invalid && form.controls.name.touched) {
+          <span id="category-name-error" class="field__error">
+            @if (form.controls.name.hasError('required')) {
+              {{ 'common.required' | translate }}
+            } @else if (form.controls.name.hasError('maxlength')) {
+              {{ 'categories.validation.nameMax' | translate }}
+            } @else if (form.controls.name.hasError('duplicate')) {
+              {{ 'categories.error.duplicate' | translate }}
+            } @else {
+              {{ 'categories.validation.server' | translate }}
+            }
+          </span>
+        }
+      </label>
+
+      <label class="field">
+        <span class="field__label-row">
+          <span class="field__label">{{ 'categories.form.description' | translate }}</span>
+          <span>{{ form.controls.description.value.length }}/1000</span>
+        </span>
+        <textarea
+          class="field__input field__textarea"
+          formControlName="description"
+          maxlength="1000"
+          rows="4"
+          [placeholder]="'categories.form.descriptionPlaceholder' | translate"
+          [attr.aria-invalid]="
+            form.controls.description.invalid && form.controls.description.touched
+          "
+          aria-describedby="category-description-error"
+        ></textarea>
+        @if (form.controls.description.invalid && form.controls.description.touched) {
+          <span id="category-description-error" class="field__error">
+            {{
+              (form.controls.description.hasError('maxlength')
+                ? 'categories.validation.descriptionMax'
+                : 'categories.validation.server'
+              ) | translate
+            }}
+          </span>
+        }
+      </label>
+
+      <div class="image-field">
+        <label class="field">
+          <span class="field__label">{{ 'categories.form.imageUrl' | translate }}</span>
+          <input
+            class="field__input"
+            type="url"
+            inputmode="url"
+            formControlName="imageUrl"
+            maxlength="2048"
+            autocomplete="url"
+            placeholder="https://…"
+            [attr.aria-invalid]="form.controls.imageUrl.invalid && form.controls.imageUrl.touched"
+            aria-describedby="category-image-hint category-image-error"
+          />
+          <span id="category-image-hint" class="field__hint">
+            {{ 'categories.form.imageHint' | translate }}
+          </span>
+          @if (form.controls.imageUrl.invalid && form.controls.imageUrl.touched) {
+            <span id="category-image-error" class="field__error">
+              @if (form.controls.imageUrl.hasError('maxlength')) {
+                {{ 'categories.validation.imageMax' | translate }}
+              } @else if (form.controls.imageUrl.hasError('absoluteHttpUrl')) {
+                {{ 'categories.validation.imageUrl' | translate }}
+              } @else {
+                {{ 'categories.validation.server' | translate }}
+              }
+            </span>
+          }
+        </label>
+
+        <div class="image-preview" [class.image-preview--empty]="!previewUrl() || previewFailed()">
+          @if (previewUrl() && !previewFailed()) {
+            <img
+              [src]="previewUrl()"
+              [alt]="'categories.form.imagePreview' | translate"
+              (error)="markPreviewFailed()"
+            />
+          } @else {
+            <span aria-hidden="true">⊞</span>
+            <small>{{ 'categories.form.imagePreviewEmpty' | translate }}</small>
+          }
+        </div>
+      </div>
+
+      <label class="inventory-switch">
+        <input type="checkbox" formControlName="isInventoryTracked" />
+        <span class="inventory-switch__control" aria-hidden="true"></span>
+        <span>
+          <strong>{{ 'categories.form.inventoryTracked' | translate }}</strong>
+          <small>{{ 'categories.form.inventoryTrackedHint' | translate }}</small>
+        </span>
+      </label>
+
+      <footer class="category-form__actions">
+        <app-ui-button
+          type="button"
+          variant="secondary"
+          [disabled]="submitting()"
+          (click)="close()"
+        >
+          {{ 'common.cancel' | translate }}
+        </app-ui-button>
+        <app-ui-button type="submit" [loading]="submitting()">
+          {{ (category() ? 'categories.form.save' : 'categories.form.create') | translate }}
+        </app-ui-button>
+      </footer>
+    </form>
+  </section>
+</div>

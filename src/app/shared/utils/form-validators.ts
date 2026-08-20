@@ -18,3 +18,29 @@ export const passwordMatchValidator =
     const confirmation = control.get(confirmationField)?.value;
     return password === confirmation ? null : { passwordMismatch: true };
   };
+
+export const absoluteHttpUrlValidator =
+  (): ValidatorFn =>
+  (control: AbstractControl): ValidationErrors | null => {
+    const value = String(control.value ?? '').trim();
+    if (!value) return null;
+
+    try {
+      const url = new URL(value);
+      return url.protocol === 'http:' || url.protocol === 'https:'
+        ? null
+        : { absoluteHttpUrl: true };
+    } catch {
+      return { absoluteHttpUrl: true };
+    }
+  };
+
+export const requiredBooleanValidator =
+  (): ValidatorFn =>
+  (control: AbstractControl): ValidationErrors | null =>
+    typeof control.value === 'boolean' ? null : { required: true };
+
+export const nonBlankRequiredValidator =
+  (): ValidatorFn =>
+  (control: AbstractControl): ValidationErrors | null =>
+    String(control.value ?? '').trim().length > 0 ? null : { required: true };

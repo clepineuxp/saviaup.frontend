@@ -1,0 +1,60 @@
+<article class="category-card" [class.category-card--inactive]="!category().isActive">
+  <div class="category-card__image">
+    @if (category().imageUrl && !imageFailed()) {
+      <img
+        [src]="category().imageUrl"
+        [alt]="category().name"
+        loading="lazy"
+        (error)="markImageFailed()"
+      />
+    } @else {
+      <div class="category-image-placeholder" data-testid="category-image-placeholder">
+        <span aria-hidden="true">⊞</span>
+        <small>{{ 'categories.image.placeholder' | translate }}</small>
+      </div>
+    }
+    <span class="status-pill" [class.status-pill--inactive]="!category().isActive">
+      {{
+        (category().isActive ? 'categories.status.active' : 'categories.status.inactive')
+          | translate
+      }}
+    </span>
+  </div>
+  <div class="category-card__body">
+    <div class="category-card__title">
+      <h2>{{ category().name }}</h2>
+      <span class="inventory-pill" [class.inventory-pill--simple]="!category().isInventoryTracked">
+        {{
+          (category().isInventoryTracked
+            ? 'categories.type.inventory'
+            : 'categories.type.nonInventory'
+          ) | translate
+        }}
+      </span>
+    </div>
+    <p class="category-description">
+      {{ category().description || ('categories.description.empty' | translate) }}
+    </p>
+  </div>
+  @if (canManage()) {
+    <footer class="category-card__actions">
+      <button type="button" (click)="editRequested.emit(category())">
+        {{ 'categories.action.edit' | translate }}
+      </button>
+      <button type="button" [disabled]="mutating()" (click)="statusRequested.emit(category())">
+        {{
+          (category().isActive ? 'categories.action.disable' : 'categories.action.reactivate')
+            | translate
+        }}
+      </button>
+      <button
+        class="danger-action"
+        type="button"
+        [disabled]="mutating()"
+        (click)="deleteRequested.emit(category())"
+      >
+        {{ 'categories.action.delete' | translate }}
+      </button>
+    </footer>
+  }
+</article>

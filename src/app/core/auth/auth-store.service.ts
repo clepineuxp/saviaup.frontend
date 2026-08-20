@@ -19,6 +19,7 @@ export class AuthStore {
   private readonly userState = signal<User | null>(null);
   private readonly statusState = signal<RequestStatus>('idle');
   private readonly errorState = signal<string | null>(null);
+  private currentUserVersion = 0;
 
   readonly tokens = this.tokensState.asReadonly();
   readonly user = this.userState.asReadonly();
@@ -58,7 +59,18 @@ export class AuthStore {
   }
 
   loadCurrentUser(): Observable<User> {
-    return this.repository.currentUser().pipe(tap((user) => this.userState.set(user)));
+    const tenantId = this.tenantContext.activeTenant()?.id ?? null;
+    const version = ++this.currentUserVersion;
+    return this.repository.currentUser().pipe(
+      tap((user) => {
+        if (
+          version === this.currentUserVersion &&
+          (this.tenantContext.activeTenant()?.id ?? null) === tenantId
+        ) {
+          this.userState.set(user);
+        }
+      }),
+    );
   }
 
   logout(): Observable<void> {
@@ -77,9 +89,12 @@ export class AuthStore {
     const persistent = this.tokenStorage.isPersistent();
     this.tokenStorage.save(tokens, persistent);
     this.tokensState.set(tokens);
+    this.currentUserVersion += 1;
+    this.userState.set(null);
   }
 
   clearSession(): void {
+    this.currentUserVersion += 1;
     this.tokenStorage.clear();
     this.authenticatedContext.clear();
     this.tenantContext.clear();
@@ -94,6 +109,7 @@ export class AuthStore {
   }
 
   private setSession(session: AuthSession, persistent: boolean): void {
+    this.currentUserVersion += 1;
     this.authenticatedContext.clear();
     this.tokenStorage.save(session.tokens, persistent);
     this.tokensState.set(session.tokens);

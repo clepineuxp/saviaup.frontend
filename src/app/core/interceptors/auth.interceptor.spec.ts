@@ -4,6 +4,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { LocalizationService } from '../../shared/i18n/localization.service';
 import { AuthRefreshCoordinator } from '../auth/auth-refresh-coordinator.service';
 import { SessionTokens } from '../auth/session.model';
 import { TOKEN_STORAGE, TokenStorage } from '../auth/token-storage';
@@ -52,6 +53,7 @@ describe('authInterceptor', () => {
         { provide: TOKEN_STORAGE, useClass: InterceptorTokenStorage },
         { provide: TenantContext, useValue: { activeTenant: activeTenant.asReadonly() } },
         { provide: AuthRefreshCoordinator, useValue: { refresh } },
+        { provide: LocalizationService, useValue: { language: () => 'es' } },
       ],
     });
     controller = TestBed.inject(HttpTestingController);
@@ -67,6 +69,7 @@ describe('authInterceptor', () => {
     const request = controller.expectOne('/api/test');
     expect(request.request.headers.get('Authorization')).toBe('Bearer old-access');
     expect(request.request.headers.get('X-Tenant-Id')).toBe('tenant-1');
+    expect(request.request.headers.get('Accept-Language')).toBe('es');
     request.flush({});
   });
 

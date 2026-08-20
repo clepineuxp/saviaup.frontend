@@ -1,6 +1,6 @@
 # Savia Up Web
 
-Frontend de **Savia Up**, una plataforma SaaS multi-tenant para restaurantes y gastrobares. Esta fase cubre autenticación, recuperación de acceso, selección o creación de organización y navegación contextual; los módulos operativos conservan vistas placeholder.
+Frontend de **Savia Up**, una plataforma SaaS multi-tenant para restaurantes y gastrobares. Esta fase cubre autenticación, recuperación de acceso, selección o creación de organización, navegación contextual y administración de categorías; los demás módulos operativos conservan vistas placeholder.
 
 ## Stack
 
@@ -51,16 +51,17 @@ El build de producción reemplaza automáticamente el environment por `environme
 
 ## Rutas
 
-| Ruta                 | Acceso               | Propósito                           |
-| -------------------- | -------------------- | ----------------------------------- |
-| `/login`             | Invitado             | Inicio de sesión                    |
-| `/register`          | Invitado             | Registro de usuario                 |
-| `/forgot-password`   | Invitado             | Solicitud neutral de recuperación   |
-| `/select-tenant`     | Autenticado          | Selección de organización           |
-| `/create-tenant`     | Autenticado          | Creación de organización            |
-| `/app`               | Autenticado + tenant | Inicio y estado vacío del workspace |
-| `/app/{módulo}`      | Autenticado + tenant | Módulo habilitado conocido          |
-| `/app/modules/:code` | Autenticado + tenant | Fallback seguro para código nuevo   |
+| Ruta                        | Acceso               | Propósito                           |
+| --------------------------- | -------------------- | ----------------------------------- |
+| `/login`                    | Invitado             | Inicio de sesión                    |
+| `/register`                 | Invitado             | Registro de usuario                 |
+| `/forgot-password`          | Invitado             | Solicitud neutral de recuperación   |
+| `/select-tenant`            | Autenticado          | Selección de organización           |
+| `/create-tenant`            | Autenticado          | Creación de organización            |
+| `/app`                      | Autenticado + tenant | Inicio y estado vacío del workspace |
+| `/app/inventory/categories` | Autenticado + tenant | Administración de categorías        |
+| `/app/{módulo}`             | Autenticado + tenant | Módulo habilitado conocido          |
+| `/app/modules/:code`        | Autenticado + tenant | Fallback seguro para código nuevo   |
 
 Todas las pantallas de feature se cargan de forma lazy.
 
@@ -79,6 +80,7 @@ src/app/
 ├── features/
 │   ├── auth/          # login, register, recovery, adapters y contratos
 │   ├── tenant/        # selección, creación, adapters y store
+│   ├── categories/    # lista, formulario, repositorio HTTP y store por tenant
 │   └── app/           # navegación y vistas de módulos
 ├── layouts/           # auth, tenant y app layouts
 ├── shared/
@@ -108,10 +110,11 @@ El interceptor:
 
 1. adjunta `Authorization: Bearer …` cuando corresponde;
 2. adjunta `X-Tenant-Id` si existe un tenant activo;
-3. ante un `401`, usa `AuthRefreshCoordinator`;
-4. comparte una sola petición de refresh entre solicitudes concurrentes;
-5. reintenta la petición original con el token nuevo;
-6. limpia sesión y tenant si el refresh falla.
+3. adjunta el idioma vigente en `Accept-Language`;
+4. ante un `401`, usa `AuthRefreshCoordinator`;
+5. comparte una sola petición de refresh entre solicitudes concurrentes;
+6. reintenta la petición original con el token nuevo;
+7. limpia sesión y tenant si el refresh falla.
 
 El endpoint de refresh usa un `HttpContextToken` para evitar recursión. `AuthGuard`, `GuestGuard` y `TenantGuard` controlan la navegación, pero la autorización real siempre debe validarse en backend.
 
@@ -129,17 +132,17 @@ El layout muestra nombre completo, organización y rol. Las secciones y sus elem
 
 En pantallas móviles, todos los accesos permanecen en una única fila desplazable. Las flechas laterales aparecen únicamente si existe overflow y combinan gradiente y sombra para mostrar la continuidad del contenido bajo los bordes.
 
-| Código       | Ruta              | Icono        |
-| ------------ | ----------------- | ------------ |
-| `orders`     | `/app/orders`     | `orders`     |
-| `tables`     | `/app/tables`     | `tables`     |
-| `inventory`  | `/app/inventory`  | `inventory`  |
-| `products`   | `/app/products`   | `products`   |
-| `categories` | `/app/categories` | `categories` |
-| `kitchen`    | `/app/kitchen`    | `kitchen`    |
-| `reports`    | `/app/reports`    | `reports`    |
-| `billing`    | `/app/billing`    | `billing`    |
-| `settings`   | `/app/settings`   | `settings`   |
+| Código       | Ruta                        | Icono        |
+| ------------ | --------------------------- | ------------ |
+| `orders`     | `/app/orders`               | `orders`     |
+| `tables`     | `/app/tables`               | `tables`     |
+| `inventory`  | `/app/inventory`            | `inventory`  |
+| `products`   | `/app/products`             | `products`   |
+| `categories` | `/app/inventory/categories` | `categories` |
+| `kitchen`    | `/app/kitchen`              | `kitchen`    |
+| `reports`    | `/app/reports`              | `reports`    |
+| `billing`    | `/app/billing`              | `billing`    |
+| `settings`   | `/app/settings`             | `settings`   |
 
 Las opciones futuras se resuelven por `option.code` y, si no existe una configuración específica, por `moduleCode`. Un código nuevo usa `/app/modules/:code`, el icono genérico `module` y una advertencia solo en desarrollo. Una respuesta `sections: []` es válida y muestra literalmente `emptyStateMessage`; un `403 TENANT_REQUIRED` devuelve al selector de organización.
 
@@ -166,8 +169,23 @@ Todos viven en `core/config/api-endpoints.ts`:
 - `GET/POST /api/tenants`
 - `POST /api/tenants/{tenantId}/select`
 - `GET /api/i18n/{language}`
+- `GET /api/categories?includeInactive=true`
+- `POST /api/categories`
+- `PUT /api/categories/{categoryId}`
+- `PATCH /api/categories/{categoryId}/status`
+- `DELETE /api/categories/{categoryId}`
 
 Los DTO están separados de los modelos de UI y se adaptan en la capa data-access.
+
+## Administración de categorías
+
+La ruta `/app/inventory/categories` usa el código dinámico `categories` dentro de la sección `inventory`. `categories.read` habilita el listado y `categories.manage` habilita creación, edición, deshabilitación/reactivación y eliminación; la UI nunca deriva permisos desde el rol y el backend siempre vuelve a validarlos.
+
+El listado administrativo envía `includeInactive=true` y mantiene búsqueda por nombre y filtros locales. Crear y editar usan formularios tipados con nombre obligatorio (120), descripción opcional (1000), URL opcional HTTP/HTTPS (2048) y el indicador booleano de inventario. La eliminación solo actualiza el store después de recibir el `204` y siempre muestra una confirmación explícita.
+
+No existe carga binaria en este frontend. Las categorías aceptan únicamente una URL de imagen con preview; si está vacía o la carga remota falla, la tarjeta muestra un placeholder coherente con el diseño. No se envían archivos, base64 ni multipart a `/api/categories`.
+
+`CategoryStore` conserva datos solo para el tenant activo, se limpia al cambiar organización o cerrar sesión y descarta respuestas tardías del tenant anterior. Los códigos `CATEGORY_NAME_ALREADY_EXISTS`, `CATEGORY_NOT_FOUND`, `VALIDATION_ERROR`, `AUTH_FORBIDDEN`, `TENANT_REQUIRED` y `AUTH_UNAUTHENTICATED` se integran con los estados locales o los flujos globales correspondientes.
 
 ## Diseño y responsive
 

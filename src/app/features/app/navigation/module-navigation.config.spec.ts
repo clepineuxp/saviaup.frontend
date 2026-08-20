@@ -58,7 +58,7 @@ describe('module navigation configuration', () => {
 
     expect(section.items[0]).toMatchObject({
       code: 'categories',
-      route: '/app/categories',
+      route: '/app/inventory/categories',
       icon: 'categories',
     });
   });

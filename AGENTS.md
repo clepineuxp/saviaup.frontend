@@ -12,6 +12,7 @@ La fase implementada cubre:
 - internacionalización español/inglés;
 - infraestructura JWT, PWA, IndexedDB y SignalR;
 - navegación autenticada ordenada y agrupada con placeholders para módulos operativos.
+- administración de categorías de inventario con permisos de lectura y gestión.
 
 No inventar todavía módulos de ventas, inventario, caja, recetas, compras, reportes o permisos si el requerimiento no los incluye expresamente.
 
@@ -79,6 +80,7 @@ src/
 │   ├── features/
 │   │   ├── auth/            # login, registro y recuperación
 │   │   ├── tenant/          # selección y creación de organización
+│   │   ├── categories/      # administración de categorías por tenant
 │   │   └── app/             # navegación dinámica y vistas privadas
 │   ├── layouts/             # auth, tenant y app shells
 │   └── shared/
@@ -144,16 +146,17 @@ La selección de adaptadores se hace en `app.config.ts` mediante `useMockApi` y 
 
 ## Rutas y control de acceso
 
-| Ruta                 | Acceso               | Layout | Propósito                      |
-| -------------------- | -------------------- | ------ | ------------------------------ |
-| `/login`             | Invitado             | Auth   | Inicio de sesión               |
-| `/register`          | Invitado             | Auth   | Creación de cuenta             |
-| `/forgot-password`   | Invitado             | Auth   | Recuperación neutral           |
-| `/select-tenant`     | Autenticado          | Tenant | Seleccionar organización       |
-| `/create-tenant`     | Autenticado          | Tenant | Crear organización             |
-| `/app`               | Autenticado + tenant | App    | Entrada privada/placeholder    |
-| `/app/{módulo}`      | Autenticado + tenant | App    | Módulo conocido habilitado     |
-| `/app/modules/:code` | Autenticado + tenant | App    | Fallback de módulo desconocido |
+| Ruta                        | Acceso               | Layout | Propósito                      |
+| --------------------------- | -------------------- | ------ | ------------------------------ |
+| `/login`                    | Invitado             | Auth   | Inicio de sesión               |
+| `/register`                 | Invitado             | Auth   | Creación de cuenta             |
+| `/forgot-password`          | Invitado             | Auth   | Recuperación neutral           |
+| `/select-tenant`            | Autenticado          | Tenant | Seleccionar organización       |
+| `/create-tenant`            | Autenticado          | Tenant | Crear organización             |
+| `/app`                      | Autenticado + tenant | App    | Entrada privada/placeholder    |
+| `/app/inventory/categories` | Autenticado + tenant | App    | Administración de categorías   |
+| `/app/{módulo}`             | Autenticado + tenant | App    | Módulo conocido habilitado     |
+| `/app/modules/:code`        | Autenticado + tenant | App    | Fallback de módulo desconocido |
 
 - `GuestGuard` impide que una sesión activa vuelva al flujo de invitado.
 - `AuthGuard` exige sesión válida.
@@ -208,23 +211,25 @@ Seleccionar o crear tenant debe recibir del backend un nuevo par de tokens conte
 - tratar `sections: []` como éxito y conservar literalmente `emptyStateMessage` del backend;
 - ante `403` con código `TENANT_REQUIRED`, limpiar el tenant y volver a `/select-tenant`.
 
+`CategoryStore` es el propietario del listado administrativo de categorías. Su estado está limitado al tenant activo: se limpia al cambiar o cerrar el tenant y descarta respuestas tardías de otra organización. La vista se autoriza únicamente con los códigos recibidos desde `GET /api/users/me`: `categories.read` permite consultar y `categories.manage` habilita crear, editar, cambiar estado y eliminar. Nunca inferir estos permisos desde el nombre o código del rol; el backend conserva la autorización efectiva.
+
 La navegación lateral se deriva exclusivamente de las secciones devueltas. Se ordenan secciones y elementos por `order`, nunca alfabéticamente. El frontend debe respetar `isGrouped` sin recalcularlo: una sección no agrupada muestra sus elementos directamente y una agrupada muestra inicialmente solo `section.name`; al activarla abre un popover compacto con módulos y opciones apilados. Solo puede quedar un grupo abierto y debe cerrarse al seleccionar, hacer clic fuera o presionar `Escape`. Los nombres visibles siempre vienen del backend.
 
 En móvil, la navegación permanece en una sola fila con scroll horizontal. Los controles laterales solo aparecen cuando hay overflow, indican la dirección disponible y usan gradiente/sombra para comunicar que los accesos continúan bajo el borde. Los botones de sección deben ocupar el ancho de su contenido, sin espacio vacío artificial.
 
 El frontend solo relaciona el `code` con ruta e icono; nunca agrega módulos ausentes ni infiere permisos:
 
-| Código       | Ruta              | Icono        |
-| ------------ | ----------------- | ------------ |
-| `orders`     | `/app/orders`     | `orders`     |
-| `tables`     | `/app/tables`     | `tables`     |
-| `inventory`  | `/app/inventory`  | `inventory`  |
-| `products`   | `/app/products`   | `products`   |
-| `categories` | `/app/categories` | `categories` |
-| `kitchen`    | `/app/kitchen`    | `kitchen`    |
-| `reports`    | `/app/reports`    | `reports`    |
-| `billing`    | `/app/billing`    | `billing`    |
-| `settings`   | `/app/settings`   | `settings`   |
+| Código       | Ruta                        | Icono        |
+| ------------ | --------------------------- | ------------ |
+| `orders`     | `/app/orders`               | `orders`     |
+| `tables`     | `/app/tables`               | `tables`     |
+| `inventory`  | `/app/inventory`            | `inventory`  |
+| `products`   | `/app/products`             | `products`   |
+| `categories` | `/app/inventory/categories` | `categories` |
+| `kitchen`    | `/app/kitchen`              | `kitchen`    |
+| `reports`    | `/app/reports`              | `reports`    |
+| `billing`    | `/app/billing`              | `billing`    |
+| `settings`   | `/app/settings`             | `settings`   |
 
 Las opciones se resuelven primero por su `code` y después por `moduleCode`, lo que permite agregar accesos administrativos sin cambiar el contrato. Los códigos desconocidos deben conservarse de forma segura en `/app/modules/:code` con el icono genérico `module` y emitir únicamente una advertencia de desarrollo sin datos sensibles.
 
@@ -245,6 +250,11 @@ Endpoints centralizados actualmente:
 - `POST /api/tenants`
 - `POST /api/tenants/{tenantId}/select`
 - `GET /api/i18n/{language}`
+- `GET /api/categories?includeInactive=true`
+- `POST /api/categories`
+- `PUT /api/categories/{categoryId}`
+- `PATCH /api/categories/{categoryId}/status`
+- `DELETE /api/categories/{categoryId}`
 
 Formato de error esperado:
 
@@ -260,6 +270,8 @@ Formato de error esperado:
 ```
 
 `HttpErrorMapper` mantiene compatibilidad con errores HTTP simples. No mostrar al usuario detalles internos, stack traces, SQL ni mensajes de infraestructura.
+
+El contrato de categorías usa `Category { id, name, description, imageUrl, isInventoryTracked, isActive, createdAt, updatedAt }`. Crear y actualizar envían `name`, `description`, `imageUrl` e `isInventoryTracked`; el cambio de estado envía `{ isActive }`. El listado administrativo siempre solicita `includeInactive=true`; los selectores operativos futuros deben conservar el valor predeterminado `false`. La eliminación responde `204` y requiere confirmación explícita en la UI. Tratar de forma específica `CATEGORY_NAME_ALREADY_EXISTS`, `CATEGORY_NOT_FOUND`, `VALIDATION_ERROR`, `AUTH_FORBIDDEN`, `TENANT_REQUIRED` y `AUTH_UNAUTHENTICATED`.
 
 Los dos endpoints de contexto requieren JWT contextual. `/api/modules/available` también recibe el idioma actual en `Accept-Language`. Sus contratos de UI son:
 
@@ -357,6 +369,8 @@ Reglas obligatorias:
 - Si se reemplaza el logo, conservar los ocho tamaños o actualizar a la vez componente, `index.html`, manifest y `ngsw-config.json`.
 - No declarar estos PNG como `maskable` mientras el arte no tenga una zona segura validada para máscaras PWA.
 
+Las imágenes de categorías son independientes del isotipo. La API recibe únicamente `imageUrl`; mientras no exista un servicio de almacenamiento, usar un campo de URL absoluta HTTP/HTTPS con preview y un placeholder local si falta o falla la imagen. No enviar archivos, base64 ni multipart a `/api/categories`.
+
 ## PWA, offline y tiempo real
 
 - El Service Worker se habilita únicamente fuera de dev mode.
@@ -380,6 +394,7 @@ Las pruebas actuales cubren:
 - selección de tenant.
 - bootstrap paralelo del contexto y descarte de respuestas obsoletas;
 - contrato ordenado, secciones directas/agrupadas, opciones futuras y estado vacío.
+- listado y mutaciones de categorías, permisos, validaciones, fallback de imagen, errores y aislamiento por tenant.
 
 Al modificar lógica observable, agregar o actualizar pruebas cerca del archivo afectado (`*.spec.ts`). Como mínimo probar:
 

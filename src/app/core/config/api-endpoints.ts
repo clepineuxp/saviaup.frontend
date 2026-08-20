@@ -14,6 +14,11 @@ export const API_ENDPOINTS = {
   modules: {
     available: '/api/modules/available',
   },
+  categories: {
+    root: '/api/categories',
+    detail: (categoryId: string) => `/api/categories/${categoryId}`,
+    status: (categoryId: string) => `/api/categories/${categoryId}/status`,
+  },
   tenants: {
     root: '/api/tenants',
     select: (tenantId: string) => `/api/tenants/${tenantId}/select`,
