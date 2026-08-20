@@ -152,7 +152,9 @@
   display: grid;
   min-width: 0;
   min-height: calc(100vh - 10rem);
-  place-items: center;
+  align-content: start;
+  align-items: start;
+  justify-items: center;
   padding: 2rem 1rem;
 }
 @keyframes spin {

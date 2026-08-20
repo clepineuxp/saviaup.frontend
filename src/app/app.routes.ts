@@ -9,7 +9,7 @@ const modulePlaceholder = () =>
   );
 
 const knownModuleRoutes: Routes = KNOWN_MODULE_NAVIGATION.filter(
-  ({ code }) => code !== 'categories',
+  ({ code }) => code !== 'categories' && code !== 'inventory',
 ).map(({ code, path }) => ({
   path,
   title: 'Savia Up',
@@ -51,6 +51,14 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/categories/categories.routes').then(
             (routesFile) => routesFile.CATEGORY_ROUTES,
+          ),
+      },
+      {
+        path: 'inventory',
+        title: 'Inventario · Savia Up',
+        loadChildren: () =>
+          import('./features/inventory/inventory.routes').then(
+            (routesFile) => routesFile.INVENTORY_ROUTES,
           ),
       },
       ...knownModuleRoutes,

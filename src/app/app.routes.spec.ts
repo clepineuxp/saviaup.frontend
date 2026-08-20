@@ -11,4 +11,12 @@ describe('application routes', () => {
     expect(categoryRoute).toBeDefined();
     expect(categoryRoute?.loadChildren).toBeTypeOf('function');
   });
+
+  it('registers inventory as a real lazy feature instead of a module placeholder', () => {
+    const appRoute = routes.find((route) => route.path === 'app');
+    const inventoryRoute = appRoute?.children?.find((route) => route.path === 'inventory');
+
+    expect(inventoryRoute?.loadChildren).toBeTypeOf('function');
+    expect(inventoryRoute?.loadComponent).toBeUndefined();
+  });
 });

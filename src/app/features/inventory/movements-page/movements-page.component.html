@@ -1,0 +1,111 @@
+<section class="page-section">
+  <header class="heading">
+    <div>
+      <h2>{{ 'inventory.movements.title' | translate }}</h2>
+      <p>{{ 'inventory.movements.description' | translate }}</p>
+    </div>
+    @if (canManage()) {
+      <app-ui-button
+        type="button"
+        [disabled]="!canSelectIngredients() || store.activeIngredients().length === 0"
+        (click)="openForm()"
+        >＋ {{ 'inventory.movements.create' | translate }}</app-ui-button
+      >
+    }
+  </header>
+  @if (canManage() && !canSelectIngredients()) {
+    <aside class="dependency-note">{{ 'inventory.movements.dependencies' | translate }}</aside>
+  }
+  @if (success()) {
+    <app-ui-alert type="success" [message]="'inventory.movements.success' | translate" />
+  }
+  <form class="filters" [formGroup]="filters" (ngSubmit)="applyFilters()">
+    @if (canSelectIngredients()) {
+      <label
+        ><span>{{ 'inventory.movements.form.ingredient' | translate }}</span
+        ><select formControlName="ingredientId">
+          <option value="">{{ 'inventory.filter.all' | translate }}</option>
+          @for (ingredient of store.activeIngredients(); track ingredient.id) {
+            <option [value]="ingredient.id">{{ ingredient.name }}</option>
+          }
+        </select></label
+      >
+    }
+    <label
+      ><span>{{ 'inventory.movements.form.direction' | translate }}</span
+      ><select formControlName="direction">
+        <option value="">{{ 'inventory.filter.all' | translate }}</option>
+        <option value="increase">{{ 'inventory.movement.direction.increase' | translate }}</option>
+        <option value="decrease">{{ 'inventory.movement.direction.decrease' | translate }}</option>
+      </select></label
+    >
+    <app-ui-button type="submit" variant="secondary">{{
+      'inventory.filter.apply' | translate
+    }}</app-ui-button>
+  </form>
+  @if (store.movementsStatus() === 'loading' || store.movementsStatus() === 'idle') {
+    <div class="state" aria-busy="true">
+      <span class="loader"></span>
+      <p>{{ 'inventory.movements.loading' | translate }}</p>
+    </div>
+  } @else if (store.movementsStatus() === 'error') {
+    <div class="state">
+      @if (store.movementsError(); as error) {
+        <app-ui-alert [message]="error.message" />
+      }
+      <app-ui-button type="button" (click)="retry()">{{
+        'app.context.retry' | translate
+      }}</app-ui-button>
+    </div>
+  } @else if (store.movementsPage().items.length === 0) {
+    <div class="state">
+      <span class="empty-icon">⇄</span>
+      <h3>{{ 'inventory.movements.emptyTitle' | translate }}</h3>
+      <p>{{ 'inventory.movements.emptyDescription' | translate }}</p>
+    </div>
+  } @else {
+    <div class="movement-list">
+      @for (movement of store.movementsPage().items; track movement.id) {
+        <article [class.decrease]="movement.direction === 'decrease'">
+          <div class="movement-icon" aria-hidden="true">
+            {{ movement.direction === 'increase' ? '↗' : '↘' }}
+          </div>
+          <div class="movement-main">
+            <div>
+              <strong>{{ movement.ingredientName }}</strong
+              ><span class="pill">{{
+                'inventory.movement.reason.' + movement.reason | translate
+              }}</span>
+            </div>
+            <p>{{ movement.note || ('inventory.value.noNote' | translate) }}</p>
+            <small>{{ movement.createdAt | date: 'medium' }}</small>
+          </div>
+          <div class="movement-quantity">
+            <strong
+              >{{ movement.direction === 'increase' ? '+' : '−'
+              }}{{ movement.quantity | number: '1.0-3' }} {{ movement.unit.code }}</strong
+            ><small
+              >{{ movement.stockBefore | number: '1.0-3' }} →
+              {{ movement.stockAfter | number: '1.0-3' }}</small
+            >
+          </div>
+        </article>
+      }
+    </div>
+    <app-inventory-pagination
+      [page]="store.movementsPage().page"
+      [totalPages]="store.movementsPage().totalPages"
+      [totalCount]="store.movementsPage().totalCount"
+      (pageChanged)="changePage($event)"
+    />
+  }
+</section>
+@if (formOpen()) {
+  <app-movement-form
+    [ingredients]="store.activeIngredients()"
+    [submitting]="store.mutating()"
+    [error]="store.operationError()"
+    (submitted)="save($event)"
+    (cancelled)="closeForm()"
+  />
+}

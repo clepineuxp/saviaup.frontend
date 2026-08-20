@@ -1,6 +1,6 @@
 # Savia Up Web
 
-Frontend de **Savia Up**, una plataforma SaaS multi-tenant para restaurantes y gastrobares. Esta fase cubre autenticación, recuperación de acceso, selección o creación de organización, navegación contextual y administración de categorías; los demás módulos operativos conservan vistas placeholder.
+Frontend de **Savia Up**, una plataforma SaaS multi-tenant para restaurantes y gastrobares. Esta fase cubre autenticación, recuperación de acceso, selección o creación de organización, navegación contextual, categorías e inventario operativo; los demás módulos conservan vistas placeholder.
 
 ## Stack
 
@@ -51,17 +51,22 @@ El build de producción reemplaza automáticamente el environment por `environme
 
 ## Rutas
 
-| Ruta                        | Acceso               | Propósito                           |
-| --------------------------- | -------------------- | ----------------------------------- |
-| `/login`                    | Invitado             | Inicio de sesión                    |
-| `/register`                 | Invitado             | Registro de usuario                 |
-| `/forgot-password`          | Invitado             | Solicitud neutral de recuperación   |
-| `/select-tenant`            | Autenticado          | Selección de organización           |
-| `/create-tenant`            | Autenticado          | Creación de organización            |
-| `/app`                      | Autenticado + tenant | Inicio y estado vacío del workspace |
-| `/app/inventory/categories` | Autenticado + tenant | Administración de categorías        |
-| `/app/{módulo}`             | Autenticado + tenant | Módulo habilitado conocido          |
-| `/app/modules/:code`        | Autenticado + tenant | Fallback seguro para código nuevo   |
+| Ruta                               | Acceso                       | Propósito                           |
+| ---------------------------------- | ---------------------------- | ----------------------------------- |
+| `/login`                           | Invitado                     | Inicio de sesión                    |
+| `/register`                        | Invitado                     | Registro de usuario                 |
+| `/forgot-password`                 | Invitado                     | Solicitud neutral de recuperación   |
+| `/select-tenant`                   | Autenticado                  | Selección de organización           |
+| `/create-tenant`                   | Autenticado                  | Creación de organización            |
+| `/app`                             | Autenticado + tenant         | Inicio y estado vacío del workspace |
+| `/app/inventory`                   | Autenticado + tenant         | Entrada al inventario               |
+| `/app/inventory/stock`             | `inventory.stock.read`       | Existencias y alertas de mínimo     |
+| `/app/inventory/ingredients`       | `inventory.ingredients.read` | Ingredientes                        |
+| `/app/inventory/movements`         | `inventory.movements.read`   | Movimientos inmutables              |
+| `/app/inventory/complements/units` | `inventory.complements.read` | Unidades de medida                  |
+| `/app/inventory/categories`        | Autenticado + tenant         | Administración de categorías        |
+| `/app/{módulo}`                    | Autenticado + tenant         | Módulo habilitado conocido          |
+| `/app/modules/:code`               | Autenticado + tenant         | Fallback seguro para código nuevo   |
 
 Todas las pantallas de feature se cargan de forma lazy.
 
@@ -81,6 +86,7 @@ src/app/
 │   ├── auth/          # login, register, recovery, adapters y contratos
 │   ├── tenant/        # selección, creación, adapters y store
 │   ├── categories/    # lista, formulario, repositorio HTTP y store por tenant
+│   ├── inventory/     # existencias, ingredientes, movimientos y complementos
 │   └── app/           # navegación y vistas de módulos
 ├── layouts/           # auth, tenant y app layouts
 ├── shared/
@@ -176,6 +182,14 @@ Todos viven en `core/config/api-endpoints.ts`:
 - `PUT /api/categories/{categoryId}`
 - `PATCH /api/categories/{categoryId}/status`
 - `DELETE /api/categories/{categoryId}`
+- `GET /api/inventory`
+- `GET/POST /api/inventory/ingredients`
+- `PUT/DELETE /api/inventory/ingredients/{ingredientId}`
+- `PATCH /api/inventory/ingredients/{ingredientId}/status`
+- `GET/POST /api/inventory/movements`
+- `GET/POST /api/inventory/complements/units`
+- `PUT/DELETE /api/inventory/complements/units/{unitId}`
+- `PATCH /api/inventory/complements/units/{unitId}/status`
 
 Los DTO están separados de los modelos de UI y se adaptan en la capa data-access.
 
@@ -188,6 +202,14 @@ El listado administrativo envía `includeInactive=true` y mantiene búsqueda por
 No existe carga binaria en este frontend. Las categorías aceptan únicamente una URL de imagen con preview; si está vacía o la carga remota falla, la tarjeta muestra un placeholder coherente con el diseño. No se envían archivos, base64 ni multipart a `/api/categories`.
 
 `CategoryStore` conserva datos solo para el tenant activo, se limpia al cambiar organización o cerrar sesión y descarta respuestas tardías del tenant anterior. Los códigos `CATEGORY_NAME_ALREADY_EXISTS`, `CATEGORY_NOT_FOUND`, `VALIDATION_ERROR`, `AUTH_FORBIDDEN`, `TENANT_REQUIRED` y `AUTH_UNAUTHENTICATED` se integran con los estados locales o los flujos globales correspondientes.
+
+## Inventario operativo
+
+`/app/inventory` expone cuatro apartados lazy e independientes: existencias, ingredientes, movimientos y complementos. Cada apartado se muestra únicamente con su permiso `*.read` exacto y las acciones aparecen solo con su `*.manage`; no se infiere acceso por rol ni se asume que gestión implique lectura. Ingredientes requiere además `categories.read` e `inventory.complements.read` para cargar sus selectores.
+
+Todos los listados usan paginación real del servidor con `{ items, page, pageSize, totalCount, totalPages }`. Los filtros vuelven a la página 1 y las mutaciones refrescan la página vigente. Crear un movimiento actualiza tanto el historial como las existencias; los movimientos no se editan ni se eliminan. El formulario de ingrediente solo admite existencia inicial al crear y muestra la existencia actual como lectura durante la edición.
+
+Complementos tiene un registro extensible por tipo y actualmente implementa Unidades. Los conflictos `INGREDIENT_IN_USE` y `MEASUREMENT_UNIT_IN_USE` permiten deshabilitar en lugar de eliminar; `MEASUREMENT_UNIT_ALREADY_EXISTS` e `INVENTORY_INSUFFICIENT_STOCK` muestran mensajes específicos sin perder los datos del formulario.
 
 ## Diseño y responsive
 

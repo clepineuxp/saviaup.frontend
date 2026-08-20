@@ -184,6 +184,15 @@ describe('AppLayoutComponent', () => {
     expect(fixture.debugElement.query(By.css('.context-loader'))).not.toBeNull();
   });
 
+  it('anchors routed module content at the top of the workspace', () => {
+    const content = fixture.debugElement.query(By.css('.app-content')).nativeElement as HTMLElement;
+    const styles = getComputedStyle(content);
+
+    expect(styles.alignContent).toBe('start');
+    expect(styles.alignItems).toBe('start');
+    expect(styles.justifyItems).toBe('center');
+  });
+
   it('shows the error state and retries the complete context load', () => {
     status.set('error');
     error.set('No se pudo cargar');

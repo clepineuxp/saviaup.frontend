@@ -19,6 +19,20 @@ export const API_ENDPOINTS = {
     detail: (categoryId: string) => `/api/categories/${categoryId}`,
     status: (categoryId: string) => `/api/categories/${categoryId}/status`,
   },
+  inventory: {
+    root: '/api/inventory',
+    ingredients: {
+      root: '/api/inventory/ingredients',
+      detail: (ingredientId: string) => `/api/inventory/ingredients/${ingredientId}`,
+      status: (ingredientId: string) => `/api/inventory/ingredients/${ingredientId}/status`,
+    },
+    movements: '/api/inventory/movements',
+    complements: {
+      units: '/api/inventory/complements/units',
+      unit: (unitId: string) => `/api/inventory/complements/units/${unitId}`,
+      unitStatus: (unitId: string) => `/api/inventory/complements/units/${unitId}/status`,
+    },
+  },
   tenants: {
     root: '/api/tenants',
     select: (tenantId: string) => `/api/tenants/${tenantId}/select`,

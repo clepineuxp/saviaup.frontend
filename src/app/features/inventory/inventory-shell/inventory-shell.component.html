@@ -1,0 +1,54 @@
+<section class="inventory-shell">
+  <header class="inventory-header">
+    <div>
+      <p class="eyebrow">{{ 'inventory.eyebrow' | translate }}</p>
+      <h1 class="page-title">{{ 'inventory.title' | translate }}</h1>
+      <p class="page-subtitle">{{ 'inventory.subtitle' | translate }}</p>
+    </div>
+  </header>
+
+  @if (store.permissionsLoading() || store.permissionsStatus() === 'idle') {
+    <div class="inventory-tabs inventory-tabs--loading" aria-busy="true" aria-live="polite">
+      <i></i><i></i><i></i><i></i>
+    </div>
+  } @else if (store.permissionsStatus() === 'error') {
+    <div class="permission-state">
+      @if (store.permissionsError(); as error) {
+        <app-ui-alert [message]="error.message" />
+      }
+      <app-ui-button type="button" (click)="loadPermissions()">
+        {{ 'app.context.retry' | translate }}
+      </app-ui-button>
+    </div>
+  } @else if (visibleSections().length === 0) {
+    <div class="permission-state" role="status">
+      <strong>{{ 'inventory.access.emptyTitle' | translate }}</strong>
+      <p>{{ 'inventory.access.emptyDescription' | translate }}</p>
+    </div>
+  } @else {
+    <nav class="inventory-tabs" [attr.aria-label]="'inventory.navigation.label' | translate">
+      @for (section of visibleSections(); track section.code) {
+        <a [routerLink]="section.route" routerLinkActive="inventory-tab--active">
+          <span aria-hidden="true">
+            @switch (section.code) {
+              @case ('stock') {
+                ▤
+              }
+              @case ('ingredients') {
+                ◇
+              }
+              @case ('movements') {
+                ⇄
+              }
+              @default {
+                ⊞
+              }
+            }
+          </span>
+          {{ section.label | translate }}
+        </a>
+      }
+    </nav>
+    <router-outlet />
+  }
+</section>

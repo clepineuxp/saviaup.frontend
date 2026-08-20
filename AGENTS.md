@@ -11,10 +11,11 @@ La fase implementada cubre:
 - selección y creación de organizaciones (tenants);
 - internacionalización español/inglés;
 - infraestructura JWT, PWA, IndexedDB y SignalR;
-- navegación autenticada ordenada y agrupada con placeholders para módulos operativos.
-- administración de categorías de inventario con permisos de lectura y gestión.
+- navegación autenticada ordenada y agrupada con placeholders para módulos operativos;
+- administración de categorías de inventario con permisos de lectura y gestión;
+- inventario operativo con existencias, ingredientes, movimientos y unidades de medida.
 
-No inventar todavía módulos de ventas, inventario, caja, recetas, compras, reportes o permisos si el requerimiento no los incluye expresamente.
+No inventar todavía módulos de ventas, caja, recetas, compras, reportes o permisos si el requerimiento no los incluye expresamente.
 
 ## Estado técnico y versiones
 
@@ -81,6 +82,7 @@ src/
 │   │   ├── auth/            # login, registro y recuperación
 │   │   ├── tenant/          # selección y creación de organización
 │   │   ├── categories/      # administración de categorías por tenant
+│   │   ├── inventory/       # existencias, ingredientes, movimientos y complementos
 │   │   └── app/             # navegación dinámica y vistas privadas
 │   ├── layouts/             # auth, tenant y app shells
 │   └── shared/
@@ -146,17 +148,22 @@ La selección de adaptadores se hace en `app.config.ts` mediante `useMockApi` y 
 
 ## Rutas y control de acceso
 
-| Ruta                        | Acceso               | Layout | Propósito                      |
-| --------------------------- | -------------------- | ------ | ------------------------------ |
-| `/login`                    | Invitado             | Auth   | Inicio de sesión               |
-| `/register`                 | Invitado             | Auth   | Creación de cuenta             |
-| `/forgot-password`          | Invitado             | Auth   | Recuperación neutral           |
-| `/select-tenant`            | Autenticado          | Tenant | Seleccionar organización       |
-| `/create-tenant`            | Autenticado          | Tenant | Crear organización             |
-| `/app`                      | Autenticado + tenant | App    | Entrada privada/placeholder    |
-| `/app/inventory/categories` | Autenticado + tenant | App    | Administración de categorías   |
-| `/app/{módulo}`             | Autenticado + tenant | App    | Módulo conocido habilitado     |
-| `/app/modules/:code`        | Autenticado + tenant | App    | Fallback de módulo desconocido |
+| Ruta                               | Acceso               | Layout | Propósito                      |
+| ---------------------------------- | -------------------- | ------ | ------------------------------ |
+| `/login`                           | Invitado             | Auth   | Inicio de sesión               |
+| `/register`                        | Invitado             | Auth   | Creación de cuenta             |
+| `/forgot-password`                 | Invitado             | Auth   | Recuperación neutral           |
+| `/select-tenant`                   | Autenticado          | Tenant | Seleccionar organización       |
+| `/create-tenant`                   | Autenticado          | Tenant | Crear organización             |
+| `/app`                             | Autenticado + tenant | App    | Entrada privada/placeholder    |
+| `/app/inventory`                   | Autenticado + tenant | App    | Entrada al inventario          |
+| `/app/inventory/stock`             | Permiso de lectura   | App    | Existencias paginadas          |
+| `/app/inventory/ingredients`       | Permiso de lectura   | App    | Administración de ingredientes |
+| `/app/inventory/movements`         | Permiso de lectura   | App    | Historial y nuevos movimientos |
+| `/app/inventory/complements/units` | Permiso de lectura   | App    | Unidades de medida             |
+| `/app/inventory/categories`        | Autenticado + tenant | App    | Administración de categorías   |
+| `/app/{módulo}`                    | Autenticado + tenant | App    | Módulo conocido habilitado     |
+| `/app/modules/:code`               | Autenticado + tenant | App    | Fallback de módulo desconocido |
 
 - `GuestGuard` impide que una sesión activa vuelva al flujo de invitado.
 - `AuthGuard` exige sesión válida.
@@ -213,6 +220,8 @@ Seleccionar o crear tenant debe recibir del backend un nuevo par de tokens conte
 
 `CategoryStore` es el propietario del listado administrativo de categorías. Su estado está limitado al tenant activo: se limpia al cambiar o cerrar el tenant y descarta respuestas tardías de otra organización. La vista se autoriza únicamente con los códigos recibidos desde `GET /api/users/me`: `categories.read` permite consultar y `categories.manage` habilita crear, editar, cambiar estado y eliminar. Nunca inferir estos permisos desde el nombre o código del rol; el backend conserva la autorización efectiva.
 
+`InventoryStore` es el propietario de las páginas, filtros y catálogos auxiliares de inventario. Conserva por separado existencias, ingredientes, movimientos y unidades, siempre paginados por el servidor y limitados al tenant activo. Cada apartado exige su permiso `*.read` exacto y cada mutación su `*.manage` exacto; `manage` no implica `read`. El formulario de ingredientes requiere además `categories.read` e `inventory.complements.read`. Tras un movimiento exitoso debe refrescar la página vigente tanto de movimientos como de existencias.
+
 La navegación lateral se deriva exclusivamente de las secciones devueltas. Se ordenan secciones y elementos por `order`, nunca alfabéticamente. El frontend debe respetar `isGrouped` sin recalcularlo: una sección no agrupada muestra sus elementos directamente y una agrupada muestra inicialmente solo `section.name`; al activarla abre un popover compacto con módulos y opciones apilados. Solo puede quedar un grupo abierto y debe cerrarse al seleccionar, hacer clic fuera o presionar `Escape`. Los nombres visibles siempre vienen del backend.
 
 En móvil, la navegación permanece en una sola fila con scroll horizontal. Los controles laterales solo aparecen cuando hay overflow, indican la dirección disponible y usan gradiente/sombra para comunicar que los accesos continúan bajo el borde. Los botones de sección deben ocupar el ancho de su contenido, sin espacio vacío artificial.
@@ -257,6 +266,14 @@ Endpoints centralizados actualmente:
 - `PUT /api/categories/{categoryId}`
 - `PATCH /api/categories/{categoryId}/status`
 - `DELETE /api/categories/{categoryId}`
+- `GET /api/inventory`
+- `GET/POST /api/inventory/ingredients`
+- `PUT/DELETE /api/inventory/ingredients/{ingredientId}`
+- `PATCH /api/inventory/ingredients/{ingredientId}/status`
+- `GET/POST /api/inventory/movements`
+- `GET/POST /api/inventory/complements/units`
+- `PUT/DELETE /api/inventory/complements/units/{unitId}`
+- `PATCH /api/inventory/complements/units/{unitId}/status`
 
 Formato de error esperado:
 
@@ -274,6 +291,8 @@ Formato de error esperado:
 `HttpErrorMapper` mantiene compatibilidad con errores HTTP simples. No mostrar al usuario detalles internos, stack traces, SQL ni mensajes de infraestructura.
 
 El contrato de categorías usa `Category { id, name, description, imageUrl, isInventoryTracked, isActive, createdAt, updatedAt }`. Crear y actualizar envían `name`, `description`, `imageUrl` e `isInventoryTracked`; el cambio de estado envía `{ isActive }`. El listado administrativo siempre solicita `includeInactive=true`; los selectores operativos futuros deben conservar el valor predeterminado `false`. La eliminación responde `204` y requiere confirmación explícita en la UI. Tratar de forma específica `CATEGORY_NAME_ALREADY_EXISTS`, `CATEGORY_NOT_FOUND`, `VALIDATION_ERROR`, `AUTH_FORBIDDEN`, `TENANT_REQUIRED` y `AUTH_UNAUTHENTICATED`.
+
+Los listados de inventario usan `{ items, page, pageSize, totalCount, totalPages }`, con páginas basadas en 1 y `pageSize` entre 1 y 100. Los filtros se envían al backend, su cambio vuelve a la página 1 y nunca se pagina localmente. La edición de un ingrediente no envía `initialStock`; las existencias cambian exclusivamente mediante movimientos inmutables. Tratar de forma específica `INGREDIENT_IN_USE`, `INVENTORY_INSUFFICIENT_STOCK`, `MEASUREMENT_UNIT_ALREADY_EXISTS`, `MEASUREMENT_UNIT_IN_USE` y los códigos `*_NOT_FOUND`.
 
 Los dos endpoints de contexto requieren JWT contextual. `/api/modules/available` también recibe el idioma actual en `Accept-Language`. Sus contratos de UI son:
 
@@ -397,6 +416,8 @@ Las pruebas actuales cubren:
 - bootstrap paralelo del contexto y descarte de respuestas obsoletas;
 - contrato ordenado, secciones directas/agrupadas, opciones futuras y estado vacío.
 - listado y mutaciones de categorías, permisos, validaciones, fallback de imagen, errores y aislamiento por tenant.
+- repositorios, permisos independientes, paginación, formularios, errores y refresco cruzado del inventario.
+- integración lazy de existencias, ingredientes, movimientos y complementos/unidades.
 
 Al modificar lógica observable, agregar o actualizar pruebas cerca del archivo afectado (`*.spec.ts`). Como mínimo probar:
 
