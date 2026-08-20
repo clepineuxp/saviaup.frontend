@@ -1,0 +1,39 @@
+:host {
+  display: inline-flex;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.72rem;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.brand--light {
+  color: white;
+}
+
+.brand__image {
+  display: block;
+  width: 2.15rem;
+  height: 2.15rem;
+  flex: 0 0 auto;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 9px rgb(36 93 59 / 24%));
+}
+
+.brand__name {
+  font-size: 1.17rem;
+  font-weight: 680;
+  letter-spacing: -0.035em;
+}
+
+.brand__name strong {
+  color: var(--color-savia-500);
+  font-weight: 800;
+}
+
+.brand--light .brand__name strong {
+  color: var(--color-lime-200);
+}

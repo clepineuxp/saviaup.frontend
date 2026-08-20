@@ -1,0 +1,59 @@
+<section class="tenant-page">
+  <header class="tenant-page__header">
+    <p class="eyebrow">{{ 'tenant.select.eyebrow' | translate }}</p>
+    <h1 class="page-title">{{ 'tenant.select.title' | translate }}</h1>
+    <p class="page-subtitle">{{ 'tenant.select.subtitle' | translate }}</p>
+  </header>
+
+  @if (tenantStore.error(); as error) {
+    <app-ui-alert [message]="error" />
+  }
+
+  <div class="tenant-grid" aria-live="polite">
+    @if (tenantStore.loading() && tenantStore.tenants().length === 0) {
+      @for (placeholder of [1, 2]; track placeholder) {
+        <div class="tenant-card tenant-card--skeleton" aria-hidden="true">
+          <span></span>
+          <div><i></i><i></i></div>
+        </div>
+      }
+      <span class="sr-only">{{ 'tenant.select.loading' | translate }}</span>
+    } @else {
+      @for (tenant of tenantStore.tenants(); track tenant.id) {
+        <button
+          class="tenant-card"
+          type="button"
+          [disabled]="tenantStore.loading()"
+          (click)="select(tenant)"
+        >
+          <span class="tenant-card__avatar" aria-hidden="true">
+            @if (tenant.logoUrl) {
+              <img [src]="tenant.logoUrl" alt="" />
+            } @else {
+              {{ initials(tenant.name) }}
+            }
+          </span>
+          <span class="tenant-card__copy">
+            <strong>{{ tenant.name }}</strong>
+            @if (tenant.roleName) {
+              <small>{{ tenant.roleName }}</small>
+            }
+          </span>
+          @if (selectingId() === tenant.id) {
+            <span class="tenant-card__loader" aria-label="Cargando"></span>
+          } @else {
+            <span class="tenant-card__arrow" aria-hidden="true">→</span>
+          }
+        </button>
+      }
+    }
+
+    <a class="tenant-card tenant-card--create" routerLink="/create-tenant">
+      <span class="tenant-card__add" aria-hidden="true">+</span>
+      <span class="tenant-card__copy"
+        ><strong>{{ 'tenant.select.create' | translate }}</strong></span
+      >
+      <span class="tenant-card__arrow" aria-hidden="true">→</span>
+    </a>
+  </div>
+</section>

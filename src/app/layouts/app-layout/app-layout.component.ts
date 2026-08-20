@@ -1,0 +1,32 @@
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
+import { AuthStore } from '../../core/auth/auth-store.service';
+import { TenantContext } from '../../core/tenant/tenant-context.service';
+import { BrandLogoComponent } from '../../shared/components/brand-logo/brand-logo.component';
+import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
+import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+
+@Component({
+  selector: 'app-app-layout',
+  imports: [RouterOutlet, BrandLogoComponent, LanguageSelectorComponent, TranslatePipe],
+  templateUrl: './app-layout.component.html',
+  styleUrl: './app-layout.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class AppLayoutComponent {
+  private readonly authStore = inject(AuthStore);
+  private readonly router = inject(Router);
+  readonly tenantContext = inject(TenantContext);
+
+  changeTenant(): void {
+    this.tenantContext.clear();
+    void this.router.navigate(['/select-tenant']);
+  }
+
+  logout(): void {
+    this.authStore.logout().subscribe({
+      next: () => void this.router.navigate(['/login']),
+      error: () => void this.router.navigate(['/login']),
+    });
+  }
+}

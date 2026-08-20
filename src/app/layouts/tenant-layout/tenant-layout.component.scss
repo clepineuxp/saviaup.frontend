@@ -1,0 +1,83 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+.workspace-shell {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 110%, rgb(131 191 148 / 18%), transparent 38%),
+    var(--color-canvas);
+}
+.workspace-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 100%;
+  max-width: 90rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: auto;
+  padding: 1.1rem clamp(1rem, 4vw, 3rem);
+}
+.workspace-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.logout-button {
+  min-height: 2.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 0 0.8rem;
+  background: rgb(255 255 255 / 75%);
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+.logout-button:hover {
+  border-color: var(--color-border-strong);
+  background: white;
+  color: var(--color-ink);
+}
+.logout-button__long {
+  display: none;
+}
+.workspace-shell__content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  min-height: calc(100vh - 5rem);
+  place-items: center;
+  padding: 2rem 1rem 4rem;
+}
+.workspace-shell__leaf {
+  position: absolute;
+  border: 1px solid rgb(59 135 88 / 10%);
+  border-radius: 75% 18% 70% 22%;
+}
+.workspace-shell__leaf--one {
+  top: 15%;
+  left: -8rem;
+  width: 18rem;
+  height: 22rem;
+  transform: rotate(30deg);
+}
+.workspace-shell__leaf--two {
+  right: -7rem;
+  bottom: -9rem;
+  width: 22rem;
+  height: 26rem;
+  transform: rotate(-18deg);
+}
+@media (min-width: 430px) {
+  .logout-button__long {
+    display: inline;
+  }
+  .logout-button__short {
+    display: none;
+  }
+}

@@ -1,0 +1,97 @@
+:host {
+  display: inline-flex;
+}
+
+:host:has(.button--wide) {
+  width: 100%;
+}
+
+.button {
+  position: relative;
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border: 1px solid transparent;
+  border-radius: 0.86rem;
+  padding: 0.72rem 1.15rem;
+  background: var(--color-savia-600);
+  box-shadow: 0 9px 22px rgb(30 100 59 / 20%);
+  color: white;
+  font-size: 0.93rem;
+  font-weight: 720;
+  cursor: pointer;
+  transition: 160ms ease;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--color-savia-700);
+  box-shadow: 0 12px 26px rgb(30 100 59 / 27%);
+  transform: translateY(-1px);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.button:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.button--secondary {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
+  box-shadow: none;
+  color: var(--color-ink);
+}
+
+.button--secondary:hover:not(:disabled) {
+  background: var(--color-canvas);
+  box-shadow: none;
+}
+
+.button--ghost {
+  min-height: 2.7rem;
+  padding-inline: 0.8rem;
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-savia-700);
+}
+
+.button--ghost:hover:not(:disabled) {
+  background: var(--color-savia-50);
+  box-shadow: none;
+}
+
+.button--wide {
+  width: 100%;
+}
+
+.spinner {
+  position: absolute;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid rgb(255 255 255 / 35%);
+  border-top-color: white;
+  border-radius: 999px;
+  animation: spin 700ms linear infinite;
+}
+
+.button--secondary .spinner,
+.button--ghost .spinner {
+  border-color: rgb(43 111 68 / 25%);
+  border-top-color: var(--color-savia-700);
+}
+
+.visually-muted {
+  opacity: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

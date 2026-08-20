@@ -1,0 +1,46 @@
+<main class="auth-shell">
+  <aside class="story-panel" aria-label="Savia Up">
+    <app-brand-logo [light]="true" />
+
+    <div class="story-panel__content">
+      <p class="story-panel__eyebrow">{{ 'auth.brandEyebrow' | translate }}</p>
+      <h1>{{ 'auth.brandTitle' | translate }}</h1>
+      <p>{{ 'auth.brandDescription' | translate }}</p>
+
+      <ul>
+        <li><span aria-hidden="true">✓</span>{{ 'auth.trustOne' | translate }}</li>
+        <li><span aria-hidden="true">✓</span>{{ 'auth.trustTwo' | translate }}</li>
+        <li><span aria-hidden="true">✓</span>{{ 'auth.trustThree' | translate }}</li>
+      </ul>
+    </div>
+
+    <div class="story-panel__visual" aria-hidden="true">
+      <div class="metric metric--primary">
+        <span>Ventas de hoy</span>
+        <strong>$ 8.4M</strong>
+        <small>↗ 12.8%</small>
+      </div>
+      <div class="metric metric--secondary">
+        <span>Órdenes activas</span>
+        <strong>24</strong>
+        <i></i><i></i><i></i><i></i><i></i>
+      </div>
+      <span class="orb orb--one"></span>
+      <span class="orb orb--two"></span>
+    </div>
+  </aside>
+
+  <section class="form-panel">
+    <header class="form-panel__header">
+      <app-brand-logo class="mobile-logo" />
+      <app-language-selector />
+    </header>
+
+    <div class="form-panel__body">
+      <div class="auth-card">
+        <router-outlet />
+      </div>
+      <p class="form-panel__footer">© 2026 Savia Up · Hecho para la hospitalidad</p>
+    </div>
+  </section>
+</main>
