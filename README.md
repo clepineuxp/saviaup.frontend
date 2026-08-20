@@ -64,7 +64,7 @@ El build de producción reemplaza automáticamente el environment por `environme
 | `/app/inventory/ingredients`       | `inventory.ingredients.read` | Ingredientes                        |
 | `/app/inventory/movements`         | `inventory.movements.read`   | Movimientos inmutables              |
 | `/app/inventory/complements/units` | `inventory.complements.read` | Unidades de medida                  |
-| `/app/inventory/categories`        | Autenticado + tenant         | Administración de categorías        |
+| `/app/categories`                  | Autenticado + tenant         | Administración de categorías        |
 | `/app/{módulo}`                    | Autenticado + tenant         | Módulo habilitado conocido          |
 | `/app/modules/:code`               | Autenticado + tenant         | Fallback seguro para código nuevo   |
 
@@ -140,17 +140,17 @@ En pantallas móviles, todos los accesos permanecen en una única fila desplazab
 
 En escritorio, la barra lateral permanece fija debajo del encabezado durante el desplazamiento del contenido. Si los accesos exceden la altura visible, el rail habilita scroll vertical propio y mantiene los popovers agrupados dentro del viewport.
 
-| Código       | Ruta                        | Icono        |
-| ------------ | --------------------------- | ------------ |
-| `orders`     | `/app/orders`               | `orders`     |
-| `tables`     | `/app/tables`               | `tables`     |
-| `inventory`  | `/app/inventory`            | `inventory`  |
-| `products`   | `/app/products`             | `products`   |
-| `categories` | `/app/inventory/categories` | `categories` |
-| `kitchen`    | `/app/kitchen`              | `kitchen`    |
-| `reports`    | `/app/reports`              | `reports`    |
-| `billing`    | `/app/billing`              | `billing`    |
-| `settings`   | `/app/settings`             | `settings`   |
+| Código       | Ruta              | Icono        |
+| ------------ | ----------------- | ------------ |
+| `orders`     | `/app/orders`     | `orders`     |
+| `tables`     | `/app/tables`     | `tables`     |
+| `inventory`  | `/app/inventory`  | `inventory`  |
+| `products`   | `/app/products`   | `products`   |
+| `categories` | `/app/categories` | `categories` |
+| `kitchen`    | `/app/kitchen`    | `kitchen`    |
+| `reports`    | `/app/reports`    | `reports`    |
+| `billing`    | `/app/billing`    | `billing`    |
+| `settings`   | `/app/settings`   | `settings`   |
 
 Las opciones futuras se resuelven por `option.code` y, si no existe una configuración específica, por `moduleCode`. Un código nuevo usa `/app/modules/:code`, el icono genérico `module` y una advertencia solo en desarrollo. Una respuesta `sections: []` es válida y muestra literalmente `emptyStateMessage`; un `403 TENANT_REQUIRED` devuelve al selector de organización.
 
@@ -195,7 +195,7 @@ Los DTO están separados de los modelos de UI y se adaptan en la capa data-acces
 
 ## Administración de categorías
 
-La ruta `/app/inventory/categories` usa el código dinámico `categories` dentro de la sección `inventory`. `categories.read` habilita el listado y `categories.manage` habilita creación, edición, deshabilitación/reactivación y eliminación; la UI nunca deriva permisos desde el rol y el backend siempre vuelve a validarlos.
+La ruta `/app/categories` usa el código dinámico `categories` dentro de la navegación contextual. `categories.read` habilita el listado y `categories.manage` habilita creación, edición, deshabilitación/reactivación y eliminación; la UI nunca deriva permisos desde el rol y el backend siempre vuelve a validarlos.
 
 El listado administrativo envía `includeInactive=true` y mantiene búsqueda por nombre y filtros locales. Crear y editar usan formularios tipados con nombre obligatorio (120), descripción opcional (1000), URL opcional HTTP/HTTPS (2048) y el indicador booleano de inventario. La eliminación solo actualiza el store después de recibir el `204` y siempre muestra una confirmación explícita.
 

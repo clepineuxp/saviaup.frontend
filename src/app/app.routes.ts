@@ -46,7 +46,7 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'inventory/categories',
+        path: 'categories',
         title: 'Categorías · Savia Up',
         loadChildren: () =>
           import('./features/categories/categories.routes').then(

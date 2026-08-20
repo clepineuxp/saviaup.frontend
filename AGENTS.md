@@ -161,7 +161,7 @@ La selección de adaptadores se hace en `app.config.ts` mediante `useMockApi` y 
 | `/app/inventory/ingredients`       | Permiso de lectura   | App    | Administración de ingredientes |
 | `/app/inventory/movements`         | Permiso de lectura   | App    | Historial y nuevos movimientos |
 | `/app/inventory/complements/units` | Permiso de lectura   | App    | Unidades de medida             |
-| `/app/inventory/categories`        | Autenticado + tenant | App    | Administración de categorías   |
+| `/app/categories`                  | Autenticado + tenant | App    | Administración de categorías   |
 | `/app/{módulo}`                    | Autenticado + tenant | App    | Módulo conocido habilitado     |
 | `/app/modules/:code`               | Autenticado + tenant | App    | Fallback de módulo desconocido |
 
@@ -230,17 +230,17 @@ En escritorio, la navegación lateral permanece fija debajo del header mientras 
 
 El frontend solo relaciona el `code` con ruta e icono; nunca agrega módulos ausentes ni infiere permisos:
 
-| Código       | Ruta                        | Icono        |
-| ------------ | --------------------------- | ------------ |
-| `orders`     | `/app/orders`               | `orders`     |
-| `tables`     | `/app/tables`               | `tables`     |
-| `inventory`  | `/app/inventory`            | `inventory`  |
-| `products`   | `/app/products`             | `products`   |
-| `categories` | `/app/inventory/categories` | `categories` |
-| `kitchen`    | `/app/kitchen`              | `kitchen`    |
-| `reports`    | `/app/reports`              | `reports`    |
-| `billing`    | `/app/billing`              | `billing`    |
-| `settings`   | `/app/settings`             | `settings`   |
+| Código       | Ruta              | Icono        |
+| ------------ | ----------------- | ------------ |
+| `orders`     | `/app/orders`     | `orders`     |
+| `tables`     | `/app/tables`     | `tables`     |
+| `inventory`  | `/app/inventory`  | `inventory`  |
+| `products`   | `/app/products`   | `products`   |
+| `categories` | `/app/categories` | `categories` |
+| `kitchen`    | `/app/kitchen`    | `kitchen`    |
+| `reports`    | `/app/reports`    | `reports`    |
+| `billing`    | `/app/billing`    | `billing`    |
+| `settings`   | `/app/settings`   | `settings`   |
 
 Las opciones se resuelven primero por su `code` y después por `moduleCode`, lo que permite agregar accesos administrativos sin cambiar el contrato. Los códigos desconocidos deben conservarse de forma segura en `/app/modules/:code` con el icono genérico `module` y emitir únicamente una advertencia de desarrollo sin datos sensibles.
 
