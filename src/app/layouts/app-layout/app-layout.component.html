@@ -1,0 +1,31 @@
+<div class="app-shell">
+  <header class="app-header">
+    <app-brand-logo />
+    <div class="tenant-pill">
+      <span class="tenant-pill__dot" aria-hidden="true"></span>
+      <span>{{ tenantContext.activeTenant()?.name }}</span>
+    </div>
+    <div class="app-header__actions">
+      <app-language-selector />
+      <button
+        class="header-action"
+        type="button"
+        (click)="changeTenant()"
+        [attr.aria-label]="'app.placeholder.changeTenant' | translate"
+      >
+        <span class="header-action__long">{{ 'app.placeholder.changeTenant' | translate }}</span>
+        <span class="header-action__short" aria-hidden="true">↔</span>
+      </button>
+      <button
+        class="header-action"
+        type="button"
+        (click)="logout()"
+        [attr.aria-label]="'common.logout' | translate"
+      >
+        <span class="header-action__long">{{ 'common.logout' | translate }}</span>
+        <span class="header-action__short" aria-hidden="true">↗</span>
+      </button>
+    </div>
+  </header>
+  <main class="app-content"><router-outlet /></main>
+</div>

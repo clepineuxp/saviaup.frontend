@@ -1,0 +1,37 @@
+.auth-form__header {
+  margin-bottom: 1.45rem;
+}
+.auth-form {
+  gap: 0.9rem;
+}
+.name-grid {
+  display: grid;
+  gap: 0.9rem;
+}
+.field__input--password {
+  padding-right: 4.7rem;
+}
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  border: 0;
+  padding: 0.35rem;
+  background: transparent;
+  color: var(--color-savia-700);
+  font-size: 0.74rem;
+  font-weight: 750;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+.auth-form__switch {
+  margin: 1.2rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.83rem;
+  text-align: center;
+}
+@media (min-width: 430px) {
+  .name-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

@@ -1,0 +1,244 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.auth-shell {
+  display: grid;
+  min-height: 100vh;
+  background: var(--color-canvas);
+}
+
+.story-panel {
+  position: relative;
+  display: none;
+  overflow: hidden;
+  padding: clamp(2rem, 4vw, 3.25rem);
+  background:
+    radial-gradient(circle at 80% 16%, rgb(151 201 112 / 22%), transparent 28%),
+    linear-gradient(145deg, #173d27 0%, #235b39 56%, #2f7248 100%);
+  color: white;
+}
+
+.story-panel::after {
+  position: absolute;
+  inset: auto -8rem -10rem auto;
+  width: 28rem;
+  height: 28rem;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 45% 55% 52% 48%;
+  content: '';
+  transform: rotate(28deg);
+}
+
+.story-panel__content {
+  position: relative;
+  z-index: 1;
+  align-self: center;
+  max-width: 35rem;
+  margin-top: 3rem;
+}
+
+.story-panel__eyebrow {
+  margin: 0 0 1rem;
+  color: var(--color-lime-200);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.story-panel h1 {
+  max-width: 32rem;
+  margin: 0;
+  font-size: clamp(2.25rem, 4vw, 3.55rem);
+  font-weight: 730;
+  letter-spacing: -0.055em;
+  line-height: 1.04;
+}
+
+.story-panel__content > p:not(.story-panel__eyebrow) {
+  max-width: 31rem;
+  margin: 1.35rem 0 0;
+  color: rgb(255 255 255 / 72%);
+  font-size: 1.02rem;
+  line-height: 1.65;
+}
+
+.story-panel ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  margin: 1.6rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: rgb(255 255 255 / 83%);
+  font-size: 0.78rem;
+}
+
+.story-panel li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.story-panel li span {
+  display: grid;
+  width: 1.15rem;
+  height: 1.15rem;
+  place-items: center;
+  border-radius: 999px;
+  background: rgb(216 238 157 / 16%);
+  color: var(--color-lime-200);
+  font-size: 0.66rem;
+}
+
+.story-panel__visual {
+  position: relative;
+  z-index: 1;
+  align-self: end;
+  height: 11rem;
+}
+
+.metric {
+  position: absolute;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: rgb(255 255 255 / 10%);
+  box-shadow: 0 18px 38px rgb(9 31 18 / 20%);
+  backdrop-filter: blur(12px);
+}
+
+.metric span,
+.metric small {
+  display: block;
+  color: rgb(255 255 255 / 60%);
+  font-size: 0.68rem;
+  font-style: normal;
+}
+
+.metric strong {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 1.45rem;
+}
+
+.metric small {
+  display: inline-block;
+  margin-left: 0.5rem;
+  color: var(--color-lime-200);
+}
+
+.metric--primary {
+  bottom: 0;
+  left: 0;
+  width: 13rem;
+  transform: rotate(-2deg);
+}
+
+.metric--secondary {
+  right: 4%;
+  bottom: 1.8rem;
+  width: 12rem;
+  transform: rotate(3deg);
+}
+
+.metric i {
+  display: inline-block;
+  width: 1rem;
+  margin: 0.75rem 0.16rem 0;
+  border-radius: 0.2rem 0.2rem 0 0;
+  background: rgb(216 238 157 / 55%);
+}
+
+.metric i:nth-of-type(1) {
+  height: 0.6rem;
+}
+.metric i:nth-of-type(2) {
+  height: 1rem;
+}
+.metric i:nth-of-type(3) {
+  height: 0.8rem;
+}
+.metric i:nth-of-type(4) {
+  height: 1.4rem;
+}
+.metric i:nth-of-type(5) {
+  height: 1.75rem;
+}
+
+.form-panel {
+  display: grid;
+  min-width: 0;
+  grid-template-rows: auto 1fr;
+  padding: 1.15rem;
+}
+
+.form-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-panel__body {
+  display: grid;
+  width: 100%;
+  max-width: 31rem;
+  align-self: center;
+  justify-self: center;
+  padding-block: 1.5rem;
+}
+
+.auth-card {
+  border: 1px solid var(--color-border);
+  border-radius: 1.35rem;
+  padding: clamp(1.35rem, 5vw, 2.25rem);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.form-panel__footer {
+  margin: 1.4rem 0 0;
+  color: var(--color-subtle);
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .form-panel {
+    padding: 1.75rem 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .auth-shell {
+    grid-template-columns: minmax(31rem, 1.05fr) minmax(30rem, 0.95fr);
+  }
+  .story-panel {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+  .form-panel {
+    padding: 2rem 3.5rem;
+  }
+  .form-panel__header {
+    justify-content: flex-end;
+  }
+  .mobile-logo {
+    display: none;
+  }
+  .auth-card {
+    border: 0;
+    box-shadow: none;
+  }
+}
+
+@media (min-width: 1440px) {
+  .auth-shell {
+    grid-template-columns: 55% 45%;
+  }
+  .story-panel {
+    padding-inline: 5rem;
+  }
+}

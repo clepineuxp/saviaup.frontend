@@ -1,0 +1,33 @@
+:host {
+  display: block;
+  width: 100%;
+}
+.create-card {
+  display: grid;
+  width: 100%;
+  max-width: 31rem;
+  gap: 1.65rem;
+  margin: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 1.3rem;
+  padding: clamp(1.4rem, 5vw, 2.35rem);
+  background: rgb(255 255 255 / 90%);
+  box-shadow: var(--shadow-card);
+}
+.create-card__icon {
+  display: grid;
+  width: 3.4rem;
+  height: 3.4rem;
+  place-items: center;
+  border-radius: 1rem;
+  background: var(--color-savia-100);
+  color: var(--color-savia-700);
+}
+.create-card__icon span {
+  font-size: 1.8rem;
+  font-weight: 350;
+}
+.create-card__back {
+  justify-self: center;
+  font-size: 0.82rem;
+}

@@ -1,0 +1,57 @@
+.auth-form__header {
+  margin-bottom: 1.65rem;
+}
+
+.auth-form {
+  gap: 1.05rem;
+}
+
+.field__input--password {
+  padding-right: 4.7rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  border: 0;
+  padding: 0.35rem;
+  background: transparent;
+  color: var(--color-savia-700);
+  font-size: 0.74rem;
+  font-weight: 750;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.form-options,
+.checkbox {
+  display: flex;
+  align-items: center;
+}
+
+.form-options {
+  min-height: 2rem;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+}
+
+.checkbox {
+  gap: 0.48rem;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.checkbox input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-savia-600);
+}
+
+.auth-form__switch {
+  margin: 1.35rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.83rem;
+  text-align: center;
+}
