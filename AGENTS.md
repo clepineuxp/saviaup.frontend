@@ -11,7 +11,7 @@ La fase implementada cubre:
 - selección y creación de organizaciones (tenants);
 - internacionalización español/inglés;
 - infraestructura JWT, PWA, IndexedDB y SignalR;
-- un placeholder autenticado para los futuros módulos operativos.
+- navegación autenticada ordenada y agrupada con placeholders para módulos operativos.
 
 No inventar todavía módulos de ventas, inventario, caja, recetas, compras, reportes o permisos si el requerimiento no los incluye expresamente.
 
@@ -71,6 +71,7 @@ src/
 │   ├── core/
 │   │   ├── auth/            # sesión, almacenamiento y refresh JWT
 │   │   ├── config/          # environment token y endpoints
+│   │   ├── context/         # usuario, organización, rol y módulos activos
 │   │   ├── guards/          # auth, guest, entry y tenant
 │   │   ├── interceptors/    # Authorization, tenant y retry de 401
 │   │   ├── models/          # modelos globales
@@ -78,7 +79,7 @@ src/
 │   ├── features/
 │   │   ├── auth/            # login, registro y recuperación
 │   │   ├── tenant/          # selección y creación de organización
-│   │   └── app/             # placeholder privado
+│   │   └── app/             # navegación dinámica y vistas privadas
 │   ├── layouts/             # auth, tenant y app shells
 │   └── shared/
 │       ├── api/             # ApiClient común
@@ -143,14 +144,16 @@ La selección de adaptadores se hace en `app.config.ts` mediante `useMockApi` y 
 
 ## Rutas y control de acceso
 
-| Ruta               | Acceso               | Layout | Propósito                   |
-| ------------------ | -------------------- | ------ | --------------------------- |
-| `/login`           | Invitado             | Auth   | Inicio de sesión            |
-| `/register`        | Invitado             | Auth   | Creación de cuenta          |
-| `/forgot-password` | Invitado             | Auth   | Recuperación neutral        |
-| `/select-tenant`   | Autenticado          | Tenant | Seleccionar organización    |
-| `/create-tenant`   | Autenticado          | Tenant | Crear organización          |
-| `/app`             | Autenticado + tenant | App    | Entrada privada/placeholder |
+| Ruta                 | Acceso               | Layout | Propósito                      |
+| -------------------- | -------------------- | ------ | ------------------------------ |
+| `/login`             | Invitado             | Auth   | Inicio de sesión               |
+| `/register`          | Invitado             | Auth   | Creación de cuenta             |
+| `/forgot-password`   | Invitado             | Auth   | Recuperación neutral           |
+| `/select-tenant`     | Autenticado          | Tenant | Seleccionar organización       |
+| `/create-tenant`     | Autenticado          | Tenant | Crear organización             |
+| `/app`               | Autenticado + tenant | App    | Entrada privada/placeholder    |
+| `/app/{módulo}`      | Autenticado + tenant | App    | Módulo conocido habilitado     |
+| `/app/modules/:code` | Autenticado + tenant | App    | Fallback de módulo desconocido |
 
 - `GuestGuard` impide que una sesión activa vuelva al flujo de invitado.
 - `AuthGuard` exige sesión válida.
@@ -193,7 +196,35 @@ La recuperación de contraseña debe mantener una respuesta neutral para no reve
 - roles o permisos fijos;
 - módulos disponibles por nombre hardcodeado.
 
-Seleccionar o crear tenant debe recibir del backend un nuevo par de tokens contextualizados. Persistir esos tokens antes de navegar a `/app`. El backend valida la relación entre `X-Tenant-Id`, el usuario y los claims del JWT.
+Seleccionar o crear tenant debe recibir del backend un nuevo par de tokens contextualizados. Persistir esos tokens antes de cargar el contexto autenticado y antes de navegar a `/app`. El backend valida la relación entre `X-Tenant-Id`, el usuario y los claims del JWT.
+
+`AuthenticatedContextStore` es el único propietario del perfil contextual y de las secciones de navegación disponibles. Debe:
+
+- cargar `GET /api/users/me/info` y `GET /api/modules/available` en paralelo;
+- comenzar únicamente después de que exista tenant y se hayan persistido los tokens contextualizados;
+- limpiar las secciones, módulos, opciones y datos del usuario al cambiar tenant o cerrar sesión;
+- descartar respuestas tardías de un tenant anterior;
+- recargar la navegación al cambiar el idioma, enviando el idioma actual en `Accept-Language`;
+- tratar `sections: []` como éxito y conservar literalmente `emptyStateMessage` del backend;
+- ante `403` con código `TENANT_REQUIRED`, limpiar el tenant y volver a `/select-tenant`.
+
+La navegación lateral se deriva exclusivamente de las secciones devueltas. Se ordenan secciones y elementos por `order`, nunca alfabéticamente. El frontend debe respetar `isGrouped` sin recalcularlo: una sección no agrupada muestra sus elementos directamente y una agrupada muestra inicialmente solo `section.name`; al activarla abre un popover compacto con módulos y opciones apilados. Solo puede quedar un grupo abierto y debe cerrarse al seleccionar, hacer clic fuera o presionar `Escape`. Los nombres visibles siempre vienen del backend.
+
+El frontend solo relaciona el `code` con ruta e icono; nunca agrega módulos ausentes ni infiere permisos:
+
+| Código       | Ruta              | Icono        |
+| ------------ | ----------------- | ------------ |
+| `orders`     | `/app/orders`     | `orders`     |
+| `tables`     | `/app/tables`     | `tables`     |
+| `inventory`  | `/app/inventory`  | `inventory`  |
+| `products`   | `/app/products`   | `products`   |
+| `categories` | `/app/categories` | `categories` |
+| `kitchen`    | `/app/kitchen`    | `kitchen`    |
+| `reports`    | `/app/reports`    | `reports`    |
+| `billing`    | `/app/billing`    | `billing`    |
+| `settings`   | `/app/settings`   | `settings`   |
+
+Las opciones se resuelven primero por su `code` y después por `moduleCode`, lo que permite agregar accesos administrativos sin cambiar el contrato. Los códigos desconocidos deben conservarse de forma segura en `/app/modules/:code` con el icono genérico `module` y emitir únicamente una advertencia de desarrollo sin datos sensibles.
 
 ## Contrato HTTP
 
@@ -206,6 +237,8 @@ Endpoints centralizados actualmente:
 - `POST /api/auth/forgot-password`
 - `POST /api/auth/reset-password`
 - `GET /api/users/me`
+- `GET /api/users/me/info`
+- `GET /api/modules/available`
 - `GET /api/tenants`
 - `POST /api/tenants`
 - `POST /api/tenants/{tenantId}/select`
@@ -225,6 +258,16 @@ Formato de error esperado:
 ```
 
 `HttpErrorMapper` mantiene compatibilidad con errores HTTP simples. No mostrar al usuario detalles internos, stack traces, SQL ni mensajes de infraestructura.
+
+Los dos endpoints de contexto requieren JWT contextual. `/api/modules/available` también recibe el idioma actual en `Accept-Language`. Sus contratos de UI son:
+
+```text
+UserInfo { firstName, lastName, organization { id, name }, role { id, code, name } }
+AvailableModulesResponse { sections, emptyStateMessage }
+NavigationSection { code, name, order, isGrouped, modules, options }
+AvailableModule { id, code, name, order }
+NavigationOption { code, moduleCode, name, order }
+```
 
 ## Environments y mocks
 
@@ -333,6 +376,8 @@ Las pruebas actuales cubren:
 - interceptor JWT/tenant/refresh;
 - login;
 - selección de tenant.
+- bootstrap paralelo del contexto y descarte de respuestas obsoletas;
+- contrato ordenado, secciones directas/agrupadas, opciones futuras y estado vacío.
 
 Al modificar lógica observable, agregar o actualizar pruebas cerca del archivo afectado (`*.spec.ts`). Como mínimo probar:
 

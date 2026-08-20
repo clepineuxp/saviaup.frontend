@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom, Observable, of } from 'rxjs';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { User } from '../models/user.model';
+import { AuthenticatedContextStore } from '../context/authenticated-context.store';
 import { TenantContext } from '../tenant/tenant-context.service';
 import { AUTH_REPOSITORY, AuthRepository, AuthResult } from './auth-repository';
 import { AuthStore } from './auth-store.service';
@@ -45,8 +46,13 @@ class MemoryTokenStorage implements TokenStorage {
 }
 
 class FakeAuthRepository implements AuthRepository {
+  result: AuthResult = {
+    session: { tokens: testTokens, user: testUser },
+    nextStep: 'tenant-selection',
+  };
+
   login(): Observable<AuthResult> {
-    return of({ session: { tokens: testTokens, user: testUser }, nextStep: 'tenant-selection' });
+    return of(this.result);
   }
 
   register(): Observable<AuthResult> {
@@ -73,20 +79,70 @@ class FakeAuthRepository implements AuthRepository {
 describe('AuthStore', () => {
   let store: AuthStore;
   let storage: MemoryTokenStorage;
+  let repository: FakeAuthRepository;
+  const clearContext = vi.fn();
+  const loadContext = vi.fn(() =>
+    of({
+      userInfo: {
+        firstName: 'Ana',
+        lastName: 'Savia',
+        organization: { id: 'tenant-1', name: 'Savia Demo' },
+        role: { id: 'role-1', code: 'OWNER', name: 'Owner' },
+      },
+      sections: [],
+      emptyStateMessage: 'Sin módulos',
+    }),
+  );
 
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
     storage = new MemoryTokenStorage();
+    repository = new FakeAuthRepository();
+    clearContext.mockClear();
+    loadContext.mockClear();
     TestBed.configureTestingModule({
       providers: [
         AuthStore,
         TenantContext,
-        { provide: AUTH_REPOSITORY, useClass: FakeAuthRepository },
+        {
+          provide: AuthenticatedContextStore,
+          useValue: { clear: clearContext, load: loadContext },
+        },
+        { provide: AUTH_REPOSITORY, useValue: repository },
         { provide: TOKEN_STORAGE, useValue: storage },
       ],
     });
     store = TestBed.inject(AuthStore);
+  });
+
+  it('persists the contextual session before loading the app context', async () => {
+    repository.result = {
+      session: {
+        tokens: testTokens,
+        user: testUser,
+        activeTenant: { id: 'tenant-1', name: 'Savia Demo' },
+      },
+      nextStep: 'app',
+    };
+    loadContext.mockImplementationOnce(() => {
+      expect(storage.value).toEqual(testTokens);
+      return of({
+        userInfo: {
+          firstName: 'Ana',
+          lastName: 'Savia',
+          organization: { id: 'tenant-1', name: 'Savia Demo' },
+          role: { id: 'role-1', code: 'OWNER', name: 'Owner' },
+        },
+        sections: [],
+        emptyStateMessage: 'Sin módulos',
+      });
+    });
+
+    await firstValueFrom(store.login({ email: 'ana@savia.test', password: 'Savia123*' }, true));
+
+    expect(loadContext).toHaveBeenCalledOnce();
+    expect(TestBed.inject(TenantContext).activeTenant()?.id).toBe('tenant-1');
   });
 
   it('stores a successful session using the requested persistence strategy', async () => {
@@ -96,6 +152,7 @@ describe('AuthStore', () => {
     expect(storage.persistent).toBe(true);
     expect(store.user()).toEqual(testUser);
     expect(store.hasValidSession()).toBe(true);
+    expect(loadContext).not.toHaveBeenCalled();
   });
 
   it('clears authentication and tenant context on logout', async () => {
@@ -108,5 +165,6 @@ describe('AuthStore', () => {
     expect(storage.value).toBeNull();
     expect(store.user()).toBeNull();
     expect(tenantContext.activeTenant()).toBeNull();
+    expect(clearContext).toHaveBeenCalled();
   });
 });

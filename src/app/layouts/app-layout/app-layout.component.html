@@ -1,12 +1,17 @@
 <div class="app-shell">
   <header class="app-header">
     <app-brand-logo />
-    <div class="tenant-pill">
-      <span class="tenant-pill__dot" aria-hidden="true"></span>
-      <span>{{ tenantContext.activeTenant()?.name }}</span>
-    </div>
+    @if (authenticatedContext.ready() && authenticatedContext.userInfo(); as userInfo) {
+      <div class="user-summary">
+        <span class="user-summary__avatar" aria-hidden="true">{{ userInitials() }}</span>
+        <span class="user-summary__copy">
+          <strong>{{ authenticatedContext.displayName() }}</strong>
+          <small>{{ userInfo.organization.name }} · {{ userInfo.role.name }}</small>
+        </span>
+      </div>
+    }
     <div class="app-header__actions">
-      <app-language-selector />
+      <app-language-selector (languageChanged)="reloadContext()" />
       <button
         class="header-action"
         type="button"
@@ -27,5 +32,52 @@
       </button>
     </div>
   </header>
-  <main class="app-content"><router-outlet /></main>
+
+  @if (authenticatedContext.loading() || authenticatedContext.status() === 'idle') {
+    <main class="context-state" aria-live="polite" aria-busy="true">
+      <span class="context-loader" aria-hidden="true"></span>
+      <div class="context-state__copy">
+        <strong>{{ 'app.context.loadingTitle' | translate }}</strong>
+        <span>{{ 'app.context.loadingDescription' | translate }}</span>
+      </div>
+      <div class="context-skeleton" aria-hidden="true"><i></i><i></i><i></i></div>
+    </main>
+  } @else if (authenticatedContext.status() === 'error') {
+    <main class="context-state" aria-live="assertive">
+      <div class="context-state__copy">
+        <strong>{{ 'app.context.errorTitle' | translate }}</strong>
+        <span>{{ 'app.context.errorDescription' | translate }}</span>
+      </div>
+      @if (authenticatedContext.error(); as error) {
+        <app-ui-alert [message]="error" />
+      }
+      <app-ui-button type="button" (click)="retry()">
+        {{ 'app.context.retry' | translate }}
+      </app-ui-button>
+    </main>
+  } @else {
+    <div class="app-workspace" [class.app-workspace--empty]="navigation().length === 0">
+      @if (navigation().length > 0) {
+        <aside class="app-sidebar">
+          <nav class="module-navigation" [attr.aria-label]="'app.navigation.label' | translate">
+            @for (section of navigation(); track section.code) {
+              @if (section.isGrouped) {
+                <app-navigation-group
+                  [section]="section"
+                  [open]="openSectionCode() === section.code"
+                  (toggled)="toggleNavigationGroup(section.code)"
+                  (dismissed)="closeNavigationGroup()"
+                />
+              } @else {
+                @for (item of section.items; track item.kind + ':' + item.code) {
+                  <app-navigation-item [item]="item" />
+                }
+              }
+            }
+          </nav>
+        </aside>
+      }
+      <main class="app-content"><router-outlet /></main>
+    </div>
+  }
 </div>

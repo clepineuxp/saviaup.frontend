@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { TenantContext } from '../../../core/tenant/tenant-context.service';
+import { AuthenticatedContextStore } from '../../../core/context/authenticated-context.store';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
@@ -10,5 +10,5 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppPlaceholderComponent {
-  readonly tenantContext = inject(TenantContext);
+  readonly authenticatedContext = inject(AuthenticatedContextStore);
 }

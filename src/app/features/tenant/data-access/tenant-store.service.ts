@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { catchError, finalize, map, Observable, tap, throwError } from 'rxjs';
+import { catchError, finalize, map, Observable, switchMap, tap, throwError } from 'rxjs';
 import { AuthStore } from '../../../core/auth/auth-store.service';
+import { AuthenticatedContextStore } from '../../../core/context/authenticated-context.store';
 import { TenantContext } from '../../../core/tenant/tenant-context.service';
 import { ApiError } from '../../../shared/http/api-error';
 import { RequestStatus } from '../../../shared/models/request-state.model';
@@ -11,6 +12,7 @@ import { TENANT_REPOSITORY } from './tenant.repository';
 export class TenantStore {
   private readonly repository = inject(TENANT_REPOSITORY);
   private readonly authStore = inject(AuthStore);
+  private readonly authenticatedContext = inject(AuthenticatedContextStore);
   private readonly tenantContext = inject(TenantContext);
   private readonly tenantsState = signal<readonly Tenant[]>([]);
   private readonly statusState = signal<RequestStatus>('idle');
@@ -28,18 +30,21 @@ export class TenantStore {
   }
 
   select(tenant: Tenant): Observable<void> {
+    this.authenticatedContext.clear();
     return this.track(
       this.repository.select(tenant.id).pipe(
         tap((result) => {
           this.authStore.acceptContextualTokens(result.tokens);
           this.tenantContext.select({ id: result.tenant.id, name: result.tenant.name });
         }),
+        switchMap(() => this.authenticatedContext.load()),
         map(() => undefined),
       ),
     );
   }
 
   create(name: string): Observable<Tenant> {
+    this.authenticatedContext.clear();
     return this.track(
       this.repository.create(name).pipe(
         tap((result) => {
@@ -47,7 +52,7 @@ export class TenantStore {
           this.tenantsState.update((tenants) => [...tenants, result.tenant]);
           this.tenantContext.select({ id: result.tenant.id, name: result.tenant.name });
         }),
-        map((result) => result.tenant),
+        switchMap((result) => this.authenticatedContext.load().pipe(map(() => result.tenant))),
       ),
     );
   }

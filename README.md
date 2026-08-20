@@ -1,6 +1,6 @@
 # Savia Up Web
 
-Frontend de **Savia Up**, una plataforma SaaS multi-tenant para restaurantes y gastrobares. Esta primera fase cubre autenticación, recuperación de acceso y selección o creación de organización; no incluye todavía los módulos operativos.
+Frontend de **Savia Up**, una plataforma SaaS multi-tenant para restaurantes y gastrobares. Esta fase cubre autenticación, recuperación de acceso, selección o creación de organización y navegación contextual; los módulos operativos conservan vistas placeholder.
 
 ## Stack
 
@@ -51,14 +51,16 @@ El build de producción reemplaza automáticamente el environment por `environme
 
 ## Rutas
 
-| Ruta               | Acceso               | Propósito                           |
-| ------------------ | -------------------- | ----------------------------------- |
-| `/login`           | Invitado             | Inicio de sesión                    |
-| `/register`        | Invitado             | Registro de usuario                 |
-| `/forgot-password` | Invitado             | Solicitud neutral de recuperación   |
-| `/select-tenant`   | Autenticado          | Selección de organización           |
-| `/create-tenant`   | Autenticado          | Creación de organización            |
-| `/app`             | Autenticado + tenant | Placeholder de la futura aplicación |
+| Ruta                 | Acceso               | Propósito                           |
+| -------------------- | -------------------- | ----------------------------------- |
+| `/login`             | Invitado             | Inicio de sesión                    |
+| `/register`          | Invitado             | Registro de usuario                 |
+| `/forgot-password`   | Invitado             | Solicitud neutral de recuperación   |
+| `/select-tenant`     | Autenticado          | Selección de organización           |
+| `/create-tenant`     | Autenticado          | Creación de organización            |
+| `/app`               | Autenticado + tenant | Inicio y estado vacío del workspace |
+| `/app/{módulo}`      | Autenticado + tenant | Módulo habilitado conocido          |
+| `/app/modules/:code` | Autenticado + tenant | Fallback seguro para código nuevo   |
 
 Todas las pantallas de feature se cargan de forma lazy.
 
@@ -69,6 +71,7 @@ src/app/
 ├── core/
 │   ├── auth/          # sesión, tokens, refresh coordinator
 │   ├── config/        # environment token y endpoints centralizados
+│   ├── context/       # perfil y módulos del tenant activo
 │   ├── guards/        # auth, guest y tenant
 │   ├── interceptors/  # Authorization, X-Tenant-Id y retry 401
 │   ├── models/
@@ -76,7 +79,7 @@ src/app/
 ├── features/
 │   ├── auth/          # login, register, recovery, adapters y contratos
 │   ├── tenant/        # selección, creación, adapters y store
-│   └── app/           # placeholder de la zona privada
+│   └── app/           # navegación y vistas de módulos
 ├── layouts/           # auth, tenant y app layouts
 ├── shared/
 │   ├── api/           # ApiClient; única puerta común a HttpClient
@@ -116,7 +119,27 @@ El endpoint de refresh usa un `HttpContextToken` para evitar recursión. `AuthGu
 
 `TenantContext` conserva únicamente `id` y `name` de la organización activa. Un usuario puede recibir cualquier cantidad de tenants desde el BFF; la UI no presupone roles, permisos, módulos ni la relación “un usuario = un restaurante”.
 
-`TenantRepository` tiene implementaciones HTTP y mock intercambiables. Crear o seleccionar una organización recibe un nuevo par de tokens contextualizados; el store los persiste antes de entrar a `/app`. El encabezado tenant queda centralizado en el interceptor y el backend valida que coincida con el claim del JWT.
+`TenantRepository` tiene implementaciones HTTP y mock intercambiables. Crear o seleccionar una organización recibe un nuevo par de tokens contextualizados; el store los persiste antes de cargar el perfil y los módulos, y solo después entra a `/app`. El encabezado tenant queda centralizado en el interceptor y el backend valida que coincida con el claim del JWT.
+
+## Contexto autenticado y navegación
+
+Con tenant activo, `AuthenticatedContextStore` solicita en paralelo la información del usuario y las secciones disponibles. Publica el estado combinado cuando ambas respuestas terminan, evita mostrar datos del tenant anterior y expone estados de carga, error/reintento, éxito y vacío. El cambio de idioma vuelve a solicitar la navegación con el valor actual de `Accept-Language`.
+
+El layout muestra nombre completo, organización y rol. Las secciones y sus elementos se ordenan por `order`. Una sección con `isGrouped: false` muestra su acceso directamente; una sección con `isGrouped: true` muestra inicialmente solo el nombre localizado del backend y abre sus módulos/opciones en un popover compacto. El popover se contrae al volver a activar la sección, elegir un acceso, hacer clic fuera o presionar `Escape`. El frontend no calcula permisos, no cambia `isGrouped` y solo mantiene esta relación estable:
+
+| Código       | Ruta              | Icono        |
+| ------------ | ----------------- | ------------ |
+| `orders`     | `/app/orders`     | `orders`     |
+| `tables`     | `/app/tables`     | `tables`     |
+| `inventory`  | `/app/inventory`  | `inventory`  |
+| `products`   | `/app/products`   | `products`   |
+| `categories` | `/app/categories` | `categories` |
+| `kitchen`    | `/app/kitchen`    | `kitchen`    |
+| `reports`    | `/app/reports`    | `reports`    |
+| `billing`    | `/app/billing`    | `billing`    |
+| `settings`   | `/app/settings`   | `settings`   |
+
+Las opciones futuras se resuelven por `option.code` y, si no existe una configuración específica, por `moduleCode`. Un código nuevo usa `/app/modules/:code`, el icono genérico `module` y una advertencia solo en desarrollo. Una respuesta `sections: []` es válida y muestra literalmente `emptyStateMessage`; un `403 TENANT_REQUIRED` devuelve al selector de organización.
 
 ## Internacionalización
 
@@ -136,6 +159,8 @@ Todos viven en `core/config/api-endpoints.ts`:
 
 - `POST /api/auth/login`, `/register`, `/refresh`, `/logout`, `/forgot-password`, `/reset-password`
 - `GET /api/users/me`
+- `GET /api/users/me/info`
+- `GET /api/modules/available` con `Accept-Language`
 - `GET/POST /api/tenants`
 - `POST /api/tenants/{tenantId}/select`
 - `GET /api/i18n/{language}`
@@ -155,5 +180,8 @@ El archivo de Figma “Savia Up · Web App” fue creado como espacio de diseño
 - Login y registro entregan una sesión y `requiresTenantSelection`; un login con último tenant válido navega directamente a `/app`.
 - Refresh rota el secreto y el frontend reemplaza ambos tokens.
 - Crear o seleccionar tenant devuelve `tenant` y `tokens`; nunca se continúa con el JWT sin contexto anterior.
+- El perfil contextual tiene `{ firstName, lastName, organization, role }`.
+- La navegación tiene `{ sections, emptyStateMessage }`; cada sección contiene `order`, `isGrouped`, módulos ordenables y opciones futuras con `moduleCode`.
+- Perfil y navegación se cargan en paralelo después de persistir los tokens y antes de navegar a `/app`.
 - Los errores usan `{ success: false, error: { code, message, details? } }` y el mapper conserva compatibilidad con errores HTTP simples.
 - Los permisos efectivos se reciben para representación de UI, pero la autorización real se resuelve siempre en el backend y no depende de claims de permisos.

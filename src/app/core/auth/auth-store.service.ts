@@ -1,7 +1,8 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { catchError, finalize, Observable, tap, throwError } from 'rxjs';
+import { catchError, finalize, map, Observable, of, switchMap, tap, throwError } from 'rxjs';
 import { ApiError } from '../../shared/http/api-error';
 import { RequestStatus } from '../../shared/models/request-state.model';
+import { AuthenticatedContextStore } from '../context/authenticated-context.store';
 import { User } from '../models/user.model';
 import { TenantContext } from '../tenant/tenant-context.service';
 import { AUTH_REPOSITORY, AuthResult, LoginCommand, RegisterCommand } from './auth-repository';
@@ -13,6 +14,7 @@ export class AuthStore {
   private readonly repository = inject(AUTH_REPOSITORY);
   private readonly tokenStorage = inject(TOKEN_STORAGE);
   private readonly tenantContext = inject(TenantContext);
+  private readonly authenticatedContext = inject(AuthenticatedContextStore);
   private readonly tokensState = signal<SessionTokens | null>(this.tokenStorage.load());
   private readonly userState = signal<User | null>(null);
   private readonly statusState = signal<RequestStatus>('idle');
@@ -36,6 +38,7 @@ export class AuthStore {
         tap((result) => {
           if (result.session) this.setSession(result.session, rememberMe);
         }),
+        switchMap((result) => this.bootstrapContext(result)),
       ),
     );
   }
@@ -78,6 +81,7 @@ export class AuthStore {
 
   clearSession(): void {
     this.tokenStorage.clear();
+    this.authenticatedContext.clear();
     this.tenantContext.clear();
     this.tokensState.set(null);
     this.userState.set(null);
@@ -90,11 +94,17 @@ export class AuthStore {
   }
 
   private setSession(session: AuthSession, persistent: boolean): void {
+    this.authenticatedContext.clear();
     this.tokenStorage.save(session.tokens, persistent);
     this.tokensState.set(session.tokens);
     this.userState.set(session.user);
     if (session.activeTenant) this.tenantContext.select(session.activeTenant);
     else this.tenantContext.clear();
+  }
+
+  private bootstrapContext(result: AuthResult): Observable<AuthResult> {
+    if (!result.session || result.nextStep !== 'app') return of(result);
+    return this.authenticatedContext.load().pipe(map(() => result));
   }
 
   private track<T>(request: Observable<T>): Observable<T> {

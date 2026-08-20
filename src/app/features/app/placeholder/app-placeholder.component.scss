@@ -1,4 +1,5 @@
-.success-card {
+.success-card,
+.empty-card {
   position: relative;
   width: 100%;
   max-width: 35rem;
@@ -10,7 +11,8 @@
   box-shadow: var(--shadow-card);
   text-align: center;
 }
-.success-card::before {
+.success-card::before,
+.empty-card::before {
   position: absolute;
   inset: 0 0 auto;
   height: 0.35rem;
@@ -21,6 +23,9 @@
     var(--color-lime-200)
   );
   content: '';
+}
+.empty-card::before {
+  background: linear-gradient(90deg, var(--color-savia-300), var(--color-lime-200));
 }
 .success-card__mark {
   position: relative;
@@ -68,5 +73,20 @@
 }
 .success-card .page-subtitle {
   max-width: 26rem;
+  margin: 1rem auto 0;
+}
+.empty-card__mark {
+  display: grid;
+  width: 4.4rem;
+  height: 4.4rem;
+  place-items: center;
+  margin: 0 auto 1.5rem;
+  border-radius: 1.35rem;
+  background: var(--color-savia-50);
+  color: var(--color-savia-600);
+  font-size: 1.75rem;
+}
+.empty-card .page-subtitle {
+  max-width: 27rem;
   margin: 1rem auto 0;
 }
