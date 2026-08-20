@@ -9,7 +9,7 @@ const modulePlaceholder = () =>
   );
 
 const knownModuleRoutes: Routes = KNOWN_MODULE_NAVIGATION.filter(
-  ({ code }) => code !== 'categories' && code !== 'inventory',
+  ({ code }) => code !== 'categories' && code !== 'inventory' && code !== 'products',
 ).map(({ code, path }) => ({
   path,
   title: 'Savia Up',
@@ -43,6 +43,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/app/placeholder/app-placeholder.component').then(
             (component) => component.AppPlaceholderComponent,
+          ),
+      },
+      {
+        path: 'products',
+        title: 'Productos · Savia Up',
+        loadChildren: () =>
+          import('./features/products/products.routes').then(
+            (routesFile) => routesFile.PRODUCT_ROUTES,
           ),
       },
       {

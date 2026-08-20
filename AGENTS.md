@@ -13,6 +13,7 @@ La fase implementada cubre:
 - infraestructura JWT, PWA, IndexedDB y SignalR;
 - navegación autenticada ordenada y agrupada con placeholders para módulos operativos;
 - administración de categorías de inventario con permisos de lectura y gestión;
+- administración paginada de productos y combos con filtros, estado e inventariabilidad condicionada;
 - inventario operativo con existencias, ingredientes, movimientos y unidades de medida.
 
 No inventar todavía módulos de ventas, caja, recetas, compras, reportes o permisos si el requerimiento no los incluye expresamente.
@@ -82,6 +83,7 @@ src/
 │   │   ├── auth/            # login, registro y recuperación
 │   │   ├── tenant/          # selección y creación de organización
 │   │   ├── categories/      # administración de categorías por tenant
+│   │   ├── products/        # catálogo paginado de productos y combos
 │   │   ├── inventory/       # existencias, ingredientes, movimientos y complementos
 │   │   └── app/             # navegación dinámica y vistas privadas
 │   ├── layouts/             # auth, tenant y app shells
@@ -156,6 +158,7 @@ La selección de adaptadores se hace en `app.config.ts` mediante `useMockApi` y 
 | `/select-tenant`                   | Autenticado          | Tenant | Seleccionar organización       |
 | `/create-tenant`                   | Autenticado          | Tenant | Crear organización             |
 | `/app`                             | Autenticado + tenant | App    | Entrada privada/placeholder    |
+| `/app/products`                    | `products.read`      | App    | Administración de productos    |
 | `/app/inventory`                   | Autenticado + tenant | App    | Entrada al inventario          |
 | `/app/inventory/stock`             | Permiso de lectura   | App    | Existencias paginadas          |
 | `/app/inventory/ingredients`       | Permiso de lectura   | App    | Administración de ingredientes |
@@ -220,6 +223,8 @@ Seleccionar o crear tenant debe recibir del backend un nuevo par de tokens conte
 
 `CategoryStore` es el propietario del listado administrativo de categorías. Su estado está limitado al tenant activo: se limpia al cambiar o cerrar el tenant y descarta respuestas tardías de otra organización. La vista se autoriza únicamente con los códigos recibidos desde `GET /api/users/me`: `categories.read` permite consultar y `categories.manage` habilita crear, editar, cambiar estado y eliminar. Nunca inferir estos permisos desde el nombre o código del rol; el backend conserva la autorización efectiva.
 
+`ProductStore` es el propietario de la página, filtros y categorías auxiliares del catálogo de productos. Su estado y permisos se limpian al cambiar tenant y todas las consultas permanecen paginadas en servidor. `products.read` permite entrar y listar; `products.manage` habilita crear, editar, cambiar estado y eliminar. El formulario requiere además `categories.read`, inicia el tipo en `NORMAL` y fuerza `isInventoryTracked=false` cuando la categoría seleccionada no es inventariable. La validación definitiva permanece en backend.
+
 `InventoryStore` es el propietario de las páginas, filtros y catálogos auxiliares de inventario. Conserva por separado existencias, ingredientes, movimientos y unidades, siempre paginados por el servidor y limitados al tenant activo. Cada apartado exige su permiso `*.read` exacto y cada mutación su `*.manage` exacto; `manage` no implica `read`. El formulario de ingredientes requiere además `categories.read` e `inventory.complements.read`. Tras un movimiento exitoso debe refrescar la página vigente tanto de movimientos como de existencias.
 
 La navegación lateral se deriva exclusivamente de las secciones devueltas. Se ordenan secciones y elementos por `order`, nunca alfabéticamente. El frontend debe respetar `isGrouped` sin recalcularlo: una sección no agrupada muestra sus elementos directamente y una agrupada muestra inicialmente solo `section.name`; al activarla abre un popover compacto con módulos y opciones apilados. Solo puede quedar un grupo abierto y debe cerrarse al seleccionar, hacer clic fuera o presionar `Escape`. Los nombres visibles siempre vienen del backend.
@@ -266,6 +271,11 @@ Endpoints centralizados actualmente:
 - `PUT /api/categories/{categoryId}`
 - `PATCH /api/categories/{categoryId}/status`
 - `DELETE /api/categories/{categoryId}`
+- `GET /api/products?page=1&pageSize=20&search=&categoryId=&type=&includeInactive=false`
+- `POST /api/products`
+- `PUT /api/products/{productId}`
+- `PATCH /api/products/{productId}/status`
+- `DELETE /api/products/{productId}`
 - `GET /api/inventory`
 - `GET/POST /api/inventory/ingredients`
 - `PUT/DELETE /api/inventory/ingredients/{ingredientId}`
@@ -291,6 +301,8 @@ Formato de error esperado:
 `HttpErrorMapper` mantiene compatibilidad con errores HTTP simples. No mostrar al usuario detalles internos, stack traces, SQL ni mensajes de infraestructura.
 
 El contrato de categorías usa `Category { id, name, description, imageUrl, isInventoryTracked, isActive, createdAt, updatedAt }`. Crear y actualizar envían `name`, `description`, `imageUrl` e `isInventoryTracked`; el cambio de estado envía `{ isActive }`. El listado administrativo siempre solicita `includeInactive=true`; los selectores operativos futuros deben conservar el valor predeterminado `false`. La eliminación responde `204` y requiere confirmación explícita en la UI. Tratar de forma específica `CATEGORY_NAME_ALREADY_EXISTS`, `CATEGORY_NOT_FOUND`, `VALIDATION_ERROR`, `AUTH_FORBIDDEN`, `TENANT_REQUIRED` y `AUTH_UNAUTHENTICATED`.
+
+El contrato de productos usa `Product { id, type, name, description, imageUrl, category, salePrice, preparationTimeMinutes, isInventoryTracked, isActive, createdAt, updatedAt }`. `type` es `NORMAL | COMBO`; crear y actualizar envían el `categoryId`, un precio positivo y los demás campos editables. El listado usa `{ items, page, pageSize, totalCount, totalPages }` y los filtros se resuelven en backend. La eliminación responde `204`, requiere confirmación explícita y nunca se aplica de forma optimista.
 
 Los listados de inventario usan `{ items, page, pageSize, totalCount, totalPages }`, con páginas basadas en 1 y `pageSize` entre 1 y 100. Los filtros se envían al backend, su cambio vuelve a la página 1 y nunca se pagina localmente. La edición de un ingrediente no envía `initialStock`; las existencias cambian exclusivamente mediante movimientos inmutables. Tratar de forma específica `INGREDIENT_IN_USE`, `INVENTORY_INSUFFICIENT_STOCK`, `MEASUREMENT_UNIT_ALREADY_EXISTS`, `MEASUREMENT_UNIT_IN_USE` y los códigos `*_NOT_FOUND`.
 
@@ -390,7 +402,7 @@ Reglas obligatorias:
 - Si se reemplaza el logo, conservar los ocho tamaños o actualizar a la vez componente, `index.html`, manifest y `ngsw-config.json`.
 - No declarar estos PNG como `maskable` mientras el arte no tenga una zona segura validada para máscaras PWA.
 
-Las imágenes de categorías son independientes del isotipo. La API recibe únicamente `imageUrl`; mientras no exista un servicio de almacenamiento, usar un campo de URL absoluta HTTP/HTTPS con preview y un placeholder local si falta o falla la imagen. No enviar archivos, base64 ni multipart a `/api/categories`.
+Las imágenes de categorías y productos son independientes del isotipo. La API recibe únicamente `imageUrl`; mientras no exista un servicio de almacenamiento, usar un campo de URL absoluta HTTP/HTTPS con preview y un placeholder local si falta o falla la imagen. No enviar archivos, base64 ni multipart a `/api/categories` o `/api/products`.
 
 ## PWA, offline y tiempo real
 
@@ -418,6 +430,7 @@ Las pruebas actuales cubren:
 - listado y mutaciones de categorías, permisos, validaciones, fallback de imagen, errores y aislamiento por tenant.
 - repositorios, permisos independientes, paginación, formularios, errores y refresco cruzado del inventario.
 - integración lazy de existencias, ingredientes, movimientos y complementos/unidades.
+- repositorio HTTP, aislamiento tenant, permisos, formulario reactivo y regla inventariable de productos.
 
 Al modificar lógica observable, agregar o actualizar pruebas cerca del archivo afectado (`*.spec.ts`). Como mínimo probar:
 

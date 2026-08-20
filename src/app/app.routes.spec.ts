@@ -20,4 +20,12 @@ describe('application routes', () => {
     expect(inventoryRoute?.loadChildren).toBeTypeOf('function');
     expect(inventoryRoute?.loadComponent).toBeUndefined();
   });
+
+  it('registers products as a real lazy feature instead of a module placeholder', () => {
+    const appRoute = routes.find((route) => route.path === 'app');
+    const productRoute = appRoute?.children?.find((route) => route.path === 'products');
+
+    expect(productRoute?.loadChildren).toBeTypeOf('function');
+    expect(productRoute?.loadComponent).toBeUndefined();
+  });
 });

@@ -19,6 +19,11 @@ export const API_ENDPOINTS = {
     detail: (categoryId: string) => `/api/categories/${categoryId}`,
     status: (categoryId: string) => `/api/categories/${categoryId}/status`,
   },
+  products: {
+    root: '/api/products',
+    detail: (productId: string) => `/api/products/${productId}`,
+    status: (productId: string) => `/api/products/${productId}/status`,
+  },
   inventory: {
     root: '/api/inventory',
     ingredients: {

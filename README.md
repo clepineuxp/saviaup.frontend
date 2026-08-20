@@ -1,6 +1,6 @@
 # Savia Up Web
 
-Frontend de **Savia Up**, una plataforma SaaS multi-tenant para restaurantes y gastrobares. Esta fase cubre autenticación, recuperación de acceso, selección o creación de organización, navegación contextual, categorías e inventario operativo; los demás módulos conservan vistas placeholder.
+Frontend de **Savia Up**, una plataforma SaaS multi-tenant para restaurantes y gastrobares. Esta fase cubre autenticación, recuperación de acceso, selección o creación de organización, navegación contextual, categorías, productos e inventario operativo; los demás módulos conservan vistas placeholder.
 
 ## Stack
 
@@ -59,6 +59,7 @@ El build de producción reemplaza automáticamente el environment por `environme
 | `/select-tenant`                   | Autenticado                  | Selección de organización           |
 | `/create-tenant`                   | Autenticado                  | Creación de organización            |
 | `/app`                             | Autenticado + tenant         | Inicio y estado vacío del workspace |
+| `/app/products`                    | `products.read`              | Administración de productos         |
 | `/app/inventory`                   | Autenticado + tenant         | Entrada al inventario               |
 | `/app/inventory/stock`             | `inventory.stock.read`       | Existencias y alertas de mínimo     |
 | `/app/inventory/ingredients`       | `inventory.ingredients.read` | Ingredientes                        |
@@ -86,6 +87,7 @@ src/app/
 │   ├── auth/          # login, register, recovery, adapters y contratos
 │   ├── tenant/        # selección, creación, adapters y store
 │   ├── categories/    # lista, formulario, repositorio HTTP y store por tenant
+│   ├── products/      # catálogo paginado, filtros y formulario reactivo
 │   ├── inventory/     # existencias, ingredientes, movimientos y complementos
 │   └── app/           # navegación y vistas de módulos
 ├── layouts/           # auth, tenant y app layouts
@@ -182,6 +184,11 @@ Todos viven en `core/config/api-endpoints.ts`:
 - `PUT /api/categories/{categoryId}`
 - `PATCH /api/categories/{categoryId}/status`
 - `DELETE /api/categories/{categoryId}`
+- `GET /api/products?page=1&pageSize=20&search=&categoryId=&type=&includeInactive=false`
+- `POST /api/products`
+- `PUT /api/products/{productId}`
+- `PATCH /api/products/{productId}/status`
+- `DELETE /api/products/{productId}`
 - `GET /api/inventory`
 - `GET/POST /api/inventory/ingredients`
 - `PUT/DELETE /api/inventory/ingredients/{ingredientId}`
@@ -202,6 +209,14 @@ El listado administrativo envía `includeInactive=true` y mantiene búsqueda por
 No existe carga binaria en este frontend. Las categorías aceptan únicamente una URL de imagen con preview; si está vacía o la carga remota falla, la tarjeta muestra un placeholder coherente con el diseño. No se envían archivos, base64 ni multipart a `/api/categories`.
 
 `CategoryStore` conserva datos solo para el tenant activo, se limpia al cambiar organización o cerrar sesión y descarta respuestas tardías del tenant anterior. Los códigos `CATEGORY_NAME_ALREADY_EXISTS`, `CATEGORY_NOT_FOUND`, `VALIDATION_ERROR`, `AUTH_FORBIDDEN`, `TENANT_REQUIRED` y `AUTH_UNAUTHENTICATED` se integran con los estados locales o los flujos globales correspondientes.
+
+## Gestión de productos
+
+`/app/products` reemplaza el placeholder del módulo `products` y exige `products.read`. El listado usa paginación del servidor, búsqueda por nombre, filtros por categoría y tipo (`NORMAL`/`COMBO`), e inclusión opcional de inactivos. `products.manage` habilita crear, editar, activar/desactivar y eliminar con confirmación explícita.
+
+El formulario usa Reactive Forms tipados y carga únicamente categorías activas. Tipo inicia en `NORMAL`; nombre, categoría y precio positivo son obligatorios. Descripción, URL HTTP/HTTPS y tiempo de preparación no negativo son opcionales. La imagen se representa como URL con preview, sin archivos, base64 ni multipart.
+
+`isInventoryTracked` reacciona a la categoría elegida: se habilita solo para categorías inventariables y se deshabilita, limpia y envía como `false` para cualquier otra. El backend repite la regla para no confiar en el cliente. `ProductStore` mantiene página, filtros, permisos y categorías aislados por tenant y refresca la consulta vigente después de cada mutación exitosa.
 
 ## Inventario operativo
 

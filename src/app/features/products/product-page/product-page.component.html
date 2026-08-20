@@ -1,0 +1,225 @@
+<section class="products-page">
+  <header class="heading">
+    <div>
+      <p class="eyebrow">{{ 'products.eyebrow' | translate }}</p>
+      <h1>{{ 'products.title' | translate }}</h1>
+      <p>{{ 'products.description' | translate }}</p>
+    </div>
+    @if (canManage()) {
+      <app-ui-button
+        type="button"
+        [disabled]="!canUseForm() || store.lookupStatus() === 'loading'"
+        (click)="openCreate()"
+      >
+        ＋ {{ 'products.action.create' | translate }}
+      </app-ui-button>
+    }
+  </header>
+
+  @if (canManage() && !canUseForm()) {
+    <aside class="dependency-note" role="note">
+      {{ 'products.dependencies' | translate }}
+    </aside>
+  }
+  @if (successKey(); as key) {
+    <app-ui-alert type="success" [message]="key | translate" />
+  }
+  @if (store.operationError(); as error) {
+    @if (!formOpen() && !deleteTarget()) {
+      <app-ui-alert [message]="error.message" />
+    }
+  }
+
+  <form class="filters" [formGroup]="filters" (ngSubmit)="applyFilters()">
+    <label>
+      <span>{{ 'products.filter.search' | translate }}</span>
+      <input
+        type="search"
+        formControlName="search"
+        [placeholder]="'products.filter.searchPlaceholder' | translate"
+      />
+    </label>
+    @if (store.hasPermission('categories.read')) {
+      <label>
+        <span>{{ 'products.filter.category' | translate }}</span>
+        <select formControlName="categoryId">
+          <option value="">{{ 'products.filter.allCategories' | translate }}</option>
+          @for (category of store.categories(); track category.id) {
+            <option [value]="category.id">{{ category.name }}</option>
+          }
+        </select>
+      </label>
+    }
+    <label>
+      <span>{{ 'products.filter.type' | translate }}</span>
+      <select formControlName="type">
+        <option value="">{{ 'products.filter.allTypes' | translate }}</option>
+        <option value="NORMAL">{{ 'products.type.normal' | translate }}</option>
+        <option value="COMBO">{{ 'products.type.combo' | translate }}</option>
+      </select>
+    </label>
+    <label class="check">
+      <input type="checkbox" formControlName="includeInactive" />
+      <span>{{ 'products.filter.includeInactive' | translate }}</span>
+    </label>
+    <app-ui-button type="submit" variant="secondary">
+      {{ 'products.filter.apply' | translate }}
+    </app-ui-button>
+  </form>
+
+  @if (store.status() === 'loading' || store.status() === 'idle') {
+    <div class="state" aria-busy="true">
+      <span class="loader"></span>
+      <p>{{ 'products.loading' | translate }}</p>
+    </div>
+  } @else if (store.status() === 'error') {
+    <div class="state">
+      @if (store.error(); as error) {
+        <app-ui-alert [message]="error.message" />
+      }
+      <app-ui-button type="button" (click)="retry()">
+        {{ 'app.context.retry' | translate }}
+      </app-ui-button>
+    </div>
+  } @else if (store.page().items.length === 0) {
+    <div class="state">
+      <span class="empty-icon" aria-hidden="true">◇</span>
+      <h2>{{ 'products.empty.title' | translate }}</h2>
+      <p>{{ 'products.empty.description' | translate }}</p>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ 'products.column.product' | translate }}</th>
+            <th>{{ 'products.column.category' | translate }}</th>
+            <th>{{ 'products.column.type' | translate }}</th>
+            <th>{{ 'products.column.salePrice' | translate }}</th>
+            <th>{{ 'products.column.preparationTime' | translate }}</th>
+            <th>{{ 'products.column.inventory' | translate }}</th>
+            <th>{{ 'products.column.status' | translate }}</th>
+            @if (canManage()) {
+              <th>{{ 'products.column.actions' | translate }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of store.page().items; track product.id) {
+            <tr [class.inactive]="!product.isActive">
+              <td>
+                <div class="product-cell">
+                  <div class="thumbnail">
+                    <span aria-hidden="true">◇</span>
+                    @if (product.imageUrl) {
+                      <img
+                        [src]="product.imageUrl"
+                        [alt]="product.name"
+                        (error)="hideBrokenImage($event)"
+                      />
+                    }
+                  </div>
+                  <span>
+                    <strong>{{ product.name }}</strong>
+                    <small>{{
+                      product.description || ('products.value.noDescription' | translate)
+                    }}</small>
+                  </span>
+                </div>
+              </td>
+              <td>{{ product.category.name }}</td>
+              <td>
+                <span class="pill">{{
+                  'products.type.' + product.type.toLowerCase() | translate
+                }}</span>
+              </td>
+              <td>
+                <b>{{ product.salePrice | number: '1.2-2' }}</b>
+              </td>
+              <td>
+                @if (product.preparationTimeMinutes !== null) {
+                  {{
+                    'products.value.minutes'
+                      | translate: { minutes: product.preparationTimeMinutes }
+                  }}
+                } @else {
+                  {{ 'products.value.notSpecified' | translate }}
+                }
+              </td>
+              <td>
+                <span class="pill" [class.pill--off]="!product.isInventoryTracked">
+                  {{
+                    (product.isInventoryTracked
+                      ? 'products.inventory.tracked'
+                      : 'products.inventory.notTracked'
+                    ) | translate
+                  }}
+                </span>
+              </td>
+              <td>
+                <span class="pill" [class.pill--off]="!product.isActive">
+                  {{
+                    (product.isActive ? 'products.status.active' : 'products.status.inactive')
+                      | translate
+                  }}
+                </span>
+              </td>
+              @if (canManage()) {
+                <td class="actions">
+                  <button type="button" [disabled]="!canUseForm()" (click)="openEdit(product)">
+                    {{ 'products.action.edit' | translate }}
+                  </button>
+                  <button
+                    type="button"
+                    [disabled]="store.mutating()"
+                    (click)="toggleStatus(product)"
+                  >
+                    {{
+                      (product.isActive ? 'products.action.disable' : 'products.action.enable')
+                        | translate
+                    }}
+                  </button>
+                  <button
+                    class="danger"
+                    type="button"
+                    [disabled]="store.mutating()"
+                    (click)="requestDelete(product)"
+                  >
+                    {{ 'products.action.delete' | translate }}
+                  </button>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-product-pagination
+      [page]="store.page().page"
+      [totalPages]="store.page().totalPages"
+      [totalCount]="store.page().totalCount"
+      (pageChanged)="changePage($event)"
+    />
+  }
+</section>
+
+@if (formOpen() && canUseForm()) {
+  <app-product-form
+    [product]="editingProduct()"
+    [categories]="store.categories()"
+    [submitting]="store.mutating()"
+    [error]="store.operationError()"
+    (submitted)="save($event)"
+    (cancelled)="closeForm()"
+  />
+}
+
+@if (deleteTarget(); as product) {
+  <app-product-delete-dialog
+    [productName]="product.name"
+    [submitting]="store.mutating()"
+    [error]="store.operationError()"
+    (confirmed)="confirmDelete()"
+    (cancelled)="cancelDelete()"
+  />
+}
