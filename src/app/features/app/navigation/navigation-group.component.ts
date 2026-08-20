@@ -43,11 +43,10 @@ import { NavigationItemComponent } from './navigation-item.component';
     }
     .navigation-group__trigger {
       display: flex;
-      min-width: 10rem;
+      width: max-content;
       min-height: 2.75rem;
       align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
+      justify-content: flex-start;
       border: 1px solid transparent;
       border-radius: 0.78rem;
       padding: 0.6rem 0.8rem;
@@ -65,10 +64,10 @@ import { NavigationItemComponent } from './navigation-item.component';
       color: var(--color-savia-700);
     }
     .navigation-popover {
-      position: absolute;
+      position: fixed;
       z-index: 30;
-      top: calc(100% + 0.55rem);
-      left: 0;
+      top: 8.45rem;
+      left: 1rem;
       display: grid;
       width: min(18rem, calc(100vw - 2rem));
       gap: 0.3rem;
@@ -92,6 +91,7 @@ import { NavigationItemComponent } from './navigation-item.component';
         width: 100%;
       }
       .navigation-popover {
+        position: absolute;
         top: 0;
         left: calc(100% + 0.65rem);
       }

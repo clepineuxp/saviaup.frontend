@@ -127,6 +127,8 @@ Con tenant activo, `AuthenticatedContextStore` solicita en paralelo la informaci
 
 El layout muestra nombre completo, organización y rol. Las secciones y sus elementos se ordenan por `order`. Una sección con `isGrouped: false` muestra su acceso directamente; una sección con `isGrouped: true` muestra inicialmente solo el nombre localizado del backend y abre sus módulos/opciones en un popover compacto. El popover se contrae al volver a activar la sección, elegir un acceso, hacer clic fuera o presionar `Escape`. El frontend no calcula permisos, no cambia `isGrouped` y solo mantiene esta relación estable:
 
+En pantallas móviles, todos los accesos permanecen en una única fila desplazable. Las flechas laterales aparecen únicamente si existe overflow y combinan gradiente y sombra para mostrar la continuidad del contenido bajo los bordes.
+
 | Código       | Ruta              | Icono        |
 | ------------ | ----------------- | ------------ |
 | `orders`     | `/app/orders`     | `orders`     |

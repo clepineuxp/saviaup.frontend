@@ -210,6 +210,8 @@ Seleccionar o crear tenant debe recibir del backend un nuevo par de tokens conte
 
 La navegación lateral se deriva exclusivamente de las secciones devueltas. Se ordenan secciones y elementos por `order`, nunca alfabéticamente. El frontend debe respetar `isGrouped` sin recalcularlo: una sección no agrupada muestra sus elementos directamente y una agrupada muestra inicialmente solo `section.name`; al activarla abre un popover compacto con módulos y opciones apilados. Solo puede quedar un grupo abierto y debe cerrarse al seleccionar, hacer clic fuera o presionar `Escape`. Los nombres visibles siempre vienen del backend.
 
+En móvil, la navegación permanece en una sola fila con scroll horizontal. Los controles laterales solo aparecen cuando hay overflow, indican la dirección disponible y usan gradiente/sombra para comunicar que los accesos continúan bajo el borde. Los botones de sección deben ocupar el ancho de su contenido, sin espacio vacío artificial.
+
 El frontend solo relaciona el `code` con ruta e icono; nunca agrega módulos ausentes ni infiere permisos:
 
 | Código       | Ruta              | Icono        |

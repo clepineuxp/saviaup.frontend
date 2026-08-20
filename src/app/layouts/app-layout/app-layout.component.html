@@ -59,22 +59,7 @@
     <div class="app-workspace" [class.app-workspace--empty]="navigation().length === 0">
       @if (navigation().length > 0) {
         <aside class="app-sidebar">
-          <nav class="module-navigation" [attr.aria-label]="'app.navigation.label' | translate">
-            @for (section of navigation(); track section.code) {
-              @if (section.isGrouped) {
-                <app-navigation-group
-                  [section]="section"
-                  [open]="openSectionCode() === section.code"
-                  (toggled)="toggleNavigationGroup(section.code)"
-                  (dismissed)="closeNavigationGroup()"
-                />
-              } @else {
-                @for (item of section.items; track item.kind + ':' + item.code) {
-                  <app-navigation-item [item]="item" />
-                }
-              }
-            }
-          </nav>
+          <app-navigation-rail [sections]="navigation()" />
         </aside>
       }
       <main class="app-content"><router-outlet /></main>
