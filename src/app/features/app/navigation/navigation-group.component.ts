@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  ElementRef,
+  HostListener,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { SectionNavigationItem } from './module-navigation.config';
 import { NavigationItemComponent } from './navigation-item.component';
 
@@ -12,6 +22,7 @@ import { NavigationItemComponent } from './navigation-item.component';
       [attr.data-section-code]="section().code"
     >
       <button
+        #trigger
         class="navigation-group__trigger"
         type="button"
         [attr.aria-expanded]="open()"
@@ -22,10 +33,14 @@ import { NavigationItemComponent } from './navigation-item.component';
       </button>
       @if (open()) {
         <div
+          #popover
           class="navigation-popover"
           [id]="'navigation-popover-' + section().code"
           role="group"
           [attr.aria-label]="section().name"
+          [style.top.px]="popoverPosition()?.top"
+          [style.left.px]="popoverPosition()?.left"
+          [style.max-height.px]="popoverPosition()?.maxHeight"
         >
           @for (item of section().items; track item.kind + ':' + item.code) {
             <app-navigation-item [item]="item" (activated)="dismissed.emit()" />
@@ -76,6 +91,7 @@ import { NavigationItemComponent } from './navigation-item.component';
       padding: 0.65rem;
       background: var(--color-surface);
       box-shadow: 0 1rem 2.5rem rgb(31 54 35 / 18%);
+      overflow-y: auto;
       animation: reveal-popover 160ms ease-out;
     }
     @keyframes reveal-popover {
@@ -91,9 +107,8 @@ import { NavigationItemComponent } from './navigation-item.component';
         width: 100%;
       }
       .navigation-popover {
-        position: absolute;
-        top: 0;
-        left: calc(100% + 0.65rem);
+        top: auto;
+        left: auto;
       }
     }
   `,
@@ -104,9 +119,55 @@ export class NavigationGroupComponent {
   readonly open = input(false);
   readonly toggled = output<void>();
   readonly dismissed = output<void>();
+  readonly trigger = viewChild<ElementRef<HTMLElement>>('trigger');
+  readonly popover = viewChild<ElementRef<HTMLElement>>('popover');
+  readonly popoverPosition = signal<{
+    readonly top: number;
+    readonly left: number;
+    readonly maxHeight: number;
+  } | null>(null);
+  private readonly synchronizePopoverPosition = effect(() => {
+    if (!this.open()) {
+      this.popoverPosition.set(null);
+      return;
+    }
+    queueMicrotask(() => this.updatePopoverPosition());
+  });
 
   toggle(event: Event): void {
     event.stopPropagation();
     this.toggled.emit();
+  }
+
+  @HostListener('window:resize')
+  updatePopoverPosition(): void {
+    const trigger = this.trigger()?.nativeElement;
+    const popover = this.popover()?.nativeElement;
+    if (!trigger || !popover || !this.open()) return;
+
+    const margin = 16;
+    const gap = 10;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const triggerBounds = trigger.getBoundingClientRect();
+    const popoverWidth = Math.min(popover.offsetWidth || 288, viewportWidth - margin * 2);
+    const maxHeight = Math.max(160, viewportHeight - margin * 2);
+    const popoverHeight = Math.min(popover.scrollHeight || maxHeight, maxHeight);
+    const desktop = viewportWidth >= 768;
+    let left = desktop ? triggerBounds.right + gap : triggerBounds.left;
+    let top = desktop ? triggerBounds.top : triggerBounds.bottom + gap;
+
+    if (left + popoverWidth > viewportWidth - margin) {
+      left = desktop
+        ? triggerBounds.left - popoverWidth - gap
+        : viewportWidth - popoverWidth - margin;
+    }
+    left = Math.max(margin, left);
+    if (top + popoverHeight > viewportHeight - margin) {
+      top = viewportHeight - popoverHeight - margin;
+    }
+    top = Math.max(margin, top);
+
+    this.popoverPosition.set({ top, left, maxHeight });
   }
 }

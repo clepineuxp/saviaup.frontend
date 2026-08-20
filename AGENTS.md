@@ -217,6 +217,8 @@ La navegación lateral se deriva exclusivamente de las secciones devueltas. Se o
 
 En móvil, la navegación permanece en una sola fila con scroll horizontal. Los controles laterales solo aparecen cuando hay overflow, indican la dirección disponible y usan gradiente/sombra para comunicar que los accesos continúan bajo el borde. Los botones de sección deben ocupar el ancho de su contenido, sin espacio vacío artificial.
 
+En escritorio, la navegación lateral permanece fija debajo del header mientras se desplaza el contenido principal. Debe ocupar como máximo la altura visible y habilitar su propio scroll vertical cuando los accesos la superen, sin recortar los popovers agrupados.
+
 El frontend solo relaciona el `code` con ruta e icono; nunca agrega módulos ausentes ni infiere permisos:
 
 | Código       | Ruta                        | Icono        |

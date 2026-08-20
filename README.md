@@ -132,6 +132,8 @@ El layout muestra nombre completo, organización y rol. Las secciones y sus elem
 
 En pantallas móviles, todos los accesos permanecen en una única fila desplazable. Las flechas laterales aparecen únicamente si existe overflow y combinan gradiente y sombra para mostrar la continuidad del contenido bajo los bordes.
 
+En escritorio, la barra lateral permanece fija debajo del encabezado durante el desplazamiento del contenido. Si los accesos exceden la altura visible, el rail habilita scroll vertical propio y mantiene los popovers agrupados dentro del viewport.
+
 | Código       | Ruta                        | Icono        |
 | ------------ | --------------------------- | ------------ |
 | `orders`     | `/app/orders`               | `orders`     |
