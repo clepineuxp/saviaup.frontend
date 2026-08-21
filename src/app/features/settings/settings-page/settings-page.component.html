@@ -146,12 +146,22 @@
             </div>
             <input type="checkbox" formControlName="deliveryEnabled"
           /></label>
-          <label class="toggle-card"
+          <label class="toggle-card" [class.disabled]="!hasCashRegistersPermission()"
             ><div>
               <strong>{{ 'settings.business.cash' | translate }}</strong
-              ><small>{{ 'settings.business.cashHint' | translate }}</small>
+              ><small>{{
+                (!hasCashRegistersPermission()
+                  ? 'settings.business.cashDisabledHint'
+                  : 'settings.business.cashHint'
+                ) | translate
+              }}</small>
             </div>
-            <input type="checkbox" formControlName="requiresOpenCashRegister"
+            <input
+              type="checkbox"
+              formControlName="requiresOpenCashRegister"
+              [disabled]="
+                !hasCashRegistersPermission() || !store.hasPermission('settings.business.manage')
+              "
           /></label>
           <label class="toggle-card"
             ><div>

@@ -93,6 +93,13 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
     description: ['', Validators.maxLength(500)],
   });
 
+  readonly hasCashRegistersPermission = computed(
+    () =>
+      this.store.hasPermission('cash-registers.manage') ||
+      this.store.hasPermission('cash-registers.read') ||
+      this.store.hasPermission('cash-registers.operate'),
+  );
+
   ngOnInit(): void {
     this.store
       .load()
@@ -115,7 +122,13 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
               website: organization.website ?? '',
             });
           const business = this.store.business();
-          if (business) this.businessForm.patchValue(business);
+          if (business) {
+            this.businessForm.patchValue({
+              ...business,
+              requiresOpenCashRegister:
+                this.hasCashRegistersPermission() && business.requiresOpenCashRegister,
+            });
+          }
           const first = this.tabs()[0];
           if (first) this.activeTab.set(first);
           if (organization?.hasLogo) this.refreshLogo();

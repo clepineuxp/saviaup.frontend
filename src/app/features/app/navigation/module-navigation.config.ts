@@ -58,6 +58,10 @@ const definitions = new Map(
 
 const optionDefinitions = new Map<string, ModuleNavigationDefinition>([
   ['tables.manage', { code: 'tables.manage', path: 'configuration/tables/manage', icon: 'tables' }],
+  [
+    'cash-registers.manage',
+    { code: 'cash-registers.manage', path: 'configuration/cash-registers/manage', icon: 'billing' },
+  ],
 ]);
 
 export const MODULE_ICON_GLYPHS: Readonly<Record<ModuleIcon, string>> = {
