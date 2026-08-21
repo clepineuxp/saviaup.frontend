@@ -24,6 +24,18 @@ export const API_ENDPOINTS = {
     detail: (productId: string) => `/api/products/${productId}`,
     status: (productId: string) => `/api/products/${productId}/status`,
   },
+  tables: {
+    root: '/api/tables',
+    detail: (tableId: string) => `/api/tables/${tableId}`,
+    operation: '/api/tables/operation',
+    operationState: (tableId: string) => `/api/tables/${tableId}/operation`,
+    order: (tableId: string) => `/api/tables/${tableId}/order`,
+    areas: {
+      root: '/api/table-areas',
+      detail: (areaId: string) => `/api/table-areas/${areaId}`,
+      reorder: '/api/table-areas/reorder',
+    },
+  },
   inventory: {
     root: '/api/inventory',
     ingredients: {

@@ -190,6 +190,15 @@
   .app-workspace--empty {
     grid-template-columns: 1fr;
   }
+  .app-workspace--sidebar-hidden {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app-workspace--sidebar-hidden .app-sidebar {
+    display: none;
+  }
+  .app-workspace--sidebar-hidden .app-content {
+    padding: 1rem;
+  }
   .app-sidebar {
     position: sticky;
     z-index: 5;

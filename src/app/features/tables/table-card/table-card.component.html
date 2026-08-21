@@ -1,0 +1,35 @@
+<button
+  class="table-card"
+  type="button"
+  [class.table-card--available]="table().status === 'AVAILABLE'"
+  [class.table-card--occupied]="table().status === 'OCCUPIED'"
+  [class.table-card--disabled]="table().status === 'DISABLED'"
+  [class.table-card--shape-round]="table().shape === 'ROUND'"
+  [class.table-card--shape-square]="table().shape === 'SQUARE'"
+  [class.table-card--shape-horizontal]="table().shape === 'RECTANGLE_HORIZONTAL'"
+  [class.table-card--shape-vertical]="table().shape === 'RECTANGLE_VERTICAL'"
+  [disabled]="interactive() && table().status === 'DISABLED'"
+  [attr.tabindex]="interactive() ? null : -1"
+  (click)="selectTable()"
+>
+  <span class="table-card__heading">
+    <strong>{{ table().name }}</strong>
+    <small class="table-card__status">{{
+      'tables.status.' + table().status.toLowerCase() | translate
+    }}</small>
+  </span>
+  <span class="table-card__capacity">
+    {{ table().capacity }} {{ 'tables.people' | translate }}
+    @if (table().isDelivery) {
+      · {{ 'tables.flags.delivery' | translate }}
+    }
+    @if (table().isCashRegister) {
+      · {{ 'tables.flags.cash' | translate }}
+    }
+  </span>
+  @if (table().status === 'OCCUPIED') {
+    <span class="table-card__total">
+      {{ table().activeOrderTotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+    </span>
+  }
+</button>

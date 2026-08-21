@@ -66,6 +66,8 @@ El build de producción reemplaza automáticamente el environment por `environme
 | `/app/inventory/movements`         | `inventory.movements.read`   | Movimientos inmutables              |
 | `/app/inventory/complements/units` | `inventory.complements.read` | Unidades de medida                  |
 | `/app/categories`                  | Autenticado + tenant         | Administración de categorías        |
+| `/app/sell/tables`                 | `tables.read`                | Operación de mesas en tiempo real   |
+| `/app/configuration/tables/manage` | `tables.manage`              | Distribución visual de salas/mesas  |
 | `/app/{módulo}`                    | Autenticado + tenant         | Módulo habilitado conocido          |
 | `/app/modules/:code`               | Autenticado + tenant         | Fallback seguro para código nuevo   |
 
@@ -142,17 +144,17 @@ En pantallas móviles, todos los accesos permanecen en una única fila desplazab
 
 En escritorio, la barra lateral permanece fija debajo del encabezado durante el desplazamiento del contenido. Si los accesos exceden la altura visible, el rail habilita scroll vertical propio y mantiene los popovers agrupados dentro del viewport.
 
-| Código       | Ruta              | Icono        |
-| ------------ | ----------------- | ------------ |
-| `orders`     | `/app/orders`     | `orders`     |
-| `tables`     | `/app/tables`     | `tables`     |
-| `inventory`  | `/app/inventory`  | `inventory`  |
-| `products`   | `/app/products`   | `products`   |
-| `categories` | `/app/categories` | `categories` |
-| `kitchen`    | `/app/kitchen`    | `kitchen`    |
-| `reports`    | `/app/reports`    | `reports`    |
-| `billing`    | `/app/billing`    | `billing`    |
-| `settings`   | `/app/settings`   | `settings`   |
+| Código       | Ruta               | Icono        |
+| ------------ | ------------------ | ------------ |
+| `orders`     | `/app/orders`      | `orders`     |
+| `tables`     | `/app/sell/tables` | `tables`     |
+| `inventory`  | `/app/inventory`   | `inventory`  |
+| `products`   | `/app/products`    | `products`   |
+| `categories` | `/app/categories`  | `categories` |
+| `kitchen`    | `/app/kitchen`     | `kitchen`    |
+| `reports`    | `/app/reports`     | `reports`    |
+| `billing`    | `/app/billing`     | `billing`    |
+| `settings`   | `/app/settings`    | `settings`   |
 
 Las opciones futuras se resuelven por `option.code` y, si no existe una configuración específica, por `moduleCode`. Un código nuevo usa `/app/modules/:code`, el icono genérico `module` y una advertencia solo en desarrollo. Una respuesta `sections: []` es válida y muestra literalmente `emptyStateMessage`; un `403 TENANT_REQUIRED` devuelve al selector de organización.
 
@@ -244,3 +246,10 @@ El archivo de Figma “Savia Up · Web App” fue creado como espacio de diseño
 - Perfil y navegación se cargan en paralelo después de persistir los tokens y antes de navegar a `/app`.
 - Los errores usan `{ success: false, error: { code, message, details? } }` y el mapper conserva compatibilidad con errores HTTP simples.
 - Los permisos efectivos se reciben para representación de UI, pero la autorización real se resuelve siempre en el backend y no depende de claims de permisos.
+
+## Gestión y operación de mesas
+
+- `/app/sell/tables` carga el snapshot por REST y concentra el área útil en la sala seleccionada. El encabezado de la sala permite cambiarla y alternar entre plano e iconos; sus KPIs son compactos y la barra lateral de escritorio puede ocultarse y recuperarse durante la operación.
+- `/app/configuration/tables/manage` administra salas y mesas, reordena salas y edita capacidad, flags, estado y forma (`SQUARE`, `ROUND`, `RECTANGLE_HORIZONTAL`, `RECTANGLE_VERTICAL`). La posición se define arrastrando la misma tarjeta y con las mismas dimensiones que usa la operación (`100×100`, `150×100` o `100×150`); doble clic abre la edición y el modal permite eliminar con confirmación. El estado se comunica por color y su etiqueta aparece solo con `hover`/foco.
+- `TableRealtimeClient` conecta únicamente durante el ciclo de vida de la feature, envía el JWT vigente y aplica reconexión automática para `OnTableStatusChanged` y `OnTableOrderUpdated`.
+- El bloqueo de caja abierta se deriva del backend y deshabilita todas las acciones de `tables.operate` sin ocultar el estado actual.

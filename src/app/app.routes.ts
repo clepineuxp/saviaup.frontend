@@ -9,7 +9,8 @@ const modulePlaceholder = () =>
   );
 
 const knownModuleRoutes: Routes = KNOWN_MODULE_NAVIGATION.filter(
-  ({ code }) => code !== 'categories' && code !== 'inventory' && code !== 'products',
+  ({ code }) =>
+    code !== 'categories' && code !== 'inventory' && code !== 'products' && code !== 'tables',
 ).map(({ code, path }) => ({
   path,
   title: 'Savia Up',
@@ -46,6 +47,22 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'sell/tables',
+        title: 'Mesas · Savia Up',
+        loadChildren: () =>
+          import('./features/tables/tables.routes').then(
+            (routesFile) => routesFile.TABLE_OPERATION_ROUTES,
+          ),
+      },
+      {
+        path: 'configuration/tables/manage',
+        title: 'Administrar mesas · Savia Up',
+        loadChildren: () =>
+          import('./features/tables/tables.routes').then(
+            (routesFile) => routesFile.TABLE_MANAGEMENT_ROUTES,
+          ),
+      },
+      {
         path: 'products',
         title: 'Productos · Savia Up',
         loadChildren: () =>
@@ -76,6 +93,11 @@ export const routes: Routes = [
         loadComponent: modulePlaceholder,
       },
     ],
+  },
+  {
+    path: 'configuration/tables/manage',
+    pathMatch: 'full',
+    redirectTo: 'app/configuration/tables/manage',
   },
   { path: '**', redirectTo: '' },
 ];

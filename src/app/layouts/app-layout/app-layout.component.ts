@@ -10,6 +10,7 @@ import { BrandLogoComponent } from '../../shared/components/brand-logo/brand-log
 import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
 import { UiButtonComponent } from '../../shared/components/ui-button/ui-button.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { AppShellState } from './app-shell-state.service';
 
 @Component({
   selector: 'app-app-layout',
@@ -30,6 +31,7 @@ export class AppLayoutComponent implements OnInit {
   private readonly authStore = inject(AuthStore);
   private readonly router = inject(Router);
   readonly tenantContext = inject(TenantContext);
+  readonly shellState = inject(AppShellState);
   readonly authenticatedContext = inject(AuthenticatedContextStore);
   readonly navigation = computed(() =>
     createSectionNavigation(this.authenticatedContext.sections()),

@@ -1,0 +1,14 @@
+<section class="metrics" aria-label="Resumen de mesas">
+  <article class="metric metric--available">
+    <span>{{ 'tables.metrics.available' | translate }}</span>
+    <strong>{{ metrics().available }}</strong>
+  </article>
+  <article class="metric metric--occupied">
+    <span>{{ 'tables.metrics.occupied' | translate }}</span>
+    <strong>{{ metrics().occupied }}</strong>
+  </article>
+  <article class="metric metric--sales">
+    <span>{{ 'tables.metrics.sales' | translate }}</span>
+    <strong>{{ metrics().activeSalesTotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+  </article>
+</section>

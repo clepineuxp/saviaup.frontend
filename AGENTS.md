@@ -15,6 +15,7 @@ La fase implementada cubre:
 - administración de categorías de inventario con permisos de lectura y gestión;
 - administración paginada de productos y combos con filtros, estado e inventariabilidad condicionada;
 - inventario operativo con existencias, ingredientes, movimientos y unidades de medida.
+- operación y configuración de salas/mesas con permisos granulares, canvas 2D y SignalR por tenant.
 
 No inventar todavía módulos de ventas, caja, recetas, compras, reportes o permisos si el requerimiento no los incluye expresamente.
 
@@ -85,6 +86,7 @@ src/
 │   │   ├── categories/      # administración de categorías por tenant
 │   │   ├── products/        # catálogo paginado de productos y combos
 │   │   ├── inventory/       # existencias, ingredientes, movimientos y complementos
+│   │   ├── tables/          # operación, realtime y configuración de salas/mesas
 │   │   └── app/             # navegación dinámica y vistas privadas
 │   ├── layouts/             # auth, tenant y app shells
 │   └── shared/
@@ -150,23 +152,25 @@ La selección de adaptadores se hace en `app.config.ts` mediante `useMockApi` y 
 
 ## Rutas y control de acceso
 
-| Ruta                               | Acceso               | Layout | Propósito                      |
-| ---------------------------------- | -------------------- | ------ | ------------------------------ |
-| `/login`                           | Invitado             | Auth   | Inicio de sesión               |
-| `/register`                        | Invitado             | Auth   | Creación de cuenta             |
-| `/forgot-password`                 | Invitado             | Auth   | Recuperación neutral           |
-| `/select-tenant`                   | Autenticado          | Tenant | Seleccionar organización       |
-| `/create-tenant`                   | Autenticado          | Tenant | Crear organización             |
-| `/app`                             | Autenticado + tenant | App    | Entrada privada/placeholder    |
-| `/app/products`                    | `products.read`      | App    | Administración de productos    |
-| `/app/inventory`                   | Autenticado + tenant | App    | Entrada al inventario          |
-| `/app/inventory/stock`             | Permiso de lectura   | App    | Existencias paginadas          |
-| `/app/inventory/ingredients`       | Permiso de lectura   | App    | Administración de ingredientes |
-| `/app/inventory/movements`         | Permiso de lectura   | App    | Historial y nuevos movimientos |
-| `/app/inventory/complements/units` | Permiso de lectura   | App    | Unidades de medida             |
-| `/app/categories`                  | Autenticado + tenant | App    | Administración de categorías   |
-| `/app/{módulo}`                    | Autenticado + tenant | App    | Módulo conocido habilitado     |
-| `/app/modules/:code`               | Autenticado + tenant | App    | Fallback de módulo desconocido |
+| Ruta                               | Acceso               | Layout | Propósito                         |
+| ---------------------------------- | -------------------- | ------ | --------------------------------- |
+| `/login`                           | Invitado             | Auth   | Inicio de sesión                  |
+| `/register`                        | Invitado             | Auth   | Creación de cuenta                |
+| `/forgot-password`                 | Invitado             | Auth   | Recuperación neutral              |
+| `/select-tenant`                   | Autenticado          | Tenant | Seleccionar organización          |
+| `/create-tenant`                   | Autenticado          | Tenant | Crear organización                |
+| `/app`                             | Autenticado + tenant | App    | Entrada privada/placeholder       |
+| `/app/products`                    | `products.read`      | App    | Administración de productos       |
+| `/app/inventory`                   | Autenticado + tenant | App    | Entrada al inventario             |
+| `/app/inventory/stock`             | Permiso de lectura   | App    | Existencias paginadas             |
+| `/app/inventory/ingredients`       | Permiso de lectura   | App    | Administración de ingredientes    |
+| `/app/inventory/movements`         | Permiso de lectura   | App    | Historial y nuevos movimientos    |
+| `/app/inventory/complements/units` | Permiso de lectura   | App    | Unidades de medida                |
+| `/app/categories`                  | Autenticado + tenant | App    | Administración de categorías      |
+| `/app/sell/tables`                 | `tables.read`        | App    | Operación de mesas en tiempo real |
+| `/app/configuration/tables/manage` | `tables.manage`      | App    | Configuración de salas y mesas    |
+| `/app/{módulo}`                    | Autenticado + tenant | App    | Módulo conocido habilitado        |
+| `/app/modules/:code`               | Autenticado + tenant | App    | Fallback de módulo desconocido    |
 
 - `GuestGuard` impide que una sesión activa vuelva al flujo de invitado.
 - `AuthGuard` exige sesión válida.
@@ -235,19 +239,21 @@ En escritorio, la navegación lateral permanece fija debajo del header mientras 
 
 El frontend solo relaciona el `code` con ruta e icono; nunca agrega módulos ausentes ni infiere permisos:
 
-| Código       | Ruta              | Icono        |
-| ------------ | ----------------- | ------------ |
-| `orders`     | `/app/orders`     | `orders`     |
-| `tables`     | `/app/tables`     | `tables`     |
-| `inventory`  | `/app/inventory`  | `inventory`  |
-| `products`   | `/app/products`   | `products`   |
-| `categories` | `/app/categories` | `categories` |
-| `kitchen`    | `/app/kitchen`    | `kitchen`    |
-| `reports`    | `/app/reports`    | `reports`    |
-| `billing`    | `/app/billing`    | `billing`    |
-| `settings`   | `/app/settings`   | `settings`   |
+| Código       | Ruta               | Icono        |
+| ------------ | ------------------ | ------------ |
+| `orders`     | `/app/orders`      | `orders`     |
+| `tables`     | `/app/sell/tables` | `tables`     |
+| `inventory`  | `/app/inventory`   | `inventory`  |
+| `products`   | `/app/products`    | `products`   |
+| `categories` | `/app/categories`  | `categories` |
+| `kitchen`    | `/app/kitchen`     | `kitchen`    |
+| `reports`    | `/app/reports`     | `reports`    |
+| `billing`    | `/app/billing`     | `billing`    |
+| `settings`   | `/app/settings`    | `settings`   |
 
 Las opciones se resuelven primero por su `code` y después por `moduleCode`, lo que permite agregar accesos administrativos sin cambiar el contrato. Los códigos desconocidos deben conservarse de forma segura en `/app/modules/:code` con el icono genérico `module` y emitir únicamente una advertencia de desarrollo sin datos sensibles.
+
+La opción `tables.manage` resuelve `/app/configuration/tables/manage`; no debe usar la ruta operativa heredada del módulo `tables`.
 
 ## Contrato HTTP
 
@@ -276,6 +282,15 @@ Endpoints centralizados actualmente:
 - `PUT /api/products/{productId}`
 - `PATCH /api/products/{productId}/status`
 - `DELETE /api/products/{productId}`
+- `GET/POST /api/table-areas`
+- `PUT/DELETE /api/table-areas/{areaId}`
+- `PUT /api/table-areas/reorder`
+- `GET/POST /api/tables`
+- `PUT/DELETE /api/tables/{tableId}`
+- `GET /api/tables/operation`
+- `PATCH /api/tables/{tableId}/operation`
+- `PATCH /api/tables/{tableId}/order`
+- `SIGNALR /hubs/tables`
 - `GET /api/inventory`
 - `GET/POST /api/inventory/ingredients`
 - `PUT/DELETE /api/inventory/ingredients/{ingredientId}`
@@ -416,6 +431,10 @@ Las imágenes de categorías y productos son independientes del isotipo. La API 
 
 `RealtimeService` crea conexiones SignalR, pero ninguna feature debe conectarse automáticamente al arrancar la aplicación. Iniciar y detener conexiones dentro del ciclo de vida del módulo que las necesita.
 
+`TableStore` es el propietario del snapshot operativo y de la configuración. La carga inicial siempre es REST; `TableRealtimeClient` aplica `OnTableStatusChanged` y `OnTableOrderUpdated`, usa token actualizado, reconexión automática y se desconecta al destruir la ruta. `tables.read`, `tables.operate` y `tables.manage` son independientes. El canvas calcula su bounding box desde las coordenadas mínima y máxima para evitar espacio desplazable infinito.
+
+`TableLayoutEditorComponent` es el propietario de la previsualización por arrastre y teclado. Emite una única posición para persistir al finalizar cada interacción y solicita edición con doble clic o `Enter`; el formulario de mesa no solicita coordenadas manuales y permite eliminar mediante la confirmación existente. `TableCardComponent` y `tableShapeDimensions` son la única fuente visual y geométrica para configuración y operación: `SQUARE`/`ROUND` miden `100×100`, `RECTANGLE_HORIZONTAL` `150×100` y `RECTANGLE_VERTICAL` `100×150`; ningún canvas debe duplicar esos tamaños. El texto de estado permanece oculto hasta `hover`/foco y el color comunica el estado base. `AppShellState` pertenece exclusivamente al layout: la operación puede ocultar la barra lateral de escritorio para ampliar el plano y debe restaurarla al abandonar la ruta.
+
 ## Pruebas
 
 Las pruebas actuales cubren:
@@ -431,6 +450,7 @@ Las pruebas actuales cubren:
 - repositorios, permisos independientes, paginación, formularios, errores y refresco cruzado del inventario.
 - integración lazy de existencias, ingredientes, movimientos y complementos/unidades.
 - repositorio HTTP, aislamiento tenant, permisos, formulario reactivo y regla inventariable de productos.
+- estados visuales e interacción bloqueada de mesas, además del contrato de rutas lazy de operación/configuración.
 
 Al modificar lógica observable, agregar o actualizar pruebas cerca del archivo afectado (`*.spec.ts`). Como mínimo probar:
 

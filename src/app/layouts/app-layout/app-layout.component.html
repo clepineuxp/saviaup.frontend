@@ -56,7 +56,11 @@
       </app-ui-button>
     </main>
   } @else {
-    <div class="app-workspace" [class.app-workspace--empty]="navigation().length === 0">
+    <div
+      class="app-workspace"
+      [class.app-workspace--empty]="navigation().length === 0"
+      [class.app-workspace--sidebar-hidden]="shellState.sidebarHidden()"
+    >
       @if (navigation().length > 0) {
         <aside class="app-sidebar">
           <app-navigation-rail [sections]="navigation()" />
