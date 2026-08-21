@@ -28,4 +28,12 @@ describe('application routes', () => {
     expect(productRoute?.loadChildren).toBeTypeOf('function');
     expect(productRoute?.loadComponent).toBeUndefined();
   });
+
+  it('registers settings as a real lazy feature instead of a module placeholder', () => {
+    const appRoute = routes.find((route) => route.path === 'app');
+    const settingsRoute = appRoute?.children?.find((route) => route.path === 'settings');
+
+    expect(settingsRoute?.loadChildren).toBeTypeOf('function');
+    expect(settingsRoute?.loadComponent).toBeUndefined();
+  });
 });

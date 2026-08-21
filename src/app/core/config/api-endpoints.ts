@@ -50,6 +50,23 @@ export const API_ENDPOINTS = {
       unitStatus: (unitId: string) => `/api/inventory/complements/units/${unitId}/status`,
     },
   },
+  settings: {
+    organization: '/api/settings/organization',
+    organizationLogo: '/api/settings/organization/logo',
+    business: '/api/settings/business',
+    paymentMethods: '/api/settings/payment-methods',
+    paymentMethod: (paymentMethodId: string) => `/api/settings/payment-methods/${paymentMethodId}`,
+    paymentMethodStatus: (paymentMethodId: string) =>
+      `/api/settings/payment-methods/${paymentMethodId}/status`,
+    access: {
+      permissions: '/api/settings/access/permissions',
+      roles: '/api/settings/access/roles',
+      role: (roleId: string) => `/api/settings/access/roles/${roleId}`,
+      roleStatus: (roleId: string) => `/api/settings/access/roles/${roleId}/status`,
+      users: '/api/settings/access/users',
+      user: (entryId: string) => `/api/settings/access/users/${entryId}`,
+    },
+  },
   tenants: {
     root: '/api/tenants',
     select: (tenantId: string) => `/api/tenants/${tenantId}/select`,

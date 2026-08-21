@@ -1,0 +1,438 @@
+<section class="settings-page">
+  <header class="heading">
+    <div>
+      <p class="eyebrow">{{ 'settings.eyebrow' | translate }}</p>
+      <h1>{{ 'settings.title' | translate }}</h1>
+      <p>{{ 'settings.description' | translate }}</p>
+    </div>
+  </header>
+
+  @if (store.error()) {
+    <div class="alert error" role="alert">{{ store.error() }}</div>
+  }
+  @if (successKey()) {
+    <div class="alert success" role="status">{{ successKey()! | translate }}</div>
+  }
+
+  @if (store.loading()) {
+    <div class="panel loading">{{ 'settings.loading' | translate }}</div>
+  } @else {
+    <nav class="tabs" [attr.aria-label]="'settings.tabs.label' | translate">
+      @for (tab of tabs(); track tab) {
+        <button type="button" [class.active]="activeTab() === tab" (click)="selectTab(tab)">
+          {{ 'settings.tabs.' + tab | translate }}
+        </button>
+      }
+    </nav>
+
+    @if (activeTab() === 'organization' && store.organization(); as organization) {
+      <form class="panel" [formGroup]="organizationForm" (ngSubmit)="saveOrganization()">
+        <div class="section-heading">
+          <div>
+            <h2>{{ 'settings.organization.title' | translate }}</h2>
+            <p>{{ 'settings.organization.description' | translate }}</p>
+          </div>
+        </div>
+        <div class="logo-row">
+          <div class="logo-preview">
+            @if (logoUrl()) {
+              <img [src]="logoUrl()" [alt]="'settings.organization.logo.alt' | translate" />
+            } @else {
+              <span>SU</span>
+            }
+          </div>
+          @if (store.hasPermission('settings.organization.manage')) {
+            <div class="logo-actions">
+              <label class="button secondary"
+                >{{ 'settings.organization.logo.upload' | translate
+                }}<input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  (change)="chooseLogo($event)"
+              /></label>
+              @if (organization.hasLogo) {
+                <button class="link danger" type="button" (click)="deleteLogo()">
+                  {{ 'settings.organization.logo.delete' | translate }}
+                </button>
+              }
+              <small>{{ 'settings.organization.logo.hint' | translate }}</small>
+            </div>
+          }
+        </div>
+        <div class="form-grid">
+          <label
+            ><span>{{ 'settings.organization.name' | translate }}</span
+            ><input formControlName="name"
+          /></label>
+          <label
+            ><span>{{ 'settings.organization.responsible' | translate }}</span
+            ><input formControlName="responsibleName"
+          /></label>
+          <label
+            ><span>{{ 'settings.organization.document' | translate }}</span
+            ><input
+              formControlName="document"
+              [readOnly]="!organization.canEditDocument"
+            /><small>{{
+              (organization.canEditDocument
+                ? 'settings.organization.documentOwner'
+                : 'settings.organization.documentReadOnly'
+              ) | translate
+            }}</small></label
+          >
+          <label
+            ><span>{{ 'settings.organization.contact' | translate }}</span
+            ><input formControlName="contactName"
+          /></label>
+          <label
+            ><span>{{ 'common.email' | translate }}</span
+            ><input type="email" formControlName="email"
+          /></label>
+          <label
+            ><span>{{ 'settings.organization.phone' | translate }}</span
+            ><input formControlName="phone"
+          /></label>
+          <label class="wide"
+            ><span>{{ 'settings.organization.address' | translate }}</span
+            ><input formControlName="address"
+          /></label>
+          <label
+            ><span>{{ 'settings.organization.country' | translate }}</span
+            ><input formControlName="country"
+          /></label>
+          <label
+            ><span>{{ 'settings.organization.state' | translate }}</span
+            ><input formControlName="state"
+          /></label>
+          <label
+            ><span>{{ 'settings.organization.city' | translate }}</span
+            ><input formControlName="city"
+          /></label>
+          <label
+            ><span>{{ 'settings.organization.website' | translate }}</span
+            ><input type="url" formControlName="website" placeholder="https://"
+          /></label>
+        </div>
+        @if (store.hasPermission('settings.organization.manage')) {
+          <div class="actions">
+            <button class="button primary" type="submit" [disabled]="store.mutating()">
+              {{ 'settings.action.save' | translate }}
+            </button>
+          </div>
+        }
+      </form>
+    }
+
+    @if (activeTab() === 'business' && store.business()) {
+      <form class="panel" [formGroup]="businessForm" (ngSubmit)="saveBusiness()">
+        <div class="section-heading">
+          <div>
+            <h2>{{ 'settings.business.title' | translate }}</h2>
+            <p>{{ 'settings.business.description' | translate }}</p>
+          </div>
+        </div>
+        <div class="toggle-list">
+          <label class="toggle-card"
+            ><div>
+              <strong>{{ 'settings.business.usesTables' | translate }}</strong
+              ><small>{{ 'settings.business.usesTablesHint' | translate }}</small>
+            </div>
+            <input type="checkbox" formControlName="usesTables"
+          /></label>
+          <label class="toggle-card"
+            ><div>
+              <strong>{{ 'settings.business.delivery' | translate }}</strong
+              ><small>{{ 'settings.business.deliveryHint' | translate }}</small>
+            </div>
+            <input type="checkbox" formControlName="deliveryEnabled"
+          /></label>
+          <label class="toggle-card"
+            ><div>
+              <strong>{{ 'settings.business.cash' | translate }}</strong
+              ><small>{{ 'settings.business.cashHint' | translate }}</small>
+            </div>
+            <input type="checkbox" formControlName="requiresOpenCashRegister"
+          /></label>
+          <label class="toggle-card"
+            ><div>
+              <strong>{{ 'settings.business.tip' | translate }}</strong
+              ><small>{{ 'settings.business.tipHint' | translate }}</small>
+            </div>
+            <input type="checkbox" formControlName="showVoluntaryTip"
+          /></label>
+        </div>
+        <div class="form-grid compact">
+          <label
+            ><span>{{ 'settings.business.tipMessage' | translate }}</span
+            ><input formControlName="tipMessage" /></label
+          ><label
+            ><span>{{ 'settings.business.tipPercentage' | translate }}</span
+            ><input type="number" min="0" max="100" formControlName="suggestedTipPercentage"
+          /></label>
+        </div>
+        @if (store.hasPermission('settings.business.manage')) {
+          <div class="actions">
+            <button class="button primary" type="submit" [disabled]="store.mutating()">
+              {{ 'settings.action.save' | translate }}
+            </button>
+          </div>
+        }
+      </form>
+    }
+
+    @if (activeTab() === 'payments') {
+      <div class="panel">
+        <div class="section-heading">
+          <div>
+            <h2>{{ 'settings.payments.title' | translate }}</h2>
+            <p>{{ 'settings.payments.description' | translate }}</p>
+          </div>
+        </div>
+        @if (store.hasPermission('settings.payment-methods.manage')) {
+          <form class="inline-form" [formGroup]="paymentForm" (ngSubmit)="savePayment()">
+            <label
+              ><span>{{ 'settings.payments.name' | translate }}</span
+              ><input formControlName="name" /></label
+            ><label class="check"
+              ><input type="checkbox" formControlName="isIncludedInCashOpening" />{{
+                'settings.payments.cashOpening' | translate
+              }}</label
+            ><button class="button primary" type="submit">
+              {{
+                (editingPaymentId() ? 'settings.action.update' : 'settings.action.create')
+                  | translate
+              }}
+            </button>
+            @if (editingPaymentId()) {
+              <button class="button secondary" type="button" (click)="cancelPayment()">
+                {{ 'common.cancel' | translate }}
+              </button>
+            }
+          </form>
+        }
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>{{ 'settings.payments.name' | translate }}</th>
+                <th>{{ 'settings.payments.cashOpening' | translate }}</th>
+                <th>{{ 'settings.column.status' | translate }}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of store.paymentMethods(); track item.id) {
+                <tr>
+                  <td>
+                    <strong>{{ item.name }}</strong>
+                  </td>
+                  <td>
+                    {{
+                      (item.isIncludedInCashOpening ? 'settings.value.yes' : 'settings.value.no')
+                        | translate
+                    }}
+                  </td>
+                  <td>
+                    <span class="badge" [class.inactive]="!item.isActive">{{
+                      (item.isActive ? 'settings.status.active' : 'settings.status.inactive')
+                        | translate
+                    }}</span>
+                  </td>
+                  <td class="row-actions">
+                    @if (store.hasPermission('settings.payment-methods.manage')) {
+                      <button class="link" type="button" (click)="editPayment(item)">
+                        {{ 'settings.action.edit' | translate }}</button
+                      ><button class="link" type="button" (click)="togglePayment(item)">
+                        {{
+                          (item.isActive ? 'settings.action.disable' : 'settings.action.enable')
+                            | translate
+                        }}</button
+                      ><button class="link danger" type="button" (click)="deletePayment(item)">
+                        {{ 'settings.action.delete' | translate }}
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'access') {
+      <div class="access-grid">
+        @if (store.hasPermission('settings.users.read')) {
+          <section class="panel">
+            <div class="section-heading">
+              <div>
+                <h2>{{ 'settings.users.title' | translate }}</h2>
+                <p>{{ 'settings.users.description' | translate }}</p>
+              </div>
+            </div>
+            @if (store.hasPermission('settings.users.manage')) {
+              <form class="inline-form invite" [formGroup]="inviteForm" (ngSubmit)="inviteUser()">
+                <label
+                  ><span>{{ 'common.email' | translate }}</span
+                  ><input type="email" formControlName="email" /></label
+                ><label
+                  ><span>{{ 'settings.users.role' | translate }}</span
+                  ><select formControlName="roleId">
+                    <option value="">{{ 'settings.users.selectRole' | translate }}</option>
+                    @for (role of store.roles(); track role.id) {
+                      @if (role.isActive) {
+                        <option [value]="role.id">{{ role.name }}</option>
+                      }
+                    }
+                  </select></label
+                ><button class="button primary" type="submit">
+                  {{ 'settings.users.invite' | translate }}
+                </button>
+              </form>
+            }
+            <div class="cards">
+              @for (user of store.users(); track user.id) {
+                <article class="user-card">
+                  <div>
+                    <strong>{{
+                      user.firstName ? user.firstName + ' ' + user.lastName : user.email
+                    }}</strong
+                    ><small>{{ user.email }}</small
+                    ><span class="badge" [class.inactive]="user.status !== 'ACTIVE'">{{
+                      'settings.users.status.' + user.status.toLowerCase() | translate
+                    }}</span>
+                  </div>
+                  @if (store.hasPermission('settings.users.manage')) {
+                    <div class="user-actions">
+                      @if (user.membershipId) {
+                        <select
+                          [value]="user.roleId"
+                          (change)="updateUserRole(user, $any($event.target).value)"
+                        >
+                          @for (role of store.roles(); track role.id) {
+                            @if (role.isActive) {
+                              <option [value]="role.id">{{ role.name }}</option>
+                            }
+                          }</select
+                        ><input
+                          #until
+                          type="date"
+                          [attr.aria-label]="'settings.users.disabledUntil' | translate"
+                        /><button
+                          class="link"
+                          type="button"
+                          (click)="toggleUser(user, until.value)"
+                        >
+                          {{
+                            (user.status === 'ACTIVE'
+                              ? 'settings.action.disable'
+                              : 'settings.action.enable'
+                            ) | translate
+                          }}
+                        </button>
+                      }
+                      <button class="link danger" type="button" (click)="deleteUser(user)">
+                        {{
+                          (user.status === 'PENDING'
+                            ? 'settings.action.cancelInvitation'
+                            : 'settings.action.delete'
+                          ) | translate
+                        }}
+                      </button>
+                    </div>
+                  }
+                </article>
+              }
+            </div>
+          </section>
+        }
+        @if (store.hasPermission('settings.roles.read')) {
+          <section class="panel">
+            <div class="section-heading">
+              <div>
+                <h2>{{ 'settings.roles.title' | translate }}</h2>
+                <p>{{ 'settings.roles.description' | translate }}</p>
+              </div>
+            </div>
+            @if (store.hasPermission('settings.roles.manage')) {
+              <form class="role-form" [formGroup]="roleForm" (ngSubmit)="saveRole()">
+                <div class="form-grid compact">
+                  <label
+                    ><span>{{ 'settings.roles.name' | translate }}</span
+                    ><input formControlName="name" /></label
+                  ><label
+                    ><span>{{ 'settings.roles.descriptionField' | translate }}</span
+                    ><input formControlName="description"
+                  /></label>
+                </div>
+                <div class="permissions">
+                  @for (module of store.permissionCatalog(); track module.id) {
+                    <fieldset>
+                      <legend>{{ module.name }}</legend>
+                      @for (permission of module.permissions; track permission.id) {
+                        <label class="check"
+                          ><input
+                            type="checkbox"
+                            [checked]="selectedPermissions().has(permission.code)"
+                            (change)="
+                              permissionChanged(permission.code, $any($event.target).checked)
+                            "
+                          />{{ permission.code }}</label
+                        >
+                      }
+                    </fieldset>
+                  }
+                </div>
+                <div class="actions">
+                  <button class="button primary" type="submit">
+                    {{
+                      (editingRoleId() ? 'settings.action.update' : 'settings.action.create')
+                        | translate
+                    }}
+                  </button>
+                  @if (editingRoleId()) {
+                    <button class="button secondary" type="button" (click)="cancelRole()">
+                      {{ 'common.cancel' | translate }}
+                    </button>
+                  }
+                </div>
+              </form>
+            }
+            <div class="cards roles">
+              @for (role of store.roles(); track role.id) {
+                <article>
+                  <div>
+                    <strong>{{ role.name }}</strong
+                    ><small>{{ role.description || role.code }}</small
+                    ><span class="badge" [class.inactive]="!role.isActive">{{
+                      (role.isActive ? 'settings.status.active' : 'settings.status.inactive')
+                        | translate
+                    }}</span>
+                  </div>
+                  <small
+                    >{{ role.permissions.length }}
+                    {{ 'settings.roles.permissionsCount' | translate }}</small
+                  >
+                  @if (store.hasPermission('settings.roles.manage') && !role.isSystem) {
+                    <div class="row-actions">
+                      <button class="link" type="button" (click)="editRole(role)">
+                        {{ 'settings.action.edit' | translate }}</button
+                      ><button class="link" type="button" (click)="toggleRole(role)">
+                        {{
+                          (role.isActive ? 'settings.action.disable' : 'settings.action.enable')
+                            | translate
+                        }}</button
+                      ><button class="link danger" type="button" (click)="deleteRole(role)">
+                        {{ 'settings.action.delete' | translate }}
+                      </button>
+                    </div>
+                  }
+                </article>
+              }
+            </div>
+          </section>
+        }
+      </div>
+    }
+  }
+</section>
