@@ -71,6 +71,11 @@ export const API_ENDPOINTS = {
     root: '/api/tenants',
     select: (tenantId: string) => `/api/tenants/${tenantId}/select`,
   },
+  cashRegisters: {
+    root: '/api/cash-registers',
+    detail: (cashRegisterId: string) => `/api/cash-registers/${cashRegisterId}`,
+    status: (cashRegisterId: string) => `/api/cash-registers/${cashRegisterId}/status`,
+  },
   i18n: {
     language: (language: string) => `/api/i18n/${language}`,
   },

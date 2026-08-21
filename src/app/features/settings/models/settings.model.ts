@@ -27,6 +27,7 @@ export interface BusinessSettings {
   readonly usesTables: boolean;
   readonly deliveryEnabled: boolean;
   readonly requiresOpenCashRegister: boolean;
+  readonly enableCustomSales: boolean;
   readonly showVoluntaryTip: boolean;
   readonly tipMessage: string;
   readonly suggestedTipPercentage: number;

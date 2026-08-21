@@ -40,6 +40,7 @@ describe('HttpSettingsRepository', () => {
       usesTables: true,
       deliveryEnabled: false,
       requiresOpenCashRegister: false,
+      enableCustomSales: false,
       showVoluntaryTip: true,
       tipMessage: 'Servicio Voluntario',
       suggestedTipPercentage: 10,

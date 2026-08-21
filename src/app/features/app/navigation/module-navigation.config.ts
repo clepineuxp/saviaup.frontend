@@ -49,6 +49,7 @@ export const KNOWN_MODULE_NAVIGATION: readonly ModuleNavigationDefinition[] = [
   { code: 'kitchen', path: 'kitchen', icon: 'kitchen' },
   { code: 'reports', path: 'reports', icon: 'reports' },
   { code: 'billing', path: 'billing', icon: 'billing' },
+  { code: 'cash_registers', path: 'cash-registers', icon: 'billing' },
   { code: 'settings', path: 'settings', icon: 'settings' },
 ] as const;
 
@@ -58,6 +59,10 @@ const definitions = new Map(
 
 const optionDefinitions = new Map<string, ModuleNavigationDefinition>([
   ['tables.manage', { code: 'tables.manage', path: 'configuration/tables/manage', icon: 'tables' }],
+  [
+    'cash-registers.manage',
+    { code: 'cash-registers.manage', path: 'configuration/cash-registers/manage', icon: 'billing' },
+  ],
 ]);
 
 export const MODULE_ICON_GLYPHS: Readonly<Record<ModuleIcon, string>> = {

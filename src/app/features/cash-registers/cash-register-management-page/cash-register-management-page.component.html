@@ -1,0 +1,222 @@
+<div class="cash-registers-page">
+  <!-- Header de Sección -->
+  <header class="page-header">
+    <div class="header-copy">
+      <span class="badge-module">{{ 'cashRegisters.management.badge' | translate }}</span>
+      <h2>{{ 'cashRegisters.management.title' | translate }}</h2>
+      <p>{{ 'cashRegisters.management.description' | translate }}</p>
+    </div>
+    <div class="header-actions">
+      <app-ui-button variant="primary" (click)="openCreateModal()">
+        + {{ 'cashRegisters.management.add' | translate }}
+      </app-ui-button>
+    </div>
+  </header>
+
+  <!-- Banner Informativo de Caja Activa -->
+  @if (store.activeCashRegister(); as active) {
+    <div class="active-register-banner">
+      <div class="active-badge">
+        <span class="pulse-dot"></span>
+        {{ 'cashRegisters.management.activeBannerTitle' | translate }}
+      </div>
+      <div class="active-details">
+        <strong>{{ active.name }}</strong>
+        @if (active.location) {
+          <span>({{ active.location }})</span>
+        }
+      </div>
+      <p class="single-active-note">
+        {{ 'cashRegisters.management.singleActiveNote' | translate }}
+      </p>
+    </div>
+  } @else {
+    <app-ui-alert [message]="'cashRegisters.management.noActiveNotice' | translate" />
+  }
+
+  <!-- Error State Alert -->
+  @if (store.status() === 'error' && store.error(); as error) {
+    <app-ui-alert [message]="error" />
+  }
+
+  <!-- Tabla / Lista de Cajas Registradoras -->
+  <div class="card registers-table-card">
+    <div class="table-responsive">
+      <table class="registers-table">
+        <thead>
+          <tr>
+            <th>{{ 'cashRegisters.table.name' | translate }}</th>
+            <th>{{ 'cashRegisters.table.location' | translate }}</th>
+            <th>{{ 'cashRegisters.table.status' | translate }}</th>
+            <th class="text-end">{{ 'cashRegisters.table.actions' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (register of store.cashRegisters(); track register.id) {
+            <tr [class.highlight-active]="register.isActive">
+              <td>
+                <div class="register-name-cell">
+                  <span class="icon-glyph">◫</span>
+                  <strong>{{ register.name }}</strong>
+                  @if (register.isActive) {
+                    <span class="active-pill">{{ 'cashRegisters.status.active' | translate }}</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <span class="location-text">
+                  {{ register.location || ('cashRegisters.table.noLocation' | translate) }}
+                </span>
+              </td>
+              <td>
+                <div class="toggle-wrap">
+                  <button
+                    type="button"
+                    class="toggle-switch"
+                    [class.active]="register.isActive"
+                    [attr.aria-label]="'cashRegisters.management.toggleStatus' | translate"
+                    (click)="toggleStatus(register)"
+                  >
+                    <span class="switch-knob"></span>
+                  </button>
+                  <span class="status-label">
+                    {{
+                      (register.isActive
+                        ? 'cashRegisters.status.active'
+                        : 'cashRegisters.status.inactive'
+                      ) | translate
+                    }}
+                  </span>
+                </div>
+              </td>
+              <td class="text-end">
+                <div class="action-buttons">
+                  <button
+                    type="button"
+                    class="btn-icon"
+                    [title]="'cashRegisters.management.edit' | translate"
+                    (click)="openEditModal(register)"
+                  >
+                    ✎
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-icon danger"
+                    [title]="'cashRegisters.management.delete' | translate"
+                    (click)="confirmDelete(register)"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="empty-state-cell">
+                <p>{{ 'cashRegisters.management.emptyState' | translate }}</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal Dialog: Crear / Editar Caja -->
+  @if (isModalOpen()) {
+    <div class="modal-overlay">
+      <div class="modal-card">
+        <header class="modal-header">
+          <h3>
+            {{
+              (editingRegister()
+                ? 'cashRegisters.modal.editTitle'
+                : 'cashRegisters.modal.createTitle'
+              ) | translate
+            }}
+          </h3>
+          <button type="button" class="close-button" (click)="closeModal()">✕</button>
+        </header>
+
+        <form [formGroup]="form" (ngSubmit)="saveRegister()">
+          <div class="modal-body">
+            <div class="form-field">
+              <label for="registerName">{{ 'cashRegisters.modal.nameLabel' | translate }} *</label>
+              <input
+                id="registerName"
+                type="text"
+                class="form-input"
+                formControlName="name"
+                [placeholder]="'cashRegisters.modal.namePlaceholder' | translate"
+              />
+              @if (form.controls.name.touched && form.controls.name.errors?.['required']) {
+                <span class="field-error">{{
+                  'cashRegisters.modal.nameRequired' | translate
+                }}</span>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="registerLocation">{{
+                'cashRegisters.modal.locationLabel' | translate
+              }}</label>
+              <input
+                id="registerLocation"
+                type="text"
+                class="form-input"
+                formControlName="location"
+                [placeholder]="'cashRegisters.modal.locationPlaceholder' | translate"
+              />
+              <span class="field-hint">{{ 'cashRegisters.modal.locationHint' | translate }}</span>
+            </div>
+
+            <div class="form-field checkbox-field">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="isActive" />
+                <span>{{ 'cashRegisters.modal.isActiveLabel' | translate }}</span>
+              </label>
+              <span class="field-hint">{{ 'cashRegisters.modal.isActiveHint' | translate }}</span>
+            </div>
+          </div>
+
+          <footer class="modal-footer">
+            <app-ui-button variant="secondary" type="button" (click)="closeModal()">
+              {{ 'cashRegisters.modal.cancel' | translate }}
+            </app-ui-button>
+            <app-ui-button variant="primary" type="submit" [disabled]="store.isSaving()">
+              {{ 'cashRegisters.modal.save' | translate }}
+            </app-ui-button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Modal Confirmación Eliminación -->
+  @if (registerToDelete(); as register) {
+    <div class="modal-overlay">
+      <div class="modal-card modal-confirm">
+        <header class="modal-header">
+          <h3>{{ 'cashRegisters.modal.deleteTitle' | translate }}</h3>
+          <button type="button" class="close-button" (click)="cancelDelete()">✕</button>
+        </header>
+        <div class="modal-body">
+          <p>{{ 'cashRegisters.modal.deletePrompt' | translate: { name: register.name } }}</p>
+        </div>
+        <footer class="modal-footer">
+          <app-ui-button variant="secondary" type="button" (click)="cancelDelete()">
+            {{ 'cashRegisters.modal.cancel' | translate }}
+          </app-ui-button>
+          <button
+            class="button danger"
+            type="button"
+            [disabled]="store.isSaving()"
+            (click)="deleteRegister()"
+          >
+            {{ 'cashRegisters.modal.confirmDelete' | translate }}
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+</div>
