@@ -12,8 +12,12 @@
       <i></i><i></i><i></i>
     </div>
     <p class="eyebrow">{{ 'app.placeholder.eyebrow' | translate }}</p>
-    <h1 class="page-title">{{ 'app.placeholder.title' | translate }}</h1>
-    <p class="tenant-name">{{ authenticatedContext.userInfo()?.organization?.name }}</p>
-    <p class="page-subtitle">{{ 'app.placeholder.description' | translate }}</p>
+    <h1 class="page-title">
+      {{
+        'app.placeholder.welcome'
+          | translate: { name: authenticatedContext.userInfo()?.organization?.name || '' }
+      }}
+    </h1>
+    <p class="page-subtitle">{{ 'app.placeholder.selectModule' | translate }}</p>
   </section>
 }

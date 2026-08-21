@@ -45,6 +45,11 @@ export class AuthenticatedContextStore {
   readonly sections = this.sectionsState.asReadonly();
   readonly modules = computed(() => this.sectionsState().flatMap((section) => section.modules));
   readonly options = computed(() => this.sectionsState().flatMap((section) => section.options));
+  readonly hasTablesModule = computed(
+    () =>
+      this.modules().some((m) => m.code === 'tables') ||
+      this.options().some((o) => o.code === 'tables' || o.moduleCode === 'tables'),
+  );
   readonly emptyStateMessage = this.emptyStateMessageState.asReadonly();
   readonly status = this.statusState.asReadonly();
   readonly error = this.errorState.asReadonly();

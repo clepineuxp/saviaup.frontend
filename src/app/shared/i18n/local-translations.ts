@@ -155,8 +155,9 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'tenant.create.placeholder': 'Ej. Secret Garden',
     'tenant.create.submit': 'Crear organización',
     'tenant.create.back': 'Volver a mis organizaciones',
-    'app.placeholder.eyebrow': 'Todo listo',
-    'app.placeholder.title': 'Organización seleccionada correctamente',
+    'app.placeholder.title': 'Espacio activo',
+    'app.placeholder.welcome': 'Bienvenido a {{name}}',
+    'app.placeholder.selectModule': 'Seleccione el módulo al cual desea ingresar',
     'app.placeholder.description':
       'Tu espacio está preparado. Los módulos de operación llegarán en la siguiente fase.',
     'app.placeholder.changeTenant': 'Cambiar organización',
@@ -509,6 +510,7 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'tables.cashGate.title': 'Turno de caja cerrado',
     'tables.cashGate.description':
       'Abre un turno de caja antes de crear, modificar o cerrar comandas.',
+    'tables.cashGate.toast': 'Debe abrir una caja para ingresar a vender',
     'tables.realtime.disconnected': 'Sin conexión en tiempo real',
     'tables.realtime.connecting': 'Conectando',
     'tables.realtime.connected': 'En tiempo real',
@@ -625,6 +627,8 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'common.unexpectedError': 'Something went wrong. Please try again.',
     'common.logout': 'Sign out',
     'common.language': 'Language',
+    'app.placeholder.welcome': 'Welcome to {{name}}',
+    'app.placeholder.selectModule': 'Select the module you wish to enter',
     'settings.eyebrow': 'Your organization',
     'settings.title': 'Settings',
     'settings.description': 'Manage your organization information, operation and access.',
