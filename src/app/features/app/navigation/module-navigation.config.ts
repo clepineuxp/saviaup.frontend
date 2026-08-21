@@ -49,6 +49,7 @@ export const KNOWN_MODULE_NAVIGATION: readonly ModuleNavigationDefinition[] = [
   { code: 'kitchen', path: 'kitchen', icon: 'kitchen' },
   { code: 'reports', path: 'reports', icon: 'reports' },
   { code: 'billing', path: 'billing', icon: 'billing' },
+  { code: 'cash_registers', path: 'cash-registers', icon: 'billing' },
   { code: 'settings', path: 'settings', icon: 'settings' },
 ] as const;
 
