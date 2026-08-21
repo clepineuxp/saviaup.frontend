@@ -260,178 +260,236 @@
       </div>
     }
 
-    @if (activeTab() === 'access') {
-      <div class="access-grid">
-        @if (store.hasPermission('settings.users.read')) {
-          <section class="panel">
-            <div class="section-heading">
-              <div>
-                <h2>{{ 'settings.users.title' | translate }}</h2>
-                <p>{{ 'settings.users.description' | translate }}</p>
-              </div>
-            </div>
-            @if (store.hasPermission('settings.users.manage')) {
-              <form class="inline-form invite" [formGroup]="inviteForm" (ngSubmit)="inviteUser()">
-                <label
-                  ><span>{{ 'common.email' | translate }}</span
-                  ><input type="email" formControlName="email" /></label
-                ><label
-                  ><span>{{ 'settings.users.role' | translate }}</span
-                  ><select formControlName="roleId">
-                    <option value="">{{ 'settings.users.selectRole' | translate }}</option>
-                    @for (role of store.roles(); track role.id) {
-                      @if (role.isActive) {
-                        <option [value]="role.id">{{ role.name }}</option>
-                      }
-                    }
-                  </select></label
-                ><button class="button primary" type="submit">
-                  {{ 'settings.users.invite' | translate }}
-                </button>
-              </form>
-            }
-            <div class="cards">
-              @for (user of store.users(); track user.id) {
-                <article class="user-card">
-                  <div>
-                    <strong>{{
-                      user.firstName ? user.firstName + ' ' + user.lastName : user.email
-                    }}</strong
-                    ><small>{{ user.email }}</small
-                    ><span class="badge" [class.inactive]="user.status !== 'ACTIVE'">{{
-                      'settings.users.status.' + user.status.toLowerCase() | translate
-                    }}</span>
-                  </div>
-                  @if (store.hasPermission('settings.users.manage')) {
-                    <div class="user-actions">
-                      @if (user.membershipId) {
-                        <select
-                          [value]="user.roleId"
-                          (change)="updateUserRole(user, $any($event.target).value)"
-                        >
-                          @for (role of store.roles(); track role.id) {
-                            @if (role.isActive) {
-                              <option [value]="role.id">{{ role.name }}</option>
-                            }
-                          }</select
-                        ><input
-                          #until
-                          type="date"
-                          [attr.aria-label]="'settings.users.disabledUntil' | translate"
-                        /><button
-                          class="link"
-                          type="button"
-                          (click)="toggleUser(user, until.value)"
-                        >
-                          {{
-                            (user.status === 'ACTIVE'
-                              ? 'settings.action.disable'
-                              : 'settings.action.enable'
-                            ) | translate
-                          }}
-                        </button>
-                      }
-                      <button class="link danger" type="button" (click)="deleteUser(user)">
-                        {{
-                          (user.status === 'PENDING'
-                            ? 'settings.action.cancelInvitation'
-                            : 'settings.action.delete'
-                          ) | translate
-                        }}
-                      </button>
-                    </div>
+    @if (activeTab() === 'users' && store.hasPermission('settings.users.read')) {
+      <div class="panel">
+        <div class="section-heading">
+          <div>
+            <h2>{{ 'settings.users.title' | translate }}</h2>
+            <p>{{ 'settings.users.description' | translate }}</p>
+          </div>
+        </div>
+        @if (store.hasPermission('settings.users.manage')) {
+          <form class="inline-form invite" [formGroup]="inviteForm" (ngSubmit)="inviteUser()">
+            <label
+              ><span>{{ 'common.email' | translate }}</span
+              ><input type="email" formControlName="email"
+            /></label>
+            <label
+              ><span>{{ 'settings.users.role' | translate }}</span
+              ><select formControlName="roleId">
+                <option value="">{{ 'settings.users.selectRole' | translate }}</option>
+                @for (role of store.roles(); track role.id) {
+                  @if (role.isActive) {
+                    <option [value]="role.id">{{ role.name }}</option>
                   }
-                </article>
-              }
-            </div>
-          </section>
+                }
+              </select></label
+            >
+            <button class="button primary" type="submit">
+              {{ 'settings.users.invite' | translate }}
+            </button>
+          </form>
         }
-        @if (store.hasPermission('settings.roles.read')) {
-          <section class="panel">
-            <div class="section-heading">
+        <div class="cards">
+          @for (user of store.users(); track user.id) {
+            <article class="user-card">
               <div>
-                <h2>{{ 'settings.roles.title' | translate }}</h2>
-                <p>{{ 'settings.roles.description' | translate }}</p>
+                <strong>{{
+                  user.firstName ? user.firstName + ' ' + user.lastName : user.email
+                }}</strong
+                ><small>{{ user.email }}</small
+                ><span class="badge" [class.inactive]="user.status !== 'ACTIVE'">{{
+                  'settings.users.status.' + user.status.toLowerCase() | translate
+                }}</span>
               </div>
-            </div>
-            @if (store.hasPermission('settings.roles.manage')) {
-              <form class="role-form" [formGroup]="roleForm" (ngSubmit)="saveRole()">
-                <div class="form-grid compact">
-                  <label
-                    ><span>{{ 'settings.roles.name' | translate }}</span
-                    ><input formControlName="name" /></label
-                  ><label
-                    ><span>{{ 'settings.roles.descriptionField' | translate }}</span
-                    ><input formControlName="description"
-                  /></label>
-                </div>
-                <div class="permissions">
-                  @for (module of store.permissionCatalog(); track module.id) {
-                    <fieldset>
-                      <legend>{{ module.name }}</legend>
-                      @for (permission of module.permissions; track permission.id) {
-                        <label class="check"
-                          ><input
-                            type="checkbox"
-                            [checked]="selectedPermissions().has(permission.code)"
-                            (change)="
-                              permissionChanged(permission.code, $any($event.target).checked)
-                            "
-                          />{{ permission.code }}</label
-                        >
-                      }
-                    </fieldset>
-                  }
-                </div>
-                <div class="actions">
-                  <button class="button primary" type="submit">
-                    {{
-                      (editingRoleId() ? 'settings.action.update' : 'settings.action.create')
-                        | translate
-                    }}
-                  </button>
-                  @if (editingRoleId()) {
-                    <button class="button secondary" type="button" (click)="cancelRole()">
-                      {{ 'common.cancel' | translate }}
+              @if (store.hasPermission('settings.users.manage')) {
+                <div class="user-actions">
+                  @if (user.membershipId) {
+                    <select
+                      [value]="user.roleId"
+                      (change)="updateUserRole(user, $any($event.target).value)"
+                    >
+                      @for (role of store.roles(); track role.id) {
+                        @if (role.isActive || role.id === user.roleId) {
+                          <option [value]="role.id" [selected]="role.id === user.roleId">
+                            {{ role.name }}
+                          </option>
+                        }
+                      }</select
+                    ><input
+                      #until
+                      type="date"
+                      [attr.aria-label]="'settings.users.disabledUntil' | translate"
+                    /><button class="link" type="button" (click)="toggleUser(user, until.value)">
+                      {{
+                        (user.status === 'ACTIVE'
+                          ? 'settings.action.disable'
+                          : 'settings.action.enable'
+                        ) | translate
+                      }}
                     </button>
                   }
+                  <button class="link danger" type="button" (click)="deleteUser(user)">
+                    {{
+                      (user.status === 'PENDING'
+                        ? 'settings.action.cancelInvitation'
+                        : 'settings.action.delete'
+                      ) | translate
+                    }}
+                  </button>
                 </div>
-              </form>
-            }
-            <div class="cards roles">
-              @for (role of store.roles(); track role.id) {
-                <article>
-                  <div>
-                    <strong>{{ role.name }}</strong
-                    ><small>{{ role.description || role.code }}</small
-                    ><span class="badge" [class.inactive]="!role.isActive">{{
-                      (role.isActive ? 'settings.status.active' : 'settings.status.inactive')
-                        | translate
-                    }}</span>
+              }
+            </article>
+          }
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'roles' && store.hasPermission('settings.roles.read')) {
+      <div class="roles-master-detail">
+        <!-- Panel Izquierdo: Lista de Roles -->
+        <aside class="panel roles-sidebar">
+          <div class="sidebar-header">
+            <h3>{{ 'settings.roles.title' | translate }}</h3>
+            <p>{{ store.roles().length }} {{ 'settings.roles.permissionsCount' | translate }}</p>
+          </div>
+          <div class="roles-list">
+            @for (role of store.roles(); track role.id) {
+              <div
+                class="role-card-item"
+                [class.selected]="selectedRoleId() === role.id"
+                role="button"
+                tabindex="0"
+                (click)="selectRole(role)"
+                (keyup.enter)="selectRole(role)"
+              >
+                <div class="role-item-main">
+                  <div class="toggle-wrap">
+                    <button
+                      type="button"
+                      class="toggle-switch"
+                      [class.active]="role.isActive"
+                      [disabled]="role.isSystem || !store.hasPermission('settings.roles.manage')"
+                      (click)="toggleRole(role, $event)"
+                      [attr.aria-label]="
+                        (role.isActive ? 'settings.action.disable' : 'settings.action.enable')
+                          | translate
+                      "
+                    >
+                      <span class="switch-knob"></span>
+                    </button>
                   </div>
-                  <small
-                    >{{ role.permissions.length }}
-                    {{ 'settings.roles.permissionsCount' | translate }}</small
-                  >
-                  @if (store.hasPermission('settings.roles.manage') && !role.isSystem) {
-                    <div class="row-actions">
-                      <button class="link" type="button" (click)="editRole(role)">
-                        {{ 'settings.action.edit' | translate }}</button
-                      ><button class="link" type="button" (click)="toggleRole(role)">
-                        {{
-                          (role.isActive ? 'settings.action.disable' : 'settings.action.enable')
-                            | translate
-                        }}</button
-                      ><button class="link danger" type="button" (click)="deleteRole(role)">
-                        {{ 'settings.action.delete' | translate }}
-                      </button>
+                  <div class="role-item-info">
+                    <div class="role-title-row">
+                      <strong class="role-name">{{ role.name }}</strong>
+                      @if (role.isSystem) {
+                        <span class="badge system">{{
+                          'settings.roles.systemRole' | translate
+                        }}</span>
+                      }
                     </div>
-                  }
-                </article>
+                    <small class="role-desc">{{ role.description || role.code }}</small>
+                    <span class="permission-pill">
+                      {{ role.permissions.length }}
+                      {{ 'settings.roles.permissionsCount' | translate }}
+                    </span>
+                  </div>
+                </div>
+                @if (store.hasPermission('settings.roles.manage') && !role.isSystem) {
+                  <button
+                    class="link danger icon-only"
+                    type="button"
+                    (click)="deleteRole(role, $event)"
+                    [title]="'settings.action.delete' | translate"
+                  >
+                    ✕
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </aside>
+
+        <!-- Panel Derecho: Editor de Rol y Permisos -->
+        <main class="panel role-editor-panel">
+          <div class="editor-header">
+            <div class="editor-title">
+              <h2>
+                {{
+                  editingRoleId()
+                    ? ('settings.roles.editingRole' | translate) +
+                      ': ' +
+                      (roleForm.controls.name.value || '')
+                    : ('settings.roles.creatingRole' | translate)
+                }}
+              </h2>
+              <p>{{ 'settings.roles.description' | translate }}</p>
+            </div>
+            @if (store.hasPermission('settings.roles.manage')) {
+              <div class="header-actions">
+                <button class="button secondary" type="button" (click)="startNewRole()">
+                  + {{ 'settings.roles.newRole' | translate }}
+                </button>
+                @if (!isSystemRoleSelected()) {
+                  <button
+                    class="button primary"
+                    type="button"
+                    (click)="saveRole()"
+                    [disabled]="store.mutating()"
+                  >
+                    {{ 'settings.roles.saveRole' | translate }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          @if (isSystemRoleSelected()) {
+            <div class="alert info">
+              Este es un rol de sistema. Sus permisos están predefinidos y no pueden ser
+              modificados.
+            </div>
+          }
+
+          <form class="role-form" [formGroup]="roleForm" (ngSubmit)="saveRole()">
+            <div class="form-grid compact">
+              <label
+                ><span>{{ 'settings.roles.name' | translate }}</span
+                ><input formControlName="name" [readOnly]="isSystemRoleSelected()"
+              /></label>
+              <label
+                ><span>{{ 'settings.roles.descriptionField' | translate }}</span
+                ><input formControlName="description" [readOnly]="isSystemRoleSelected()"
+              /></label>
+            </div>
+            <div class="permissions-matrix">
+              @for (module of store.permissionCatalog(); track module.id) {
+                <fieldset class="permission-fieldset">
+                  <legend>{{ module.name }}</legend>
+                  <div class="permission-grid">
+                    @for (permission of module.permissions; track permission.id) {
+                      <label
+                        class="check permission-card"
+                        [class.checked]="selectedPermissions().has(permission.code)"
+                      >
+                        <input
+                          type="checkbox"
+                          [disabled]="isSystemRoleSelected()"
+                          [checked]="selectedPermissions().has(permission.code)"
+                          (change)="permissionChanged(permission.code, $any($event.target).checked)"
+                        />
+                        <div class="perm-text">
+                          <strong>{{ permission.name }}</strong>
+                          <small>{{ permission.code }}</small>
+                        </div>
+                      </label>
+                    }
+                  </div>
+                </fieldset>
               }
             </div>
-          </section>
-        }
+          </form>
+        </main>
       </div>
     }
   }

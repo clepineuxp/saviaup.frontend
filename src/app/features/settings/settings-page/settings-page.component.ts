@@ -20,9 +20,8 @@ import {
   SaveSettingsRole,
   SETTINGS_PERMISSIONS,
   SettingsRole,
+  SettingsTab,
 } from '../models/settings.model';
-
-type SettingsTab = 'organization' | 'business' | 'payments' | 'access';
 
 @Component({
   selector: 'app-settings-page',
@@ -38,10 +37,16 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
   private readonly localization = inject(LocalizationService);
   readonly activeTab = signal<SettingsTab>('organization');
   readonly editingPaymentId = signal<string | null>(null);
+  readonly selectedRoleId = signal<string | null>(null);
   readonly editingRoleId = signal<string | null>(null);
   readonly selectedPermissions = signal<ReadonlySet<string>>(new Set());
   readonly logoUrl = signal<string | null>(null);
   readonly successKey = signal<string | null>(null);
+  readonly isSystemRoleSelected = computed(() => {
+    const id = this.selectedRoleId();
+    if (!id) return false;
+    return this.store.roles().find((r) => r.id === id)?.isSystem ?? false;
+  });
   readonly tabs = computed(() =>
     [
       this.store.hasPermission(SETTINGS_PERMISSIONS.organizationRead)
@@ -49,10 +54,8 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
         : null,
       this.store.hasPermission(SETTINGS_PERMISSIONS.businessRead) ? ('business' as const) : null,
       this.store.hasPermission(SETTINGS_PERMISSIONS.paymentsRead) ? ('payments' as const) : null,
-      this.store.hasPermission(SETTINGS_PERMISSIONS.usersRead) ||
-      this.store.hasPermission(SETTINGS_PERMISSIONS.rolesRead)
-        ? ('access' as const)
-        : null,
+      this.store.hasPermission(SETTINGS_PERMISSIONS.usersRead) ? ('users' as const) : null,
+      this.store.hasPermission(SETTINGS_PERMISSIONS.rolesRead) ? ('roles' as const) : null,
     ].filter((value): value is SettingsTab => value !== null),
   );
 
@@ -237,18 +240,26 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
       .subscribe({ error: () => undefined });
   }
 
-  editRole(role: SettingsRole): void {
-    if (role.isSystem) return;
+  selectRole(role: SettingsRole): void {
+    this.selectedRoleId.set(role.id);
     this.editingRoleId.set(role.id);
     this.roleForm.setValue({ name: role.name, description: role.description ?? '' });
     this.selectedPermissions.set(new Set(role.permissions));
   }
-  cancelRole(): void {
+  startNewRole(): void {
+    this.selectedRoleId.set(null);
     this.editingRoleId.set(null);
     this.roleForm.reset({ name: '', description: '' });
     this.selectedPermissions.set(new Set());
   }
+  editRole(role: SettingsRole): void {
+    this.selectRole(role);
+  }
+  cancelRole(): void {
+    this.startNewRole();
+  }
   permissionChanged(code: string, checked: boolean): void {
+    if (this.isSystemRoleSelected()) return;
     this.selectedPermissions.update((current) => {
       const next = new Set(current);
       if (checked) next.add(code);
@@ -257,6 +268,7 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
     });
   }
   saveRole(): void {
+    if (this.isSystemRoleSelected()) return;
     if (this.roleForm.invalid) return this.roleForm.markAllAsTouched();
     const value = this.roleForm.getRawValue();
     const request: SaveSettingsRole = {
@@ -268,25 +280,35 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
       .saveRole(this.editingRoleId(), request)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => {
-          this.cancelRole();
+        next: (savedRole) => {
+          this.selectRole(savedRole);
           this.successKey.set('settings.success.saved');
         },
         error: () => undefined,
       });
   }
-  toggleRole(role: SettingsRole): void {
+  toggleRole(role: SettingsRole, event?: Event): void {
+    event?.stopPropagation();
+    if (role.isSystem) return;
     this.store
       .toggleRole(role)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ error: () => undefined });
   }
-  deleteRole(role: SettingsRole): void {
+  deleteRole(role: SettingsRole, event?: Event): void {
+    event?.stopPropagation();
     if (!confirm(this.localization.translate('settings.confirm.role', { name: role.name }))) return;
     this.store
       .deleteRole(role.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({ error: () => undefined });
+      .subscribe({
+        next: () => {
+          if (this.selectedRoleId() === role.id) {
+            this.startNewRole();
+          }
+        },
+        error: () => undefined,
+      });
   }
 
   inviteUser(): void {

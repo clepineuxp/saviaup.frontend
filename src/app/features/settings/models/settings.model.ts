@@ -1,3 +1,5 @@
+export type SettingsTab = 'organization' | 'business' | 'payments' | 'users' | 'roles';
+
 export interface OrganizationSettings {
   readonly id: string;
   readonly name: string;
