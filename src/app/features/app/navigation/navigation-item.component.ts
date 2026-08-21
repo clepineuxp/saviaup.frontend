@@ -32,6 +32,8 @@ import { MODULE_ICON_GLYPHS, ModuleNavigationItem } from './module-navigation.co
       font-size: 0.82rem;
       font-weight: 680;
       text-decoration: none;
+      box-sizing: border-box;
+      white-space: nowrap;
     }
     .module-link:hover,
     .module-link--active {
