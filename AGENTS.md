@@ -16,6 +16,7 @@ La fase implementada cubre:
 - administración paginada de productos y combos con filtros, estado e inventariabilidad condicionada;
 - inventario operativo con existencias, ingredientes, movimientos y unidades de medida.
 - operación y configuración de salas/mesas con permisos granulares, canvas 2D y SignalR por tenant.
+- configuración de organización, negocio, medios de pago, invitaciones, usuarios, roles y permisos.
 
 No inventar todavía módulos de ventas, caja, recetas, compras, reportes o permisos si el requerimiento no los incluye expresamente.
 
@@ -87,6 +88,7 @@ src/
 │   │   ├── products/        # catálogo paginado de productos y combos
 │   │   ├── inventory/       # existencias, ingredientes, movimientos y complementos
 │   │   ├── tables/          # operación, realtime y configuración de salas/mesas
+│   │   ├── settings/        # organización, negocio, pagos, usuarios y roles
 │   │   └── app/             # navegación dinámica y vistas privadas
 │   ├── layouts/             # auth, tenant y app shells
 │   └── shared/
@@ -161,6 +163,7 @@ La selección de adaptadores se hace en `app.config.ts` mediante `useMockApi` y 
 | `/create-tenant`                   | Autenticado          | Tenant | Crear organización                |
 | `/app`                             | Autenticado + tenant | App    | Entrada privada/placeholder       |
 | `/app/products`                    | `products.read`      | App    | Administración de productos       |
+| `/app/settings`                    | Algún `settings.*`   | App    | Configuración de la organización  |
 | `/app/inventory`                   | Autenticado + tenant | App    | Entrada al inventario             |
 | `/app/inventory/stock`             | Permiso de lectura   | App    | Existencias paginadas             |
 | `/app/inventory/ingredients`       | Permiso de lectura   | App    | Administración de ingredientes    |
@@ -231,6 +234,8 @@ Seleccionar o crear tenant debe recibir del backend un nuevo par de tokens conte
 
 `InventoryStore` es el propietario de las páginas, filtros y catálogos auxiliares de inventario. Conserva por separado existencias, ingredientes, movimientos y unidades, siempre paginados por el servidor y limitados al tenant activo. Cada apartado exige su permiso `*.read` exacto y cada mutación su `*.manage` exacto; `manage` no implica `read`. El formulario de ingredientes requiere además `categories.read` e `inventory.complements.read`. Tras un movimiento exitoso debe refrescar la página vigente tanto de movimientos como de existencias.
 
+`SettingsStore` es el propietario de las cuatro pestañas de configuración y se recrea con la ruta lazy. Carga cada recurso únicamente si el usuario posee el permiso `settings.*.read` correspondiente y oculta acciones sin `*.manage`. Al cambiar el nombre de la organización actualiza también `TenantContext`; nunca mostrar “tenant” como texto visible. Los permisos seleccionables para roles provienen exclusivamente de `/api/settings/access/permissions`.
+
 La navegación lateral se deriva exclusivamente de las secciones devueltas. Se ordenan secciones y elementos por `order`, nunca alfabéticamente. El frontend debe respetar `isGrouped` sin recalcularlo: una sección no agrupada muestra sus elementos directamente y una agrupada muestra inicialmente solo `section.name`; al activarla abre un popover compacto con módulos y opciones apilados. Solo puede quedar un grupo abierto y debe cerrarse al seleccionar, hacer clic fuera o presionar `Escape`. Los nombres visibles siempre vienen del backend.
 
 En móvil, la navegación permanece en una sola fila con scroll horizontal. Los controles laterales solo aparecen cuando hay overflow, indican la dirección disponible y usan gradiente/sombra para comunicar que los accesos continúan bajo el borde. Los botones de sección deben ocupar el ancho de su contenido, sin espacio vacío artificial.
@@ -282,6 +287,11 @@ Endpoints centralizados actualmente:
 - `PUT /api/products/{productId}`
 - `PATCH /api/products/{productId}/status`
 - `DELETE /api/products/{productId}`
+- `GET/PUT /api/settings/organization`
+- `GET/POST/DELETE /api/settings/organization/logo`
+- `GET/PUT /api/settings/business`
+- CRUD y estado en `/api/settings/payment-methods`
+- catálogo, CRUD de roles e invitaciones/membresías bajo `/api/settings/access`
 - `GET/POST /api/table-areas`
 - `PUT/DELETE /api/table-areas/{areaId}`
 - `PUT /api/table-areas/reorder`
@@ -417,7 +427,7 @@ Reglas obligatorias:
 - Si se reemplaza el logo, conservar los ocho tamaños o actualizar a la vez componente, `index.html`, manifest y `ngsw-config.json`.
 - No declarar estos PNG como `maskable` mientras el arte no tenga una zona segura validada para máscaras PWA.
 
-Las imágenes de categorías y productos son independientes del isotipo. La API recibe únicamente `imageUrl`; mientras no exista un servicio de almacenamiento, usar un campo de URL absoluta HTTP/HTTPS con preview y un placeholder local si falta o falla la imagen. No enviar archivos, base64 ni multipart a `/api/categories` o `/api/products`.
+Las imágenes de categorías y productos son independientes del isotipo. La API recibe únicamente `imageUrl`; mientras no exista un servicio de almacenamiento, usar un campo de URL absoluta HTTP/HTTPS con preview y un placeholder local si falta o falla la imagen. No enviar archivos, base64 ni multipart a `/api/categories` o `/api/products`. El logo de organización es la excepción: se envía como `multipart/form-data`, solo PNG/JPEG/WebP hasta 2 MB, se descarga autenticado como `Blob` y todo `ObjectURL` debe revocarse.
 
 ## PWA, offline y tiempo real
 
@@ -448,6 +458,7 @@ Las pruebas actuales cubren:
 - contrato ordenado, secciones directas/agrupadas, opciones futuras y estado vacío.
 - listado y mutaciones de categorías, permisos, validaciones, fallback de imagen, errores y aislamiento por tenant.
 - repositorios, permisos independientes, paginación, formularios, errores y refresco cruzado del inventario.
+- configuración: endpoints tipados, ruta lazy, restricciones por permiso, actualización del nombre activo, upload de logo, parámetros, pagos, invitaciones y roles.
 - integración lazy de existencias, ingredientes, movimientos y complementos/unidades.
 - repositorio HTTP, aislamiento tenant, permisos, formulario reactivo y regla inventariable de productos.
 - estados visuales e interacción bloqueada de mesas, además del contrato de rutas lazy de operación/configuración.

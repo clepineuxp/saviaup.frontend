@@ -71,6 +71,8 @@ import { NavigationItemComponent } from './navigation-item.component';
       font-size: 0.82rem;
       font-weight: 750;
       cursor: pointer;
+      box-sizing: border-box;
+      white-space: nowrap;
     }
     .navigation-group__trigger:hover,
     .navigation-group--open .navigation-group__trigger {
@@ -84,7 +86,10 @@ import { NavigationItemComponent } from './navigation-item.component';
       top: 8.45rem;
       left: 1rem;
       display: grid;
-      width: min(18rem, calc(100vw - 2rem));
+      width: max-content;
+      min-width: 10rem;
+      max-width: min(18rem, calc(100vw - 2rem));
+      box-sizing: border-box;
       gap: 0.3rem;
       border: 1px solid var(--color-border-strong);
       border-radius: 1rem;
@@ -150,7 +155,10 @@ export class NavigationGroupComponent {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     const triggerBounds = trigger.getBoundingClientRect();
-    const popoverWidth = Math.min(popover.offsetWidth || 288, viewportWidth - margin * 2);
+    const popoverWidth = Math.min(
+      Math.max(popover.scrollWidth, popover.offsetWidth || 160),
+      viewportWidth - margin * 2,
+    );
     const maxHeight = Math.max(160, viewportHeight - margin * 2);
     const popoverHeight = Math.min(popover.scrollHeight || maxHeight, maxHeight);
     const desktop = viewportWidth >= 768;

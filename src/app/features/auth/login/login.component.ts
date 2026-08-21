@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthStore } from '../../../core/auth/auth-store.service';
 import { UiAlertComponent } from '../../../shared/components/ui-alert/ui-alert.component';
 import { UiButtonComponent } from '../../../shared/components/ui-button/ui-button.component';
@@ -15,10 +15,11 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 })
 export class LoginComponent {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   readonly authStore = inject(AuthStore);
   readonly showPassword = signal(false);
   readonly form = new FormGroup({
-    email: new FormControl('', {
+    email: new FormControl(this.route.snapshot.queryParamMap.get('email') ?? '', {
       nonNullable: true,
       validators: [Validators.required, Validators.email],
     }),
