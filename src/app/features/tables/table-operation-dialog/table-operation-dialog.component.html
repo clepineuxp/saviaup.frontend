@@ -1,0 +1,80 @@
+<div class="backdrop" role="presentation">
+  <section class="dialog" role="dialog" aria-modal="true" [attr.aria-label]="table().name">
+    <header>
+      <span>
+        <small>{{ 'tables.dialog.eyebrow' | translate }}</small>
+        <h2>{{ table().name }}</h2>
+      </span>
+      <button
+        type="button"
+        (click)="closed.emit()"
+        [attr.aria-label]="'tables.dialog.close' | translate"
+      >
+        ×
+      </button>
+    </header>
+    <div class="summary">
+      <span>{{ table().capacity }} {{ 'tables.people' | translate }}</span>
+      <strong>{{ 'tables.status.' + table().status.toLowerCase() | translate }}</strong>
+    </div>
+
+    @if (blocked()) {
+      <div class="gate" role="alert">
+        <strong>{{ 'tables.cashGate.title' | translate }}</strong>
+        <span>{{ 'tables.cashGate.description' | translate }}</span>
+      </div>
+    } @else if (!canOperate()) {
+      <div class="gate" role="alert">{{ 'tables.readOnly' | translate }}</div>
+    }
+
+    @if (table().status === 'AVAILABLE') {
+      <p>
+        {{
+          table().isCashRegister
+            ? ('tables.dialog.cashDescription' | translate)
+            : ('tables.dialog.openDescription' | translate)
+        }}
+      </p>
+      <button
+        class="primary"
+        type="button"
+        [disabled]="blocked() || !canOperate() || busy()"
+        (click)="opened.emit()"
+      >
+        {{
+          table().isCashRegister
+            ? ('tables.dialog.createImmediate' | translate)
+            : ('tables.dialog.openOrder' | translate)
+        }}
+      </button>
+    } @else if (table().status === 'OCCUPIED') {
+      <div class="order-total">
+        <small>{{ 'tables.dialog.currentTotal' | translate }}</small>
+        <strong>{{
+          table().activeOrderTotal | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+        }}</strong>
+      </div>
+      <label>
+        <span>{{ 'tables.dialog.updateTotal' | translate }}</span>
+        <input type="number" min="0" step="100" [formControl]="total" />
+      </label>
+      <div class="actions">
+        <button
+          type="button"
+          [disabled]="blocked() || !canOperate() || busy() || total.invalid"
+          (click)="updateTotal()"
+        >
+          {{ 'tables.dialog.saveOrder' | translate }}
+        </button>
+        <button
+          class="primary"
+          type="button"
+          [disabled]="blocked() || !canOperate() || busy()"
+          (click)="released.emit()"
+        >
+          {{ 'tables.dialog.payAndClose' | translate }}
+        </button>
+      </div>
+    }
+  </section>
+</div>

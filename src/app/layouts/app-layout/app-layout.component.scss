@@ -152,7 +152,9 @@
   display: grid;
   min-width: 0;
   min-height: calc(100vh - 10rem);
-  place-items: center;
+  align-content: start;
+  align-items: start;
+  justify-items: center;
   padding: 2rem 1rem;
 }
 @keyframes spin {
@@ -183,14 +185,32 @@
   .app-workspace {
     display: grid;
     grid-template-columns: 15rem minmax(0, 1fr);
+    align-items: start;
   }
   .app-workspace--empty {
     grid-template-columns: 1fr;
   }
+  .app-workspace--sidebar-hidden {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app-workspace--sidebar-hidden .app-sidebar {
+    display: none;
+  }
+  .app-workspace--sidebar-hidden .app-content {
+    padding: 1rem;
+  }
   .app-sidebar {
+    position: sticky;
+    z-index: 5;
+    top: 4.8rem;
+    height: calc(100vh - 4.8rem);
+    height: calc(100dvh - 4.8rem);
+    align-self: start;
+    overflow: hidden;
     border-right: 1px solid var(--color-border);
     border-bottom: 0;
     padding: 1.5rem 1rem;
+    background: rgb(255 255 255 / 92%);
   }
   .app-content {
     min-height: calc(100vh - 4.8rem);

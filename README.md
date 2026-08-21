@@ -1,6 +1,6 @@
 # Savia Up Web
 
-Frontend de **Savia Up**, una plataforma SaaS multi-tenant para restaurantes y gastrobares. Esta fase cubre autenticación, recuperación de acceso, selección o creación de organización y navegación contextual; los módulos operativos conservan vistas placeholder.
+Frontend de **Savia Up**, una plataforma SaaS multi-tenant para restaurantes y gastrobares. Esta fase cubre autenticación, recuperación de acceso, selección o creación de organización, navegación contextual, categorías, productos e inventario operativo; los demás módulos conservan vistas placeholder.
 
 ## Stack
 
@@ -51,16 +51,25 @@ El build de producción reemplaza automáticamente el environment por `environme
 
 ## Rutas
 
-| Ruta                 | Acceso               | Propósito                           |
-| -------------------- | -------------------- | ----------------------------------- |
-| `/login`             | Invitado             | Inicio de sesión                    |
-| `/register`          | Invitado             | Registro de usuario                 |
-| `/forgot-password`   | Invitado             | Solicitud neutral de recuperación   |
-| `/select-tenant`     | Autenticado          | Selección de organización           |
-| `/create-tenant`     | Autenticado          | Creación de organización            |
-| `/app`               | Autenticado + tenant | Inicio y estado vacío del workspace |
-| `/app/{módulo}`      | Autenticado + tenant | Módulo habilitado conocido          |
-| `/app/modules/:code` | Autenticado + tenant | Fallback seguro para código nuevo   |
+| Ruta                               | Acceso                       | Propósito                           |
+| ---------------------------------- | ---------------------------- | ----------------------------------- |
+| `/login`                           | Invitado                     | Inicio de sesión                    |
+| `/register`                        | Invitado                     | Registro de usuario                 |
+| `/forgot-password`                 | Invitado                     | Solicitud neutral de recuperación   |
+| `/select-tenant`                   | Autenticado                  | Selección de organización           |
+| `/create-tenant`                   | Autenticado                  | Creación de organización            |
+| `/app`                             | Autenticado + tenant         | Inicio y estado vacío del workspace |
+| `/app/products`                    | `products.read`              | Administración de productos         |
+| `/app/inventory`                   | Autenticado + tenant         | Entrada al inventario               |
+| `/app/inventory/stock`             | `inventory.stock.read`       | Existencias y alertas de mínimo     |
+| `/app/inventory/ingredients`       | `inventory.ingredients.read` | Ingredientes                        |
+| `/app/inventory/movements`         | `inventory.movements.read`   | Movimientos inmutables              |
+| `/app/inventory/complements/units` | `inventory.complements.read` | Unidades de medida                  |
+| `/app/categories`                  | Autenticado + tenant         | Administración de categorías        |
+| `/app/sell/tables`                 | `tables.read`                | Operación de mesas en tiempo real   |
+| `/app/configuration/tables/manage` | `tables.manage`              | Distribución visual de salas/mesas  |
+| `/app/{módulo}`                    | Autenticado + tenant         | Módulo habilitado conocido          |
+| `/app/modules/:code`               | Autenticado + tenant         | Fallback seguro para código nuevo   |
 
 Todas las pantallas de feature se cargan de forma lazy.
 
@@ -79,6 +88,9 @@ src/app/
 ├── features/
 │   ├── auth/          # login, register, recovery, adapters y contratos
 │   ├── tenant/        # selección, creación, adapters y store
+│   ├── categories/    # lista, formulario, repositorio HTTP y store por tenant
+│   ├── products/      # catálogo paginado, filtros y formulario reactivo
+│   ├── inventory/     # existencias, ingredientes, movimientos y complementos
 │   └── app/           # navegación y vistas de módulos
 ├── layouts/           # auth, tenant y app layouts
 ├── shared/
@@ -108,10 +120,11 @@ El interceptor:
 
 1. adjunta `Authorization: Bearer …` cuando corresponde;
 2. adjunta `X-Tenant-Id` si existe un tenant activo;
-3. ante un `401`, usa `AuthRefreshCoordinator`;
-4. comparte una sola petición de refresh entre solicitudes concurrentes;
-5. reintenta la petición original con el token nuevo;
-6. limpia sesión y tenant si el refresh falla.
+3. adjunta el idioma vigente en `Accept-Language`;
+4. ante un `401`, usa `AuthRefreshCoordinator`;
+5. comparte una sola petición de refresh entre solicitudes concurrentes;
+6. reintenta la petición original con el token nuevo;
+7. limpia sesión y tenant si el refresh falla.
 
 El endpoint de refresh usa un `HttpContextToken` para evitar recursión. `AuthGuard`, `GuestGuard` y `TenantGuard` controlan la navegación, pero la autorización real siempre debe validarse en backend.
 
@@ -129,17 +142,19 @@ El layout muestra nombre completo, organización y rol. Las secciones y sus elem
 
 En pantallas móviles, todos los accesos permanecen en una única fila desplazable. Las flechas laterales aparecen únicamente si existe overflow y combinan gradiente y sombra para mostrar la continuidad del contenido bajo los bordes.
 
-| Código       | Ruta              | Icono        |
-| ------------ | ----------------- | ------------ |
-| `orders`     | `/app/orders`     | `orders`     |
-| `tables`     | `/app/tables`     | `tables`     |
-| `inventory`  | `/app/inventory`  | `inventory`  |
-| `products`   | `/app/products`   | `products`   |
-| `categories` | `/app/categories` | `categories` |
-| `kitchen`    | `/app/kitchen`    | `kitchen`    |
-| `reports`    | `/app/reports`    | `reports`    |
-| `billing`    | `/app/billing`    | `billing`    |
-| `settings`   | `/app/settings`   | `settings`   |
+En escritorio, la barra lateral permanece fija debajo del encabezado durante el desplazamiento del contenido. Si los accesos exceden la altura visible, el rail habilita scroll vertical propio y mantiene los popovers agrupados dentro del viewport.
+
+| Código       | Ruta               | Icono        |
+| ------------ | ------------------ | ------------ |
+| `orders`     | `/app/orders`      | `orders`     |
+| `tables`     | `/app/sell/tables` | `tables`     |
+| `inventory`  | `/app/inventory`   | `inventory`  |
+| `products`   | `/app/products`    | `products`   |
+| `categories` | `/app/categories`  | `categories` |
+| `kitchen`    | `/app/kitchen`     | `kitchen`    |
+| `reports`    | `/app/reports`     | `reports`    |
+| `billing`    | `/app/billing`     | `billing`    |
+| `settings`   | `/app/settings`    | `settings`   |
 
 Las opciones futuras se resuelven por `option.code` y, si no existe una configuración específica, por `moduleCode`. Un código nuevo usa `/app/modules/:code`, el icono genérico `module` y una advertencia solo en desarrollo. Una respuesta `sections: []` es válida y muestra literalmente `emptyStateMessage`; un `403 TENANT_REQUIRED` devuelve al selector de organización.
 
@@ -166,8 +181,52 @@ Todos viven en `core/config/api-endpoints.ts`:
 - `GET/POST /api/tenants`
 - `POST /api/tenants/{tenantId}/select`
 - `GET /api/i18n/{language}`
+- `GET /api/categories?includeInactive=true`
+- `POST /api/categories`
+- `PUT /api/categories/{categoryId}`
+- `PATCH /api/categories/{categoryId}/status`
+- `DELETE /api/categories/{categoryId}`
+- `GET /api/products?page=1&pageSize=20&search=&categoryId=&type=&includeInactive=false`
+- `POST /api/products`
+- `PUT /api/products/{productId}`
+- `PATCH /api/products/{productId}/status`
+- `DELETE /api/products/{productId}`
+- `GET /api/inventory`
+- `GET/POST /api/inventory/ingredients`
+- `PUT/DELETE /api/inventory/ingredients/{ingredientId}`
+- `PATCH /api/inventory/ingredients/{ingredientId}/status`
+- `GET/POST /api/inventory/movements`
+- `GET/POST /api/inventory/complements/units`
+- `PUT/DELETE /api/inventory/complements/units/{unitId}`
+- `PATCH /api/inventory/complements/units/{unitId}/status`
 
 Los DTO están separados de los modelos de UI y se adaptan en la capa data-access.
+
+## Administración de categorías
+
+La ruta `/app/categories` usa el código dinámico `categories` dentro de la navegación contextual. `categories.read` habilita el listado y `categories.manage` habilita creación, edición, deshabilitación/reactivación y eliminación; la UI nunca deriva permisos desde el rol y el backend siempre vuelve a validarlos.
+
+El listado administrativo envía `includeInactive=true` y mantiene búsqueda por nombre y filtros locales. Crear y editar usan formularios tipados con nombre obligatorio (120), descripción opcional (1000), URL opcional HTTP/HTTPS (2048) y el indicador booleano de inventario. La eliminación solo actualiza el store después de recibir el `204` y siempre muestra una confirmación explícita.
+
+No existe carga binaria en este frontend. Las categorías aceptan únicamente una URL de imagen con preview; si está vacía o la carga remota falla, la tarjeta muestra un placeholder coherente con el diseño. No se envían archivos, base64 ni multipart a `/api/categories`.
+
+`CategoryStore` conserva datos solo para el tenant activo, se limpia al cambiar organización o cerrar sesión y descarta respuestas tardías del tenant anterior. Los códigos `CATEGORY_NAME_ALREADY_EXISTS`, `CATEGORY_NOT_FOUND`, `VALIDATION_ERROR`, `AUTH_FORBIDDEN`, `TENANT_REQUIRED` y `AUTH_UNAUTHENTICATED` se integran con los estados locales o los flujos globales correspondientes.
+
+## Gestión de productos
+
+`/app/products` reemplaza el placeholder del módulo `products` y exige `products.read`. El listado usa paginación del servidor, búsqueda por nombre, filtros por categoría y tipo (`NORMAL`/`COMBO`), e inclusión opcional de inactivos. `products.manage` habilita crear, editar, activar/desactivar y eliminar con confirmación explícita.
+
+El formulario usa Reactive Forms tipados y carga únicamente categorías activas. Tipo inicia en `NORMAL`; nombre, categoría y precio positivo son obligatorios. Descripción, URL HTTP/HTTPS y tiempo de preparación no negativo son opcionales. La imagen se representa como URL con preview, sin archivos, base64 ni multipart.
+
+`isInventoryTracked` reacciona a la categoría elegida: se habilita solo para categorías inventariables y se deshabilita, limpia y envía como `false` para cualquier otra. El backend repite la regla para no confiar en el cliente. `ProductStore` mantiene página, filtros, permisos y categorías aislados por tenant y refresca la consulta vigente después de cada mutación exitosa.
+
+## Inventario operativo
+
+`/app/inventory` expone cuatro apartados lazy e independientes: existencias, ingredientes, movimientos y complementos. Cada apartado se muestra únicamente con su permiso `*.read` exacto y las acciones aparecen solo con su `*.manage`; no se infiere acceso por rol ni se asume que gestión implique lectura. Ingredientes requiere además `categories.read` e `inventory.complements.read` para cargar sus selectores.
+
+Todos los listados usan paginación real del servidor con `{ items, page, pageSize, totalCount, totalPages }`. Los filtros vuelven a la página 1 y las mutaciones refrescan la página vigente. Crear un movimiento actualiza tanto el historial como las existencias; los movimientos no se editan ni se eliminan. El formulario de ingrediente solo admite existencia inicial al crear y muestra la existencia actual como lectura durante la edición.
+
+Complementos tiene un registro extensible por tipo y actualmente implementa Unidades. Los conflictos `INGREDIENT_IN_USE` y `MEASUREMENT_UNIT_IN_USE` permiten deshabilitar en lugar de eliminar; `MEASUREMENT_UNIT_ALREADY_EXISTS` e `INVENTORY_INSUFFICIENT_STOCK` muestran mensajes específicos sin perder los datos del formulario.
 
 ## Diseño y responsive
 
@@ -187,3 +246,10 @@ El archivo de Figma “Savia Up · Web App” fue creado como espacio de diseño
 - Perfil y navegación se cargan en paralelo después de persistir los tokens y antes de navegar a `/app`.
 - Los errores usan `{ success: false, error: { code, message, details? } }` y el mapper conserva compatibilidad con errores HTTP simples.
 - Los permisos efectivos se reciben para representación de UI, pero la autorización real se resuelve siempre en el backend y no depende de claims de permisos.
+
+## Gestión y operación de mesas
+
+- `/app/sell/tables` carga el snapshot por REST y concentra el área útil en la sala seleccionada. El encabezado de la sala permite cambiarla y alternar entre plano e iconos; sus KPIs son compactos y la barra lateral de escritorio puede ocultarse y recuperarse durante la operación.
+- `/app/configuration/tables/manage` administra salas y mesas, reordena salas y edita capacidad, flags, estado y forma (`SQUARE`, `ROUND`, `RECTANGLE_HORIZONTAL`, `RECTANGLE_VERTICAL`). La posición se define arrastrando la misma tarjeta y con las mismas dimensiones que usa la operación (`100×100`, `150×100` o `100×150`); doble clic abre la edición y el modal permite eliminar con confirmación. El estado se comunica por color y su etiqueta aparece solo con `hover`/foco.
+- `TableRealtimeClient` conecta únicamente durante el ciclo de vida de la feature, envía el JWT vigente y aplica reconexión automática para `OnTableStatusChanged` y `OnTableOrderUpdated`.
+- El bloqueo de caja abierta se deriva del backend y deshabilita todas las acciones de `tables.operate` sin ocultar el estado actual.

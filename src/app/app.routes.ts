@@ -8,7 +8,10 @@ const modulePlaceholder = () =>
     (component) => component.ModulePlaceholderComponent,
   );
 
-const knownModuleRoutes: Routes = KNOWN_MODULE_NAVIGATION.map(({ code, path }) => ({
+const knownModuleRoutes: Routes = KNOWN_MODULE_NAVIGATION.filter(
+  ({ code }) =>
+    code !== 'categories' && code !== 'inventory' && code !== 'products' && code !== 'tables',
+).map(({ code, path }) => ({
   path,
   title: 'Savia Up',
   data: { moduleCode: code },
@@ -43,6 +46,46 @@ export const routes: Routes = [
             (component) => component.AppPlaceholderComponent,
           ),
       },
+      {
+        path: 'sell/tables',
+        title: 'Mesas · Savia Up',
+        loadChildren: () =>
+          import('./features/tables/tables.routes').then(
+            (routesFile) => routesFile.TABLE_OPERATION_ROUTES,
+          ),
+      },
+      {
+        path: 'configuration/tables/manage',
+        title: 'Administrar mesas · Savia Up',
+        loadChildren: () =>
+          import('./features/tables/tables.routes').then(
+            (routesFile) => routesFile.TABLE_MANAGEMENT_ROUTES,
+          ),
+      },
+      {
+        path: 'products',
+        title: 'Productos · Savia Up',
+        loadChildren: () =>
+          import('./features/products/products.routes').then(
+            (routesFile) => routesFile.PRODUCT_ROUTES,
+          ),
+      },
+      {
+        path: 'categories',
+        title: 'Categorías · Savia Up',
+        loadChildren: () =>
+          import('./features/categories/categories.routes').then(
+            (routesFile) => routesFile.CATEGORY_ROUTES,
+          ),
+      },
+      {
+        path: 'inventory',
+        title: 'Inventario · Savia Up',
+        loadChildren: () =>
+          import('./features/inventory/inventory.routes').then(
+            (routesFile) => routesFile.INVENTORY_ROUTES,
+          ),
+      },
       ...knownModuleRoutes,
       {
         path: 'modules/:code',
@@ -50,6 +93,11 @@ export const routes: Routes = [
         loadComponent: modulePlaceholder,
       },
     ],
+  },
+  {
+    path: 'configuration/tables/manage',
+    pathMatch: 'full',
+    redirectTo: 'app/configuration/tables/manage',
   },
   { path: '**', redirectTo: '' },
 ];

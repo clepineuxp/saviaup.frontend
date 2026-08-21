@@ -14,6 +14,42 @@ export const API_ENDPOINTS = {
   modules: {
     available: '/api/modules/available',
   },
+  categories: {
+    root: '/api/categories',
+    detail: (categoryId: string) => `/api/categories/${categoryId}`,
+    status: (categoryId: string) => `/api/categories/${categoryId}/status`,
+  },
+  products: {
+    root: '/api/products',
+    detail: (productId: string) => `/api/products/${productId}`,
+    status: (productId: string) => `/api/products/${productId}/status`,
+  },
+  tables: {
+    root: '/api/tables',
+    detail: (tableId: string) => `/api/tables/${tableId}`,
+    operation: '/api/tables/operation',
+    operationState: (tableId: string) => `/api/tables/${tableId}/operation`,
+    order: (tableId: string) => `/api/tables/${tableId}/order`,
+    areas: {
+      root: '/api/table-areas',
+      detail: (areaId: string) => `/api/table-areas/${areaId}`,
+      reorder: '/api/table-areas/reorder',
+    },
+  },
+  inventory: {
+    root: '/api/inventory',
+    ingredients: {
+      root: '/api/inventory/ingredients',
+      detail: (ingredientId: string) => `/api/inventory/ingredients/${ingredientId}`,
+      status: (ingredientId: string) => `/api/inventory/ingredients/${ingredientId}/status`,
+    },
+    movements: '/api/inventory/movements',
+    complements: {
+      units: '/api/inventory/complements/units',
+      unit: (unitId: string) => `/api/inventory/complements/units/${unitId}`,
+      unitStatus: (unitId: string) => `/api/inventory/complements/units/${unitId}/status`,
+    },
+  },
   tenants: {
     root: '/api/tenants',
     select: (tenantId: string) => `/api/tenants/${tenantId}/select`,

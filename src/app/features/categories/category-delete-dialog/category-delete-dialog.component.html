@@ -1,0 +1,42 @@
+<div class="confirmation-backdrop">
+  <button
+    class="confirmation-backdrop__close"
+    type="button"
+    tabindex="-1"
+    [attr.aria-label]="'common.cancel' | translate"
+    (click)="cancel()"
+  ></button>
+  <section
+    class="confirmation-dialog"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="delete-category-title"
+    aria-describedby="delete-category-description"
+  >
+    <span class="confirmation-dialog__icon" aria-hidden="true">!</span>
+    <h2 id="delete-category-title">{{ 'categories.delete.title' | translate }}</h2>
+    <p id="delete-category-description">
+      {{ 'categories.delete.description' | translate: { name: category().name } }}
+    </p>
+    <small>{{ 'categories.delete.warning' | translate }}</small>
+    @if (error(); as operationError) {
+      <app-ui-alert [message]="operationError.message" />
+    }
+    <footer>
+      <app-ui-button type="button" variant="secondary" [disabled]="submitting()" (click)="cancel()">
+        {{ 'common.cancel' | translate }}
+      </app-ui-button>
+      <button
+        class="delete-confirmation"
+        type="button"
+        [disabled]="submitting()"
+        (click)="confirm()"
+      >
+        @if (submitting()) {
+          <span class="button-spinner" aria-hidden="true"></span>
+        }
+        {{ 'categories.delete.confirm' | translate }}
+      </button>
+    </footer>
+  </section>
+</div>

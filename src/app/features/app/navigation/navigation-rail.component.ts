@@ -33,7 +33,7 @@ import { NavigationItemComponent } from './navigation-item.component';
         #navigationScroller
         class="module-navigation"
         [attr.aria-label]="'app.navigation.label' | translate"
-        (scroll)="updateScrollState()"
+        (scroll)="handleNavigationScroll()"
       >
         @for (section of sections(); track section.code) {
           @if (section.isGrouped) {
@@ -117,10 +117,21 @@ import { NavigationItemComponent } from './navigation-item.component';
       cursor: default;
     }
     @media (min-width: 768px) {
+      :host,
+      .navigation-rail {
+        height: 100%;
+      }
       .module-navigation {
         display: grid;
-        overflow: visible;
+        max-height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior-y: contain;
         padding-inline: 0;
+        padding-right: 0.3rem;
+        scrollbar-color: var(--color-border-strong) transparent;
+        scrollbar-gutter: stable;
+        scrollbar-width: thin;
       }
       .navigation-scroll {
         display: none;
@@ -166,6 +177,11 @@ export class NavigationRailComponent {
     this.hasOverflow.set(maximumScroll > 1);
     this.canScrollLeft.set(scroller.scrollLeft > 1);
     this.canScrollRight.set(scroller.scrollLeft < maximumScroll - 1);
+  }
+
+  handleNavigationScroll(): void {
+    this.updateScrollState();
+    this.closeGroup();
   }
 
   @HostListener('document:click')

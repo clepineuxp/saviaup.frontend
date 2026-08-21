@@ -1,6 +1,7 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
+import { LocalizationService } from '../../shared/i18n/localization.service';
 import { AuthRefreshCoordinator } from '../auth/auth-refresh-coordinator.service';
 import { TOKEN_STORAGE } from '../auth/token-storage';
 import { TenantContext } from '../tenant/tenant-context.service';
@@ -9,6 +10,7 @@ import { SKIP_AUTH } from './http-context.tokens';
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const storage = inject(TOKEN_STORAGE);
   const tenantContext = inject(TenantContext);
+  const localization = inject(LocalizationService);
   const refreshCoordinator = inject(AuthRefreshCoordinator);
 
   const addContext = (accessToken: string | null) => {
@@ -18,6 +20,9 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
     }
     const tenantId = tenantContext.activeTenant()?.id;
     if (tenantId) headers = headers.set('X-Tenant-Id', tenantId);
+    if (!headers.has('Accept-Language')) {
+      headers = headers.set('Accept-Language', localization.language());
+    }
     return request.clone({ headers });
   };
 

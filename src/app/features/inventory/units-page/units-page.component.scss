@@ -1,0 +1,249 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.page-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.heading h2,
+.heading h3,
+.heading p {
+  margin: 0;
+}
+
+.heading h2 {
+  font-size: 1.25rem;
+}
+
+.heading h3 {
+  font-size: 1rem;
+}
+
+.heading p {
+  margin-top: 0.35rem;
+  color: var(--color-muted);
+  font-size: 0.84rem;
+}
+
+.heading--catalog {
+  border-top: 1px solid var(--color-border);
+  padding-top: 1rem;
+}
+
+.complement-nav {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+}
+
+.complement-nav a {
+  border: 1px solid var(--color-border);
+  border-radius: 99px;
+  padding: 0.5rem 0.75rem;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 720;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.complement-nav a.active {
+  border-color: var(--color-savia-300);
+  background: var(--color-savia-50);
+  color: var(--color-savia-700);
+}
+
+.filters {
+  display: grid;
+  gap: 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  padding: 0.8rem;
+  background: white;
+}
+
+.filters label:not(.check) {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.filters input[type='search'] {
+  min-height: 2.7rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0.72rem;
+  padding: 0.55rem 0.7rem;
+  background: white;
+}
+
+.check {
+  display: flex;
+  min-height: 2.7rem;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-muted);
+  font-size: 0.76rem;
+  font-weight: 680;
+}
+
+.unit-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.unit-grid article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  padding: 0.85rem;
+  background: white;
+}
+
+.unit-grid article.inactive {
+  opacity: 0.62;
+}
+
+.unit-code {
+  display: grid;
+  min-width: 3.25rem;
+  min-height: 3.25rem;
+  place-items: center;
+  border-radius: 0.85rem;
+  padding: 0.45rem;
+  background: var(--color-savia-50);
+  color: var(--color-savia-700);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.unit-copy h4 {
+  margin: 0 0 0.35rem;
+  color: var(--color-ink);
+  font-size: 0.88rem;
+}
+
+.pill {
+  display: inline-flex;
+  border-radius: 99px;
+  padding: 0.26rem 0.48rem;
+  background: var(--color-savia-50);
+  color: var(--color-savia-700);
+  font-size: 0.64rem;
+  font-weight: 760;
+}
+
+.pill--off {
+  background: #f0f1ee;
+  color: var(--color-muted);
+}
+
+.actions {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.actions button {
+  min-height: 2.25rem;
+  border: 0;
+  border-radius: 0.6rem;
+  padding: 0.4rem 0.55rem;
+  background: transparent;
+  color: var(--color-savia-700);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background: var(--color-savia-50);
+}
+
+.actions .danger {
+  color: #a44037;
+}
+
+.actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.state {
+  display: grid;
+  min-height: 12rem;
+  place-items: center;
+  align-content: center;
+  gap: 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  background: white;
+  text-align: center;
+}
+
+.state h3,
+.state p {
+  margin: 0;
+}
+
+.state p {
+  color: var(--color-muted);
+  font-size: 0.82rem;
+}
+
+.empty-icon {
+  color: var(--color-savia-600);
+  font-size: 2rem;
+}
+
+.loader {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--color-savia-100);
+  border-top-color: var(--color-savia-600);
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (min-width: 700px) {
+  .filters {
+    grid-template-columns: minmax(12rem, 1fr) auto auto;
+    align-items: end;
+  }
+
+  .unit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .unit-grid article {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .actions {
+    grid-column: auto;
+    justify-content: flex-end;
+  }
+}

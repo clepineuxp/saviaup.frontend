@@ -1,0 +1,279 @@
+<section class="management-page">
+  <header class="management-heading">
+    <span>
+      <p class="eyebrow">{{ 'tables.manage.eyebrow' | translate }}</p>
+      <h1>{{ 'tables.manage.title' | translate }}</h1>
+      <p>{{ 'tables.manage.subtitle' | translate }}</p>
+    </span>
+  </header>
+
+  @if (store.error(); as error) {
+    <div class="error" role="alert">{{ error.message }}</div>
+  }
+  @if (store.loading()) {
+    <div class="empty">{{ 'tables.manage.loading' | translate }}</div>
+  } @else {
+    @if (selectedLayoutArea()) {
+      <section class="panel layout-panel">
+        <header>
+          <span>
+            <small>{{ 'tables.manage.layout.eyebrow' | translate }}</small>
+            <h2>{{ 'tables.manage.layout.title' | translate }}</h2>
+            <p>{{ 'tables.manage.layout.description' | translate }}</p>
+          </span>
+          <div class="layout-controls">
+            <label class="layout-area-selector">
+              <span>{{ 'tables.manage.layout.area' | translate }}</span>
+              <select [value]="selectedLayoutAreaId()" (change)="selectLayoutArea($event)">
+                @for (area of store.areas(); track area.id) {
+                  <option [value]="area.id">{{ area.name }}</option>
+                }
+              </select>
+            </label>
+            <button class="primary" type="button" (click)="newTable()">
+              + {{ 'tables.manage.tables.create' | translate }}
+            </button>
+          </div>
+        </header>
+        <app-table-layout-editor
+          [tables]="layoutTables()"
+          [busy]="store.mutating()"
+          (positionChanged)="savePosition($event)"
+          (editRequested)="editTable($event)"
+        />
+        <footer>{{ 'tables.manage.layout.hint' | translate }}</footer>
+      </section>
+    }
+
+    <div class="management-grid">
+      <section class="panel">
+        <header>
+          <span
+            ><small>{{ 'tables.manage.areas.eyebrow' | translate }}</small>
+            <h2>{{ 'tables.manage.areas.title' | translate }}</h2></span
+          ><button class="primary" type="button" (click)="newArea()">
+            + {{ 'tables.manage.areas.create' | translate }}
+          </button>
+        </header>
+        <div class="area-list">
+          @for (area of store.areas(); track area.id; let first = $first; let last = $last) {
+            <article class="area-row">
+              <span
+                ><strong>{{ area.order }}. {{ area.name }}</strong
+                ><small>{{
+                  (area.isActive ? 'tables.manage.active' : 'tables.manage.inactive') | translate
+                }}</small></span
+              >
+              <div class="row-actions">
+                <button
+                  type="button"
+                  [disabled]="first"
+                  (click)="moveArea(area, -1)"
+                  [attr.aria-label]="'tables.manage.moveUp' | translate"
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  [disabled]="last"
+                  (click)="moveArea(area, 1)"
+                  [attr.aria-label]="'tables.manage.moveDown' | translate"
+                >
+                  ↓
+                </button>
+                <button type="button" (click)="editArea(area)">
+                  {{ 'tables.manage.edit' | translate }}
+                </button>
+                <button class="danger" type="button" (click)="pendingAreaDelete.set(area)">
+                  {{ 'tables.manage.delete' | translate }}
+                </button>
+              </div>
+            </article>
+          } @empty {
+            <div class="empty">{{ 'tables.manage.areas.empty' | translate }}</div>
+          }
+        </div>
+      </section>
+
+      <section class="panel panel--tables">
+        <header>
+          <span>
+            <small>{{ 'tables.manage.tables.eyebrow' | translate }}</small>
+            <h2>{{ 'tables.manage.tables.title' | translate }}</h2>
+          </span>
+        </header>
+        <div class="table-list">
+          @for (table of store.tables(); track table.id) {
+            <article class="table-row">
+              <span
+                class="table-symbol"
+                [class.table-symbol--occupied]="table.status === 'OCCUPIED'"
+                [class.table-symbol--disabled]="table.status === 'DISABLED'"
+                >▦</span
+              >
+              <span
+                ><strong>{{ table.name }}</strong
+                ><small
+                  >{{ areaName(table.diningAreaId) }} · {{ table.capacity }}
+                  {{ 'tables.people' | translate }} ·
+                  {{ 'tables.shape.' + table.shape.toLowerCase() | translate }}</small
+                ></span
+              >
+              <span class="flags">
+                @if (table.isDelivery) {
+                  <i>{{ 'tables.flags.delivery' | translate }}</i>
+                }
+                @if (table.isCashRegister) {
+                  <i>{{ 'tables.flags.cash' | translate }}</i>
+                }
+              </span>
+              <div class="row-actions">
+                <button type="button" (click)="editTable(table)">
+                  {{ 'tables.manage.edit' | translate }}</button
+                ><button class="danger" type="button" (click)="pendingTableDelete.set(table)">
+                  {{ 'tables.manage.delete' | translate }}
+                </button>
+              </div>
+            </article>
+          } @empty {
+            <div class="empty">{{ 'tables.manage.tables.empty' | translate }}</div>
+          }
+        </div>
+      </section>
+    </div>
+  }
+</section>
+
+@if (areaFormOpen()) {
+  <div class="backdrop">
+    <form class="form-dialog" [formGroup]="areaForm" (ngSubmit)="saveArea()">
+      <header>
+        <h2>
+          {{
+            (editingArea() ? 'tables.manage.areas.editTitle' : 'tables.manage.areas.createTitle')
+              | translate
+          }}
+        </h2>
+        <button type="button" (click)="areaFormOpen.set(false)">×</button>
+      </header>
+      <label
+        ><span>{{ 'tables.manage.name' | translate }}</span
+        ><input formControlName="name" /></label
+      ><label
+        ><span>{{ 'tables.manage.order' | translate }}</span
+        ><input type="number" min="1" formControlName="order" /></label
+      ><label class="check"
+        ><input type="checkbox" formControlName="isActive" /><span>{{
+          'tables.manage.active' | translate
+        }}</span></label
+      ><button class="primary" type="submit" [disabled]="store.mutating()">
+        {{ 'tables.manage.save' | translate }}
+      </button>
+    </form>
+  </div>
+}
+
+@if (tableFormOpen()) {
+  <div class="backdrop">
+    <form class="form-dialog form-dialog--wide" [formGroup]="tableForm" (ngSubmit)="saveTable()">
+      <header>
+        <h2>
+          {{
+            (editingTable() ? 'tables.manage.tables.editTitle' : 'tables.manage.tables.createTitle')
+              | translate
+          }}
+        </h2>
+        <button type="button" (click)="tableFormOpen.set(false)">×</button>
+      </header>
+      <div class="form-grid">
+        <label
+          ><span>{{ 'tables.manage.area' | translate }}</span
+          ><select formControlName="diningAreaId">
+            @for (area of store.areas(); track area.id) {
+              <option [value]="area.id">{{ area.name }}</option>
+            }
+          </select></label
+        ><label
+          ><span>{{ 'tables.manage.name' | translate }}</span
+          ><input formControlName="name" /></label
+        ><label
+          ><span>{{ 'tables.manage.capacity' | translate }}</span
+          ><input type="number" min="1" max="100" formControlName="capacity" /></label
+        ><label
+          ><span>{{ 'tables.manage.shape' | translate }}</span
+          ><select formControlName="shape">
+            <option value="SQUARE">{{ 'tables.shape.square' | translate }}</option>
+            <option value="ROUND">{{ 'tables.shape.round' | translate }}</option>
+            <option value="RECTANGLE_HORIZONTAL">
+              {{ 'tables.shape.rectangle_horizontal' | translate }}
+            </option>
+            <option value="RECTANGLE_VERTICAL">
+              {{ 'tables.shape.rectangle_vertical' | translate }}
+            </option>
+          </select></label
+        ><label
+          ><span>{{ 'tables.manage.status' | translate }}</span
+          ><select formControlName="status">
+            <option value="AVAILABLE">{{ 'tables.status.available' | translate }}</option>
+            <option value="OCCUPIED" [disabled]="editingTable()?.status !== 'OCCUPIED'">
+              {{ 'tables.status.occupied' | translate }}
+            </option>
+            <option value="DISABLED">{{ 'tables.status.disabled' | translate }}</option>
+          </select></label
+        >
+      </div>
+      <div class="checks">
+        <label class="check"
+          ><input type="checkbox" formControlName="isDelivery" /><span>{{
+            'tables.flags.delivery' | translate
+          }}</span></label
+        ><label class="check"
+          ><input type="checkbox" formControlName="isCashRegister" /><span>{{
+            'tables.flags.cash' | translate
+          }}</span></label
+        >
+      </div>
+      <div class="form-actions">
+        @if (editingTable()) {
+          <button class="danger" type="button" (click)="requestDeleteFromForm()">
+            {{ 'tables.manage.delete' | translate }}
+          </button>
+        }
+        <button class="primary" type="submit" [disabled]="store.mutating()">
+          {{ 'tables.manage.save' | translate }}
+        </button>
+      </div>
+    </form>
+  </div>
+}
+
+@if (pendingAreaDelete(); as area) {
+  <div class="backdrop">
+    <section class="confirm-dialog">
+      <h2>{{ 'tables.manage.deleteAreaTitle' | translate }}</h2>
+      <p>{{ area.name }} · {{ 'tables.manage.deleteAreaDescription' | translate }}</p>
+      <div>
+        <button type="button" (click)="pendingAreaDelete.set(null)">
+          {{ 'common.cancel' | translate }}</button
+        ><button class="danger" type="button" (click)="confirmDeleteArea()">
+          {{ 'tables.manage.delete' | translate }}
+        </button>
+      </div>
+    </section>
+  </div>
+}
+@if (pendingTableDelete(); as table) {
+  <div class="backdrop">
+    <section class="confirm-dialog">
+      <h2>{{ 'tables.manage.deleteTableTitle' | translate }}</h2>
+      <p>{{ table.name }} · {{ 'tables.manage.deleteTableDescription' | translate }}</p>
+      <div>
+        <button type="button" (click)="pendingTableDelete.set(null)">
+          {{ 'common.cancel' | translate }}</button
+        ><button class="danger" type="button" (click)="confirmDeleteTable()">
+          {{ 'tables.manage.delete' | translate }}
+        </button>
+      </div>
+    </section>
+  </div>
+}

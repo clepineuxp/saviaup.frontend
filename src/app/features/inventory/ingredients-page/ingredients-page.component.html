@@ -1,0 +1,173 @@
+<section class="page-section">
+  <header class="heading">
+    <div>
+      <h2>{{ 'inventory.ingredients.title' | translate }}</h2>
+      <p>{{ 'inventory.ingredients.description' | translate }}</p>
+    </div>
+    @if (canManage()) {
+      <app-ui-button
+        type="button"
+        [disabled]="!canUseForm() || store.lookupStatus() === 'loading'"
+        (click)="openCreate()"
+        >＋ {{ 'inventory.ingredients.create' | translate }}</app-ui-button
+      >
+    }
+  </header>
+  @if (canManage() && !canUseForm()) {
+    <aside class="dependency-note" role="note">
+      {{ 'inventory.ingredients.dependencies' | translate }}
+    </aside>
+  }
+  @if (successKey(); as key) {
+    <app-ui-alert type="success" [message]="key | translate" />
+  }
+  @if (store.operationError(); as error) {
+    @if (!formOpen() && !deleteTarget()) {
+      <app-ui-alert [message]="error.message" />
+    }
+  }
+  <form class="filters" [formGroup]="filters" (ngSubmit)="applyFilters()">
+    <label
+      ><span>{{ 'inventory.filter.search' | translate }}</span
+      ><input
+        type="search"
+        formControlName="search"
+        [placeholder]="'inventory.ingredients.searchPlaceholder' | translate"
+    /></label>
+    @if (store.hasPermission('categories.read')) {
+      <label
+        ><span>{{ 'inventory.column.category' | translate }}</span
+        ><select formControlName="categoryId">
+          <option value="">{{ 'inventory.filter.all' | translate }}</option>
+          @for (category of store.categories(); track category.id) {
+            <option [value]="category.id">{{ category.name }}</option>
+          }
+        </select></label
+      >
+    }
+    <label class="check"
+      ><input type="checkbox" formControlName="includeInactive" /><span>{{
+        'inventory.filter.includeInactive' | translate
+      }}</span></label
+    >
+    <app-ui-button type="submit" variant="secondary">{{
+      'inventory.filter.apply' | translate
+    }}</app-ui-button>
+  </form>
+  @if (store.ingredientsStatus() === 'loading' || store.ingredientsStatus() === 'idle') {
+    <div class="state" aria-busy="true">
+      <span class="loader"></span>
+      <p>{{ 'inventory.ingredients.loading' | translate }}</p>
+    </div>
+  } @else if (store.ingredientsStatus() === 'error') {
+    <div class="state">
+      @if (store.ingredientsError(); as error) {
+        <app-ui-alert [message]="error.message" />
+      }
+      <app-ui-button type="button" (click)="retry()">{{
+        'app.context.retry' | translate
+      }}</app-ui-button>
+    </div>
+  } @else if (store.ingredientsPage().items.length === 0) {
+    <div class="state">
+      <span class="empty-icon">◇</span>
+      <h3>{{ 'inventory.ingredients.emptyTitle' | translate }}</h3>
+      <p>{{ 'inventory.ingredients.emptyDescription' | translate }}</p>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ 'inventory.column.name' | translate }}</th>
+            <th>{{ 'inventory.column.category' | translate }}</th>
+            <th>{{ 'inventory.stock.current' | translate }}</th>
+            <th>{{ 'inventory.stock.minimum' | translate }}</th>
+            <th>{{ 'inventory.column.status' | translate }}</th>
+            @if (canManage()) {
+              <th>{{ 'inventory.column.actions' | translate }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (ingredient of store.ingredientsPage().items; track ingredient.id) {
+            <tr [class.inactive]="!ingredient.isActive" [class.low]="ingredient.isBelowMinimum">
+              <td>
+                <strong>{{ ingredient.name }}</strong
+                ><small>{{
+                  ingredient.description || ('inventory.value.noDescription' | translate)
+                }}</small>
+              </td>
+              <td>{{ ingredient.category.name }}</td>
+              <td>
+                <b>{{ ingredient.currentStock | number: '1.0-3' }} {{ ingredient.unit.code }}</b>
+              </td>
+              <td>{{ ingredient.minimumStock | number: '1.0-3' }} {{ ingredient.unit.code }}</td>
+              <td>
+                <span class="pill" [class.pill--off]="!ingredient.isActive">{{
+                  (ingredient.isActive ? 'inventory.status.active' : 'inventory.status.inactive')
+                    | translate
+                }}</span>
+                @if (ingredient.isBelowMinimum) {
+                  <span class="pill pill--low">{{ 'inventory.stock.low' | translate }}</span>
+                }
+              </td>
+              @if (canManage()) {
+                <td class="actions">
+                  <button type="button" [disabled]="!canUseForm()" (click)="openEdit(ingredient)">
+                    {{ 'inventory.action.edit' | translate }}</button
+                  ><button
+                    type="button"
+                    [disabled]="store.mutating()"
+                    (click)="toggleStatus(ingredient)"
+                  >
+                    {{
+                      (ingredient.isActive ? 'inventory.action.disable' : 'inventory.action.enable')
+                        | translate
+                    }}</button
+                  ><button
+                    class="danger"
+                    type="button"
+                    [disabled]="store.mutating()"
+                    (click)="requestDelete(ingredient)"
+                  >
+                    {{ 'inventory.action.delete' | translate }}
+                  </button>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-inventory-pagination
+      [page]="store.ingredientsPage().page"
+      [totalPages]="store.ingredientsPage().totalPages"
+      [totalCount]="store.ingredientsPage().totalCount"
+      (pageChanged)="changePage($event)"
+    />
+  }
+</section>
+@if (formOpen() && canUseForm()) {
+  <app-ingredient-form
+    [ingredient]="editingIngredient()"
+    [categories]="store.categories()"
+    [units]="store.activeUnits()"
+    [submitting]="store.mutating()"
+    [error]="store.operationError()"
+    (submitted)="save($event)"
+    (cancelled)="closeForm()"
+  />
+}
+@if (deleteTarget(); as ingredient) {
+  <app-inventory-delete-dialog
+    [title]="'inventory.ingredients.deleteTitle' | translate"
+    [description]="'inventory.ingredients.deleteDescription' | translate: { name: ingredient.name }"
+    inUseCode="INGREDIENT_IN_USE"
+    [submitting]="store.mutating()"
+    [error]="store.operationError()"
+    (confirmed)="confirmDelete()"
+    (deactivateRequested)="deactivateInstead()"
+    (cancelled)="cancelDelete()"
+  />
+}

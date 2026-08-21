@@ -1,0 +1,86 @@
+<div class="backdrop">
+  <button
+    class="backdrop__close"
+    type="button"
+    tabindex="-1"
+    [attr.aria-label]="'common.cancel' | translate"
+    (click)="close()"
+  ></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="unit-form-title">
+    <header>
+      <div>
+        <p class="eyebrow">{{ 'inventory.complements.units.form.eyebrow' | translate }}</p>
+        <h2 id="unit-form-title">
+          {{
+            (unit()
+              ? 'inventory.complements.units.form.editTitle'
+              : 'inventory.complements.units.form.createTitle'
+            ) | translate
+          }}
+        </h2>
+      </div>
+      <button
+        class="close"
+        type="button"
+        [disabled]="submitting()"
+        [attr.aria-label]="'common.cancel' | translate"
+        (click)="close()"
+      >
+        ×
+      </button>
+    </header>
+
+    @if (error(); as operationError) {
+      <app-ui-alert
+        [message]="
+          (operationError.code === 'MEASUREMENT_UNIT_ALREADY_EXISTS'
+            ? 'inventory.complements.units.error.duplicate'
+            : operationError.message
+          ) | translate
+        "
+      />
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label>
+        <span>{{ 'inventory.complements.units.form.code' | translate }}</span>
+        <input
+          type="text"
+          formControlName="code"
+          maxlength="20"
+          autocomplete="off"
+          [attr.aria-invalid]="form.controls.code.invalid && form.controls.code.touched"
+        />
+        @if (form.controls.code.invalid && form.controls.code.touched) {
+          <small>{{ 'inventory.complements.units.validation.code' | translate }}</small>
+        }
+      </label>
+      <label>
+        <span>{{ 'inventory.column.name' | translate }}</span>
+        <input
+          type="text"
+          formControlName="name"
+          maxlength="120"
+          autocomplete="off"
+          [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched"
+        />
+        @if (form.controls.name.invalid && form.controls.name.touched) {
+          <small>{{ 'inventory.validation.name' | translate }}</small>
+        }
+      </label>
+      <footer>
+        <app-ui-button
+          type="button"
+          variant="secondary"
+          [disabled]="submitting()"
+          (click)="close()"
+        >
+          {{ 'common.cancel' | translate }}
+        </app-ui-button>
+        <app-ui-button type="submit" [loading]="submitting()">
+          {{ (unit() ? 'inventory.action.save' : 'inventory.action.create') | translate }}
+        </app-ui-button>
+      </footer>
+    </form>
+  </section>
+</div>

@@ -1,0 +1,110 @@
+<section class="tables-page">
+  <header class="page-heading">
+    <div class="page-heading__title">
+      <span>{{ 'tables.eyebrow' | translate }}</span>
+      <i aria-hidden="true">—</i>
+      <h1>{{ 'tables.title' | translate }}</h1>
+    </div>
+    <div class="page-heading__actions">
+      <button
+        class="sidebar-toggle"
+        type="button"
+        (click)="shellState.toggleSidebar()"
+        [attr.aria-expanded]="!shellState.sidebarHidden()"
+        [attr.aria-label]="
+          (shellState.sidebarHidden() ? 'tables.navigation.show' : 'tables.navigation.hide')
+            | translate
+        "
+      >
+        <span aria-hidden="true">☰</span>
+        <strong>{{
+          (shellState.sidebarHidden() ? 'tables.navigation.show' : 'tables.navigation.hide')
+            | translate
+        }}</strong>
+      </button>
+      <span class="realtime" [class.realtime--online]="store.realtimeState() === 'connected'">
+        <i></i>{{ 'tables.realtime.' + store.realtimeState() | translate }}
+      </span>
+    </div>
+  </header>
+
+  @if (store.cashRegister().isInteractionBlocked) {
+    <div class="cash-banner" role="alert">
+      <strong>{{ 'tables.cashGate.title' | translate }}</strong>
+      <span>{{ 'tables.cashGate.description' | translate }}</span>
+    </div>
+  }
+
+  @if (store.error(); as error) {
+    <div class="error-banner" role="alert">{{ error.message }}</div>
+  }
+
+  <app-metrics-header [metrics]="store.metrics()" />
+
+  @if (store.loading()) {
+    <div class="loading">{{ 'tables.loading' | translate }}</div>
+  } @else if (store.operationAreas().length === 0) {
+    <div class="loading">{{ 'tables.empty' | translate }}</div>
+  } @else {
+    <section class="room-workspace">
+      <header class="room-toolbar">
+        <label class="room-selector">
+          <span class="visually-hidden">{{ 'tables.areas.label' | translate }}</span>
+          <select
+            [value]="store.selectedAreaId()"
+            (change)="selectArea($event)"
+            [attr.aria-label]="'tables.areas.label' | translate"
+          >
+            @for (item of store.operationAreas(); track item.area.id) {
+              <option [value]="item.area.id">{{ item.area.name }}</option>
+            }
+          </select>
+        </label>
+
+        <div class="view-toggle" [attr.aria-label]="'tables.view.label' | translate">
+          <button
+            type="button"
+            [class.view-toggle__active]="store.viewMode() === 'room'"
+            (click)="setViewMode('room')"
+          >
+            {{ 'tables.view.room' | translate }}
+          </button>
+          <button
+            type="button"
+            [class.view-toggle__active]="store.viewMode() === 'icons'"
+            (click)="setViewMode('icons')"
+          >
+            {{ 'tables.view.icons' | translate }}
+          </button>
+        </div>
+      </header>
+
+      @if (store.selectedArea(); as area) {
+        @if (store.viewMode() === 'room') {
+          <app-canvas-room-view [area]="area" (tableSelected)="chooseTable($event)" />
+        } @else {
+          <div class="table-grid">
+            @for (table of area.tables; track table.id) {
+              <app-table-card [table]="table" (selected)="chooseTable($event)" />
+            } @empty {
+              <p class="room-empty">{{ 'tables.emptyArea' | translate }}</p>
+            }
+          </div>
+        }
+      }
+    </section>
+  }
+</section>
+
+@if (selectedTable(); as table) {
+  <app-table-operation-dialog
+    [table]="table"
+    [blocked]="store.cashRegister().isInteractionBlocked"
+    [canOperate]="store.canOperate()"
+    [busy]="store.mutating()"
+    (closed)="selectedTable.set(null)"
+    (opened)="openOrder(table)"
+    (released)="closeOrder(table)"
+    (totalUpdated)="updateTotal(table, $event)"
+  />
+}

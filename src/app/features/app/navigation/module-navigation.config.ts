@@ -42,7 +42,7 @@ export interface SectionNavigationItem {
 
 export const KNOWN_MODULE_NAVIGATION: readonly ModuleNavigationDefinition[] = [
   { code: 'orders', path: 'orders', icon: 'orders' },
-  { code: 'tables', path: 'tables', icon: 'tables' },
+  { code: 'tables', path: 'sell/tables', icon: 'tables' },
   { code: 'inventory', path: 'inventory', icon: 'inventory' },
   { code: 'products', path: 'products', icon: 'products' },
   { code: 'categories', path: 'categories', icon: 'categories' },
@@ -55,6 +55,10 @@ export const KNOWN_MODULE_NAVIGATION: readonly ModuleNavigationDefinition[] = [
 const definitions = new Map(
   KNOWN_MODULE_NAVIGATION.map((definition) => [definition.code, definition]),
 );
+
+const optionDefinitions = new Map<string, ModuleNavigationDefinition>([
+  ['tables.manage', { code: 'tables.manage', path: 'configuration/tables/manage', icon: 'tables' }],
+]);
 
 export const MODULE_ICON_GLYPHS: Readonly<Record<ModuleIcon, string>> = {
   orders: '≡',
@@ -80,7 +84,8 @@ const warnAboutFallback = (code: string): void => {
 const resolveDefinition = (
   code: string,
   moduleCode: string,
-): ModuleNavigationDefinition | undefined => definitions.get(code) ?? definitions.get(moduleCode);
+): ModuleNavigationDefinition | undefined =>
+  optionDefinitions.get(code) ?? definitions.get(code) ?? definitions.get(moduleCode);
 
 const createNavigationItem = (
   item: AvailableModule | NavigationOption,

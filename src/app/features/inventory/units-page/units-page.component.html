@@ -1,0 +1,142 @@
+<section class="page-section">
+  <header class="heading">
+    <div>
+      <h2>{{ 'inventory.complements.title' | translate }}</h2>
+      <p>{{ 'inventory.complements.description' | translate }}</p>
+    </div>
+  </header>
+
+  <nav class="complement-nav" [attr.aria-label]="'inventory.complements.navigation' | translate">
+    @for (type of complementTypes; track type.code) {
+      <a [routerLink]="type.route" routerLinkActive="active">{{ type.label | translate }}</a>
+    }
+  </nav>
+
+  <header class="heading heading--catalog">
+    <div>
+      <h3>{{ 'inventory.complements.units.title' | translate }}</h3>
+      <p>{{ 'inventory.complements.units.description' | translate }}</p>
+    </div>
+    @if (canManage()) {
+      <app-ui-button type="button" (click)="openCreate()">
+        ＋ {{ 'inventory.complements.units.create' | translate }}
+      </app-ui-button>
+    }
+  </header>
+
+  @if (successKey(); as key) {
+    <app-ui-alert type="success" [message]="key | translate" />
+  }
+  @if (store.operationError(); as error) {
+    @if (!formOpen() && !deleteTarget()) {
+      <app-ui-alert [message]="error.message" />
+    }
+  }
+
+  <form class="filters" [formGroup]="filters" (ngSubmit)="applyFilters()">
+    <label>
+      <span>{{ 'inventory.filter.search' | translate }}</span>
+      <input
+        type="search"
+        formControlName="search"
+        [placeholder]="'inventory.complements.units.searchPlaceholder' | translate"
+      />
+    </label>
+    <label class="check">
+      <input type="checkbox" formControlName="includeInactive" />
+      <span>{{ 'inventory.filter.includeInactive' | translate }}</span>
+    </label>
+    <app-ui-button type="submit" variant="secondary">
+      {{ 'inventory.filter.apply' | translate }}
+    </app-ui-button>
+  </form>
+
+  @if (store.unitsStatus() === 'loading' || store.unitsStatus() === 'idle') {
+    <div class="state" aria-busy="true">
+      <span class="loader"></span>
+      <p>{{ 'inventory.complements.units.loading' | translate }}</p>
+    </div>
+  } @else if (store.unitsStatus() === 'error') {
+    <div class="state">
+      @if (store.unitsError(); as error) {
+        <app-ui-alert [message]="error.message" />
+      }
+      <app-ui-button type="button" (click)="retry()">
+        {{ 'app.context.retry' | translate }}
+      </app-ui-button>
+    </div>
+  } @else if (store.unitsPage().items.length === 0) {
+    <div class="state">
+      <span class="empty-icon">⊞</span>
+      <h3>{{ 'inventory.complements.units.emptyTitle' | translate }}</h3>
+      <p>{{ 'inventory.complements.units.emptyDescription' | translate }}</p>
+    </div>
+  } @else {
+    <div class="unit-grid">
+      @for (unit of store.unitsPage().items; track unit.id) {
+        <article [class.inactive]="!unit.isActive">
+          <div class="unit-code">{{ unit.code }}</div>
+          <div class="unit-copy">
+            <h4>{{ unit.name }}</h4>
+            <span class="pill" [class.pill--off]="!unit.isActive">
+              {{
+                (unit.isActive ? 'inventory.status.active' : 'inventory.status.inactive')
+                  | translate
+              }}
+            </span>
+          </div>
+          @if (canManage()) {
+            <div class="actions">
+              <button type="button" (click)="openEdit(unit)">
+                {{ 'inventory.action.edit' | translate }}
+              </button>
+              <button type="button" [disabled]="store.mutating()" (click)="toggleStatus(unit)">
+                {{
+                  (unit.isActive ? 'inventory.action.disable' : 'inventory.action.enable')
+                    | translate
+                }}
+              </button>
+              <button
+                class="danger"
+                type="button"
+                [disabled]="store.mutating()"
+                (click)="requestDelete(unit)"
+              >
+                {{ 'inventory.action.delete' | translate }}
+              </button>
+            </div>
+          }
+        </article>
+      }
+    </div>
+    <app-inventory-pagination
+      [page]="store.unitsPage().page"
+      [totalPages]="store.unitsPage().totalPages"
+      [totalCount]="store.unitsPage().totalCount"
+      (pageChanged)="changePage($event)"
+    />
+  }
+</section>
+
+@if (formOpen() && canManage()) {
+  <app-unit-form
+    [unit]="editingUnit()"
+    [submitting]="store.mutating()"
+    [error]="store.operationError()"
+    (submitted)="save($event)"
+    (cancelled)="closeForm()"
+  />
+}
+
+@if (deleteTarget(); as unit) {
+  <app-inventory-delete-dialog
+    [title]="'inventory.complements.units.deleteTitle' | translate"
+    [description]="'inventory.complements.units.deleteDescription' | translate: { name: unit.name }"
+    inUseCode="MEASUREMENT_UNIT_IN_USE"
+    [submitting]="store.mutating()"
+    [error]="store.operationError()"
+    (confirmed)="confirmDelete()"
+    (deactivateRequested)="deactivateInstead()"
+    (cancelled)="cancelDelete()"
+  />
+}

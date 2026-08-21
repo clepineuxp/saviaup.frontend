@@ -11,9 +11,13 @@ La fase implementada cubre:
 - selección y creación de organizaciones (tenants);
 - internacionalización español/inglés;
 - infraestructura JWT, PWA, IndexedDB y SignalR;
-- navegación autenticada ordenada y agrupada con placeholders para módulos operativos.
+- navegación autenticada ordenada y agrupada con placeholders para módulos operativos;
+- administración de categorías de inventario con permisos de lectura y gestión;
+- administración paginada de productos y combos con filtros, estado e inventariabilidad condicionada;
+- inventario operativo con existencias, ingredientes, movimientos y unidades de medida.
+- operación y configuración de salas/mesas con permisos granulares, canvas 2D y SignalR por tenant.
 
-No inventar todavía módulos de ventas, inventario, caja, recetas, compras, reportes o permisos si el requerimiento no los incluye expresamente.
+No inventar todavía módulos de ventas, caja, recetas, compras, reportes o permisos si el requerimiento no los incluye expresamente.
 
 ## Estado técnico y versiones
 
@@ -79,6 +83,10 @@ src/
 │   ├── features/
 │   │   ├── auth/            # login, registro y recuperación
 │   │   ├── tenant/          # selección y creación de organización
+│   │   ├── categories/      # administración de categorías por tenant
+│   │   ├── products/        # catálogo paginado de productos y combos
+│   │   ├── inventory/       # existencias, ingredientes, movimientos y complementos
+│   │   ├── tables/          # operación, realtime y configuración de salas/mesas
 │   │   └── app/             # navegación dinámica y vistas privadas
 │   ├── layouts/             # auth, tenant y app shells
 │   └── shared/
@@ -144,16 +152,25 @@ La selección de adaptadores se hace en `app.config.ts` mediante `useMockApi` y 
 
 ## Rutas y control de acceso
 
-| Ruta                 | Acceso               | Layout | Propósito                      |
-| -------------------- | -------------------- | ------ | ------------------------------ |
-| `/login`             | Invitado             | Auth   | Inicio de sesión               |
-| `/register`          | Invitado             | Auth   | Creación de cuenta             |
-| `/forgot-password`   | Invitado             | Auth   | Recuperación neutral           |
-| `/select-tenant`     | Autenticado          | Tenant | Seleccionar organización       |
-| `/create-tenant`     | Autenticado          | Tenant | Crear organización             |
-| `/app`               | Autenticado + tenant | App    | Entrada privada/placeholder    |
-| `/app/{módulo}`      | Autenticado + tenant | App    | Módulo conocido habilitado     |
-| `/app/modules/:code` | Autenticado + tenant | App    | Fallback de módulo desconocido |
+| Ruta                               | Acceso               | Layout | Propósito                         |
+| ---------------------------------- | -------------------- | ------ | --------------------------------- |
+| `/login`                           | Invitado             | Auth   | Inicio de sesión                  |
+| `/register`                        | Invitado             | Auth   | Creación de cuenta                |
+| `/forgot-password`                 | Invitado             | Auth   | Recuperación neutral              |
+| `/select-tenant`                   | Autenticado          | Tenant | Seleccionar organización          |
+| `/create-tenant`                   | Autenticado          | Tenant | Crear organización                |
+| `/app`                             | Autenticado + tenant | App    | Entrada privada/placeholder       |
+| `/app/products`                    | `products.read`      | App    | Administración de productos       |
+| `/app/inventory`                   | Autenticado + tenant | App    | Entrada al inventario             |
+| `/app/inventory/stock`             | Permiso de lectura   | App    | Existencias paginadas             |
+| `/app/inventory/ingredients`       | Permiso de lectura   | App    | Administración de ingredientes    |
+| `/app/inventory/movements`         | Permiso de lectura   | App    | Historial y nuevos movimientos    |
+| `/app/inventory/complements/units` | Permiso de lectura   | App    | Unidades de medida                |
+| `/app/categories`                  | Autenticado + tenant | App    | Administración de categorías      |
+| `/app/sell/tables`                 | `tables.read`        | App    | Operación de mesas en tiempo real |
+| `/app/configuration/tables/manage` | `tables.manage`      | App    | Configuración de salas y mesas    |
+| `/app/{módulo}`                    | Autenticado + tenant | App    | Módulo conocido habilitado        |
+| `/app/modules/:code`               | Autenticado + tenant | App    | Fallback de módulo desconocido    |
 
 - `GuestGuard` impide que una sesión activa vuelva al flujo de invitado.
 - `AuthGuard` exige sesión válida.
@@ -208,25 +225,35 @@ Seleccionar o crear tenant debe recibir del backend un nuevo par de tokens conte
 - tratar `sections: []` como éxito y conservar literalmente `emptyStateMessage` del backend;
 - ante `403` con código `TENANT_REQUIRED`, limpiar el tenant y volver a `/select-tenant`.
 
+`CategoryStore` es el propietario del listado administrativo de categorías. Su estado está limitado al tenant activo: se limpia al cambiar o cerrar el tenant y descarta respuestas tardías de otra organización. La vista se autoriza únicamente con los códigos recibidos desde `GET /api/users/me`: `categories.read` permite consultar y `categories.manage` habilita crear, editar, cambiar estado y eliminar. Nunca inferir estos permisos desde el nombre o código del rol; el backend conserva la autorización efectiva.
+
+`ProductStore` es el propietario de la página, filtros y categorías auxiliares del catálogo de productos. Su estado y permisos se limpian al cambiar tenant y todas las consultas permanecen paginadas en servidor. `products.read` permite entrar y listar; `products.manage` habilita crear, editar, cambiar estado y eliminar. El formulario requiere además `categories.read`, inicia el tipo en `NORMAL` y fuerza `isInventoryTracked=false` cuando la categoría seleccionada no es inventariable. La validación definitiva permanece en backend.
+
+`InventoryStore` es el propietario de las páginas, filtros y catálogos auxiliares de inventario. Conserva por separado existencias, ingredientes, movimientos y unidades, siempre paginados por el servidor y limitados al tenant activo. Cada apartado exige su permiso `*.read` exacto y cada mutación su `*.manage` exacto; `manage` no implica `read`. El formulario de ingredientes requiere además `categories.read` e `inventory.complements.read`. Tras un movimiento exitoso debe refrescar la página vigente tanto de movimientos como de existencias.
+
 La navegación lateral se deriva exclusivamente de las secciones devueltas. Se ordenan secciones y elementos por `order`, nunca alfabéticamente. El frontend debe respetar `isGrouped` sin recalcularlo: una sección no agrupada muestra sus elementos directamente y una agrupada muestra inicialmente solo `section.name`; al activarla abre un popover compacto con módulos y opciones apilados. Solo puede quedar un grupo abierto y debe cerrarse al seleccionar, hacer clic fuera o presionar `Escape`. Los nombres visibles siempre vienen del backend.
 
 En móvil, la navegación permanece en una sola fila con scroll horizontal. Los controles laterales solo aparecen cuando hay overflow, indican la dirección disponible y usan gradiente/sombra para comunicar que los accesos continúan bajo el borde. Los botones de sección deben ocupar el ancho de su contenido, sin espacio vacío artificial.
 
+En escritorio, la navegación lateral permanece fija debajo del header mientras se desplaza el contenido principal. Debe ocupar como máximo la altura visible y habilitar su propio scroll vertical cuando los accesos la superen, sin recortar los popovers agrupados.
+
 El frontend solo relaciona el `code` con ruta e icono; nunca agrega módulos ausentes ni infiere permisos:
 
-| Código       | Ruta              | Icono        |
-| ------------ | ----------------- | ------------ |
-| `orders`     | `/app/orders`     | `orders`     |
-| `tables`     | `/app/tables`     | `tables`     |
-| `inventory`  | `/app/inventory`  | `inventory`  |
-| `products`   | `/app/products`   | `products`   |
-| `categories` | `/app/categories` | `categories` |
-| `kitchen`    | `/app/kitchen`    | `kitchen`    |
-| `reports`    | `/app/reports`    | `reports`    |
-| `billing`    | `/app/billing`    | `billing`    |
-| `settings`   | `/app/settings`   | `settings`   |
+| Código       | Ruta               | Icono        |
+| ------------ | ------------------ | ------------ |
+| `orders`     | `/app/orders`      | `orders`     |
+| `tables`     | `/app/sell/tables` | `tables`     |
+| `inventory`  | `/app/inventory`   | `inventory`  |
+| `products`   | `/app/products`    | `products`   |
+| `categories` | `/app/categories`  | `categories` |
+| `kitchen`    | `/app/kitchen`     | `kitchen`    |
+| `reports`    | `/app/reports`     | `reports`    |
+| `billing`    | `/app/billing`     | `billing`    |
+| `settings`   | `/app/settings`    | `settings`   |
 
 Las opciones se resuelven primero por su `code` y después por `moduleCode`, lo que permite agregar accesos administrativos sin cambiar el contrato. Los códigos desconocidos deben conservarse de forma segura en `/app/modules/:code` con el icono genérico `module` y emitir únicamente una advertencia de desarrollo sin datos sensibles.
+
+La opción `tables.manage` resuelve `/app/configuration/tables/manage`; no debe usar la ruta operativa heredada del módulo `tables`.
 
 ## Contrato HTTP
 
@@ -245,6 +272,33 @@ Endpoints centralizados actualmente:
 - `POST /api/tenants`
 - `POST /api/tenants/{tenantId}/select`
 - `GET /api/i18n/{language}`
+- `GET /api/categories?includeInactive=true`
+- `POST /api/categories`
+- `PUT /api/categories/{categoryId}`
+- `PATCH /api/categories/{categoryId}/status`
+- `DELETE /api/categories/{categoryId}`
+- `GET /api/products?page=1&pageSize=20&search=&categoryId=&type=&includeInactive=false`
+- `POST /api/products`
+- `PUT /api/products/{productId}`
+- `PATCH /api/products/{productId}/status`
+- `DELETE /api/products/{productId}`
+- `GET/POST /api/table-areas`
+- `PUT/DELETE /api/table-areas/{areaId}`
+- `PUT /api/table-areas/reorder`
+- `GET/POST /api/tables`
+- `PUT/DELETE /api/tables/{tableId}`
+- `GET /api/tables/operation`
+- `PATCH /api/tables/{tableId}/operation`
+- `PATCH /api/tables/{tableId}/order`
+- `SIGNALR /hubs/tables`
+- `GET /api/inventory`
+- `GET/POST /api/inventory/ingredients`
+- `PUT/DELETE /api/inventory/ingredients/{ingredientId}`
+- `PATCH /api/inventory/ingredients/{ingredientId}/status`
+- `GET/POST /api/inventory/movements`
+- `GET/POST /api/inventory/complements/units`
+- `PUT/DELETE /api/inventory/complements/units/{unitId}`
+- `PATCH /api/inventory/complements/units/{unitId}/status`
 
 Formato de error esperado:
 
@@ -260,6 +314,12 @@ Formato de error esperado:
 ```
 
 `HttpErrorMapper` mantiene compatibilidad con errores HTTP simples. No mostrar al usuario detalles internos, stack traces, SQL ni mensajes de infraestructura.
+
+El contrato de categorías usa `Category { id, name, description, imageUrl, isInventoryTracked, isActive, createdAt, updatedAt }`. Crear y actualizar envían `name`, `description`, `imageUrl` e `isInventoryTracked`; el cambio de estado envía `{ isActive }`. El listado administrativo siempre solicita `includeInactive=true`; los selectores operativos futuros deben conservar el valor predeterminado `false`. La eliminación responde `204` y requiere confirmación explícita en la UI. Tratar de forma específica `CATEGORY_NAME_ALREADY_EXISTS`, `CATEGORY_NOT_FOUND`, `VALIDATION_ERROR`, `AUTH_FORBIDDEN`, `TENANT_REQUIRED` y `AUTH_UNAUTHENTICATED`.
+
+El contrato de productos usa `Product { id, type, name, description, imageUrl, category, salePrice, preparationTimeMinutes, isInventoryTracked, isActive, createdAt, updatedAt }`. `type` es `NORMAL | COMBO`; crear y actualizar envían el `categoryId`, un precio positivo y los demás campos editables. El listado usa `{ items, page, pageSize, totalCount, totalPages }` y los filtros se resuelven en backend. La eliminación responde `204`, requiere confirmación explícita y nunca se aplica de forma optimista.
+
+Los listados de inventario usan `{ items, page, pageSize, totalCount, totalPages }`, con páginas basadas en 1 y `pageSize` entre 1 y 100. Los filtros se envían al backend, su cambio vuelve a la página 1 y nunca se pagina localmente. La edición de un ingrediente no envía `initialStock`; las existencias cambian exclusivamente mediante movimientos inmutables. Tratar de forma específica `INGREDIENT_IN_USE`, `INVENTORY_INSUFFICIENT_STOCK`, `MEASUREMENT_UNIT_ALREADY_EXISTS`, `MEASUREMENT_UNIT_IN_USE` y los códigos `*_NOT_FOUND`.
 
 Los dos endpoints de contexto requieren JWT contextual. `/api/modules/available` también recibe el idioma actual en `Accept-Language`. Sus contratos de UI son:
 
@@ -357,6 +417,8 @@ Reglas obligatorias:
 - Si se reemplaza el logo, conservar los ocho tamaños o actualizar a la vez componente, `index.html`, manifest y `ngsw-config.json`.
 - No declarar estos PNG como `maskable` mientras el arte no tenga una zona segura validada para máscaras PWA.
 
+Las imágenes de categorías y productos son independientes del isotipo. La API recibe únicamente `imageUrl`; mientras no exista un servicio de almacenamiento, usar un campo de URL absoluta HTTP/HTTPS con preview y un placeholder local si falta o falla la imagen. No enviar archivos, base64 ni multipart a `/api/categories` o `/api/products`.
+
 ## PWA, offline y tiempo real
 
 - El Service Worker se habilita únicamente fuera de dev mode.
@@ -369,6 +431,10 @@ Reglas obligatorias:
 
 `RealtimeService` crea conexiones SignalR, pero ninguna feature debe conectarse automáticamente al arrancar la aplicación. Iniciar y detener conexiones dentro del ciclo de vida del módulo que las necesita.
 
+`TableStore` es el propietario del snapshot operativo y de la configuración. La carga inicial siempre es REST; `TableRealtimeClient` aplica `OnTableStatusChanged` y `OnTableOrderUpdated`, usa token actualizado, reconexión automática y se desconecta al destruir la ruta. `tables.read`, `tables.operate` y `tables.manage` son independientes. El canvas calcula su bounding box desde las coordenadas mínima y máxima para evitar espacio desplazable infinito.
+
+`TableLayoutEditorComponent` es el propietario de la previsualización por arrastre y teclado. Emite una única posición para persistir al finalizar cada interacción y solicita edición con doble clic o `Enter`; el formulario de mesa no solicita coordenadas manuales y permite eliminar mediante la confirmación existente. `TableCardComponent` y `tableShapeDimensions` son la única fuente visual y geométrica para configuración y operación: `SQUARE`/`ROUND` miden `100×100`, `RECTANGLE_HORIZONTAL` `150×100` y `RECTANGLE_VERTICAL` `100×150`; ningún canvas debe duplicar esos tamaños. El texto de estado permanece oculto hasta `hover`/foco y el color comunica el estado base. `AppShellState` pertenece exclusivamente al layout: la operación puede ocultar la barra lateral de escritorio para ampliar el plano y debe restaurarla al abandonar la ruta.
+
 ## Pruebas
 
 Las pruebas actuales cubren:
@@ -380,6 +446,11 @@ Las pruebas actuales cubren:
 - selección de tenant.
 - bootstrap paralelo del contexto y descarte de respuestas obsoletas;
 - contrato ordenado, secciones directas/agrupadas, opciones futuras y estado vacío.
+- listado y mutaciones de categorías, permisos, validaciones, fallback de imagen, errores y aislamiento por tenant.
+- repositorios, permisos independientes, paginación, formularios, errores y refresco cruzado del inventario.
+- integración lazy de existencias, ingredientes, movimientos y complementos/unidades.
+- repositorio HTTP, aislamiento tenant, permisos, formulario reactivo y regla inventariable de productos.
+- estados visuales e interacción bloqueada de mesas, además del contrato de rutas lazy de operación/configuración.
 
 Al modificar lógica observable, agregar o actualizar pruebas cerca del archivo afectado (`*.spec.ts`). Como mínimo probar:
 

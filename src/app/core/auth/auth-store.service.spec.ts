@@ -167,4 +167,13 @@ describe('AuthStore', () => {
     expect(tenantContext.activeTenant()).toBeNull();
     expect(clearContext).toHaveBeenCalled();
   });
+
+  it('clears tenant permissions when contextual tokens change', async () => {
+    await firstValueFrom(store.login({ email: 'ana@savia.test', password: 'Savia123*' }, true));
+    expect(store.user()).toEqual(testUser);
+
+    store.acceptContextualTokens({ ...testTokens, accessToken: 'tenant-access' });
+
+    expect(store.user()).toBeNull();
+  });
 });
