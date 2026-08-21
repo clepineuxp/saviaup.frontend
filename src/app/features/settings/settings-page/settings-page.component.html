@@ -132,44 +132,114 @@
           </div>
         </div>
         <div class="toggle-list">
-          <label class="toggle-card"
-            ><div>
-              <strong>{{ 'settings.business.usesTables' | translate }}</strong
-              ><small>{{ 'settings.business.usesTablesHint' | translate }}</small>
+          <div
+            class="toggle-card"
+            [class.disabled]="!store.hasPermission('settings.business.manage')"
+          >
+            <div>
+              <strong>{{ 'settings.business.usesTables' | translate }}</strong>
+              <small>{{ 'settings.business.usesTablesHint' | translate }}</small>
             </div>
-            <input type="checkbox" formControlName="usesTables"
-          /></label>
-          <label class="toggle-card"
-            ><div>
-              <strong>{{ 'settings.business.delivery' | translate }}</strong
-              ><small>{{ 'settings.business.deliveryHint' | translate }}</small>
+            <button
+              type="button"
+              class="toggle-switch"
+              [class.active]="businessForm.controls.usesTables.value"
+              [disabled]="!store.hasPermission('settings.business.manage')"
+              (click)="toggleBusinessSetting('usesTables')"
+              [attr.aria-label]="'settings.business.usesTables' | translate"
+            >
+              <span class="switch-knob"></span>
+            </button>
+          </div>
+
+          <div
+            class="toggle-card"
+            [class.disabled]="!store.hasPermission('settings.business.manage')"
+          >
+            <div>
+              <strong>{{ 'settings.business.delivery' | translate }}</strong>
+              <small>{{ 'settings.business.deliveryHint' | translate }}</small>
             </div>
-            <input type="checkbox" formControlName="deliveryEnabled"
-          /></label>
-          <label class="toggle-card" [class.disabled]="!hasCashRegistersPermission()"
-            ><div>
-              <strong>{{ 'settings.business.cash' | translate }}</strong
-              ><small>{{
+            <button
+              type="button"
+              class="toggle-switch"
+              [class.active]="businessForm.controls.deliveryEnabled.value"
+              [disabled]="!store.hasPermission('settings.business.manage')"
+              (click)="toggleBusinessSetting('deliveryEnabled')"
+              [attr.aria-label]="'settings.business.delivery' | translate"
+            >
+              <span class="switch-knob"></span>
+            </button>
+          </div>
+
+          <div
+            class="toggle-card"
+            [class.disabled]="
+              !hasCashRegistersPermission() || !store.hasPermission('settings.business.manage')
+            "
+          >
+            <div>
+              <strong>{{ 'settings.business.cash' | translate }}</strong>
+              <small>{{
                 (!hasCashRegistersPermission()
                   ? 'settings.business.cashDisabledHint'
                   : 'settings.business.cashHint'
                 ) | translate
               }}</small>
             </div>
-            <input
-              type="checkbox"
-              formControlName="requiresOpenCashRegister"
+            <button
+              type="button"
+              class="toggle-switch"
+              [class.active]="businessForm.controls.requiresOpenCashRegister.value"
               [disabled]="
                 !hasCashRegistersPermission() || !store.hasPermission('settings.business.manage')
               "
-          /></label>
-          <label class="toggle-card"
-            ><div>
-              <strong>{{ 'settings.business.tip' | translate }}</strong
-              ><small>{{ 'settings.business.tipHint' | translate }}</small>
+              (click)="toggleBusinessSetting('requiresOpenCashRegister')"
+              [attr.aria-label]="'settings.business.cash' | translate"
+            >
+              <span class="switch-knob"></span>
+            </button>
+          </div>
+
+          <div
+            class="toggle-card"
+            [class.disabled]="!store.hasPermission('settings.business.manage')"
+          >
+            <div>
+              <strong>{{ 'settings.business.enableCustomSales' | translate }}</strong>
+              <small>{{ 'settings.business.enableCustomSalesHint' | translate }}</small>
             </div>
-            <input type="checkbox" formControlName="showVoluntaryTip"
-          /></label>
+            <button
+              type="button"
+              class="toggle-switch"
+              [class.active]="businessForm.controls.enableCustomSales.value"
+              [disabled]="!store.hasPermission('settings.business.manage')"
+              (click)="toggleBusinessSetting('enableCustomSales')"
+              [attr.aria-label]="'settings.business.enableCustomSales' | translate"
+            >
+              <span class="switch-knob"></span>
+            </button>
+          </div>
+
+          <div
+            class="toggle-card"
+            [class.disabled]="!store.hasPermission('settings.business.manage')"
+          >
+            <div>
+              <strong>{{ 'settings.business.tip' | translate }}</strong>
+              <small>{{ 'settings.business.tipHint' | translate }}</small>
+            </div>
+            <button
+              type="button"
+              class="toggle-switch"
+              [class.active]="businessForm.controls.showVoluntaryTip.value"
+              [disabled]="!store.hasPermission('settings.business.manage')"
+              (click)="toggleBusinessSetting('showVoluntaryTip')"
+              [attr.aria-label]="'settings.business.tip' | translate"
+            >
+              <span class="switch-knob"></span>
+            </button>
+          </div>
         </div>
         <div class="form-grid compact">
           <label

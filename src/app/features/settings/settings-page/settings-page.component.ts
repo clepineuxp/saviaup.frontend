@@ -76,6 +76,7 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
     usesTables: [true],
     deliveryEnabled: [false],
     requiresOpenCashRegister: [false],
+    enableCustomSales: [false],
     showVoluntaryTip: [true],
     tipMessage: ['Servicio Voluntario', [Validators.required, Validators.maxLength(200)]],
     suggestedTipPercentage: [10, [Validators.required, Validators.min(0), Validators.max(100)]],
@@ -200,6 +201,20 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
         },
         error: () => undefined,
       });
+  }
+
+  toggleBusinessSetting(
+    key:
+      | 'usesTables'
+      | 'deliveryEnabled'
+      | 'requiresOpenCashRegister'
+      | 'enableCustomSales'
+      | 'showVoluntaryTip',
+  ): void {
+    if (!this.store.hasPermission(SETTINGS_PERMISSIONS.businessManage)) return;
+    if (key === 'requiresOpenCashRegister' && !this.hasCashRegistersPermission()) return;
+    const control = this.businessForm.controls[key];
+    control.setValue(!control.value);
   }
 
   saveBusiness(): void {

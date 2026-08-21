@@ -573,6 +573,9 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'tables.manage.deleteTableDescription': 'No se podrá eliminar mientras tenga una orden activa.',
     'settings.business.cashDisabledHint':
       'El módulo de cajas registradoras debe estar habilitado para la organización para activar este ajuste.',
+    'settings.business.enableCustomSales': 'Habilitar ventas libres',
+    'settings.business.enableCustomSalesHint':
+      'Permite ingresar a una mesa una venta por escrito sin estar relacionada a un producto del catálogo.',
     'cashRegisters.management.badge': 'Configuración de cajas',
     'cashRegisters.management.title': 'Gestión de cajas registradoras',
     'cashRegisters.management.description':
@@ -660,6 +663,9 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'settings.business.deliveryHint': 'Allows delivery order management.',
     'settings.business.cash': 'Requires opening cash register',
     'settings.business.cashHint': 'Blocks operations until a cash register shift is open.',
+    'settings.business.enableCustomSales': 'Enable open / custom sales',
+    'settings.business.enableCustomSalesHint':
+      'Allows adding written custom items to table orders without linking to a catalog product.',
     'settings.business.tip': 'Show voluntary tip',
     'settings.business.tipHint': 'Shows a service suggestion during checkout.',
     'settings.business.tipMessage': 'Tip message',
