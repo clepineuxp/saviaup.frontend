@@ -124,6 +124,11 @@
                     <small>{{
                       product.description || ('products.value.noDescription' | translate)
                     }}</small>
+                    @if (product.createdByUserName || product.lastModifiedByUserName) {
+                      <small class="user-audit-tag">
+                        ✉️ {{ product.createdByUserName || product.lastModifiedByUserName }}
+                      </small>
+                    }
                   </span>
                 </div>
               </td>

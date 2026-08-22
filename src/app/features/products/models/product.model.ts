@@ -17,6 +17,8 @@ export interface Product {
   readonly preparationTimeMinutes: number | null;
   readonly isInventoryTracked: boolean;
   readonly isActive: boolean;
+  readonly createdByUserName?: string | null;
+  readonly lastModifiedByUserName?: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
