@@ -114,6 +114,7 @@ export class TableOperationDialogComponent {
   readonly draftItems = signal<readonly CreateOrderItem[]>([]);
   readonly draftObservations = signal<string>('');
   readonly submittingOrder = signal<boolean>(false);
+  readonly showMobileDraftModal = signal<boolean>(false);
 
   // Sub-modals
   readonly configuredProduct = signal<ConfiguredProductModalState | null>(null);
@@ -122,6 +123,18 @@ export class TableOperationDialogComponent {
   readonly movingTableState = signal<MoveTableModalState | null>(null);
   readonly partialPaySelectorState = signal<PartialPaySelectorModalState | null>(null);
   readonly checkoutState = signal<CheckoutModalState | null>(null);
+
+  openMobileDraftModal(): void {
+    if (this.draftItems().length === 0) {
+      this.toastService.show('El pedido está vacío. Selecciona productos del catálogo primero.', 'warning', 3000);
+      return;
+    }
+    this.showMobileDraftModal.set(true);
+  }
+
+  closeMobileDraftModal(): void {
+    this.showMobileDraftModal.set(false);
+  }
 
   readonly availableTablesToMove = computed(() => {
     const currentId = this.table().id;
@@ -344,6 +357,7 @@ export class TableOperationDialogComponent {
       .subscribe(() => {
         this.submittingOrder.set(false);
         this.clearDraft();
+        this.showMobileDraftModal.set(false);
         this.toastService.show('Pedido ingresado correctamente', 'success', 3000);
         this.orderUpdated.emit();
         this.closed.emit();
