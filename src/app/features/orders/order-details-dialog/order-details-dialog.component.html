@@ -1,0 +1,126 @@
+<div class="modal-backdrop" (click)="close.emit()">
+  <div class="modal-card dialog-container" (click)="$event.stopPropagation()">
+    <header class="modal-header">
+      <div class="header-title-group">
+        <span class="order-badge">Comanda #{{ order().orderNumber }}</span>
+        <h2 class="modal-title">
+          {{ order().tableName || 'Venta Directa' }}
+        </h2>
+      </div>
+      <div class="header-actions">
+        <span
+          class="status-pill"
+          [ngClass]="{
+            'status-pending': order().status === 'PENDING',
+            'status-paid': order().status === 'PAID',
+            'status-cancelled': order().status === 'CANCELLED'
+          }"
+        >
+          {{
+            order().status === 'PENDING'
+              ? 'En Espera'
+              : order().status === 'PAID'
+              ? 'Pagado'
+              : 'Cancelado'
+          }}
+        </span>
+        <button type="button" class="btn-close" (click)="close.emit()" title="Cerrar">✕</button>
+      </div>
+    </header>
+
+    <div class="modal-body">
+      <!-- Summary Audit Grid -->
+      <div class="audit-summary-grid">
+        <div class="audit-item">
+          <span class="audit-label">✉️ Creado Por (Email):</span>
+          <span class="audit-val">{{ order().createdByUserName || 'N/A' }}</span>
+          <span class="audit-time">{{ order().createdAt | date: 'dd/MM/yyyy, HH:mm' }}</span>
+        </div>
+        <div class="audit-item" *ngIf="order().status === 'PAID'">
+          <span class="audit-label">💳 Pagado Por (Email):</span>
+          <span class="audit-val text-success">{{ order().paidByUserName || 'N/A' }}</span>
+          <span class="audit-time">{{ order().paidAt | date: 'dd/MM/yyyy, HH:mm' }}</span>
+        </div>
+        <div class="audit-item" *ngIf="order().status === 'CANCELLED'">
+          <span class="audit-label">⚠️ Estado:</span>
+          <span class="audit-val text-danger">Comanda Cancelada</span>
+          <span class="audit-time">{{ order().updatedAt | date: 'dd/MM/yyyy, HH:mm' }}</span>
+        </div>
+        <div class="audit-item" *ngIf="order().paymentMethod">
+          <span class="audit-label">💰 Medio de Pago:</span>
+          <span class="audit-val payment-tag">{{ order().paymentMethod }}</span>
+        </div>
+      </div>
+
+      <!-- Observations -->
+      <div class="observations-box" *ngIf="order().observations">
+        <span class="obs-title">📝 Observaciones de la Comanda:</span>
+        <p class="obs-text">{{ order().observations }}</p>
+      </div>
+
+      <!-- Items List Table -->
+      <div class="items-section">
+        <h3 class="section-title">Detalle de Ítems ({{ order().items.length }})</h3>
+        
+        <div class="table-responsive">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Cant.</th>
+                <th>Producto / Descripción</th>
+                <th class="text-right">Precio Unit.</th>
+                <th class="text-right">Subtotal</th>
+                <th>Estado / Auditoría</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of order().items" [class.cancelled-row]="item.status === 'CANCELLED'">
+                <td class="qty-cell">
+                  <span class="qty-badge">{{ item.quantity }}x</span>
+                </td>
+                <td class="product-cell">
+                  <span class="product-name">{{ item.productName }}</span>
+                  <span class="custom-tag" *ngIf="item.isCustomSale">Venta Libre</span>
+                  <div class="item-notes" *ngIf="item.notes">
+                    <small>💬 {{ item.notes }}</small>
+                  </div>
+                </td>
+                <td class="text-right">{{ item.unitPrice | currency: 'COP': 'symbol': '1.0-0' }}</td>
+                <td class="text-right bold-text">{{ item.subtotal | currency: 'COP': 'symbol': '1.0-0' }}</td>
+                <td>
+                  <span class="item-status-pill" [class.status-cancelled]="item.status === 'CANCELLED'" [class.status-paid]="item.status === 'PAID'">
+                    {{ item.status === 'PENDING' ? 'En Espera' : item.status === 'PAID' ? 'Pagado' : 'Cancelado' }}
+                  </span>
+                  <div class="cancel-detail" *ngIf="item.status === 'CANCELLED'">
+                    <small class="text-danger" *ngIf="item.cancellationReason">Motivo: {{ item.cancellationReason }}</small>
+                    <small class="text-muted" *ngIf="item.cancelledByUserName"> por {{ item.cancelledByUserName }}</small>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Financial Totals -->
+      <div class="totals-summary-card">
+        <div class="totals-row">
+          <span>Subtotal Comanda:</span>
+          <strong>{{ order().subtotalAmount | currency: 'COP': 'symbol': '1.0-0' }}</strong>
+        </div>
+        <div class="totals-row" *ngIf="order().tipAmount > 0">
+          <span>Propina Voluntaria:</span>
+          <strong class="text-success">+ {{ order().tipAmount | currency: 'COP': 'symbol': '1.0-0' }}</strong>
+        </div>
+        <div class="totals-row grand-total">
+          <span>TOTAL COMPROBANTE:</span>
+          <strong class="total-amount">{{ order().totalAmount | currency: 'COP': 'symbol': '1.0-0' }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <footer class="modal-footer">
+      <button type="button" class="sav-btn sav-btn-secondary" (click)="close.emit()">Cerrar Detalle</button>
+    </footer>
+  </div>
+</div>

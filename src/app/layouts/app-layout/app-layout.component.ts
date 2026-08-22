@@ -6,6 +6,7 @@ import { TenantContext } from '../../core/tenant/tenant-context.service';
 import { createSectionNavigation } from '../../features/app/navigation/module-navigation.config';
 import { NavigationRailComponent } from '../../features/app/navigation/navigation-rail.component';
 import { UiAlertComponent } from '../../shared/components/ui-alert/ui-alert.component';
+import { ToastContainerComponent } from '../../shared/components/toast-container/toast-container.component';
 import { BrandLogoComponent } from '../../shared/components/brand-logo/brand-logo.component';
 import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
 import { UiButtonComponent } from '../../shared/components/ui-button/ui-button.component';
@@ -21,6 +22,7 @@ import { AppShellState } from './app-shell-state.service';
     LanguageSelectorComponent,
     UiAlertComponent,
     UiButtonComponent,
+    ToastContainerComponent,
     TranslatePipe,
   ],
   templateUrl: './app-layout.component.html',

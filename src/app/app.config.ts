@@ -36,6 +36,13 @@ import {
   TRANSLATION_REPOSITORY,
   TranslationRepository,
 } from './shared/i18n/translation.repository';
+import { HttpOrderRepository } from './features/orders/data-access/http-order.repository';
+import { ORDER_REPOSITORY } from './features/orders/data-access/order.repository';
+import { HttpProductRepository } from './features/products/data-access/http-product.repository';
+import { PRODUCT_REPOSITORY } from './features/products/data-access/product.repository';
+import { HttpSettingsRepository } from './features/settings/data-access/http-settings.repository';
+import { SettingsStore } from './features/settings/data-access/settings-store.service';
+import { SETTINGS_REPOSITORY } from './features/settings/data-access/settings.repository';
 
 const authRepositoryFactory = (): AuthRepository =>
   inject(APP_ENVIRONMENT).useMockApi ? inject(MockAuthRepository) : inject(HttpAuthRepository);
@@ -79,6 +86,10 @@ export const appConfig: ApplicationConfig = {
     },
     { provide: TENANT_REPOSITORY, useFactory: tenantRepositoryFactory },
     { provide: TRANSLATION_REPOSITORY, useFactory: translationRepositoryFactory },
+    { provide: ORDER_REPOSITORY, useClass: HttpOrderRepository },
+    { provide: PRODUCT_REPOSITORY, useClass: HttpProductRepository },
+    { provide: SETTINGS_REPOSITORY, useClass: HttpSettingsRepository },
+    SettingsStore,
     provideAppInitializer(() => inject(LocalizationService).initialize()),
   ],
 };

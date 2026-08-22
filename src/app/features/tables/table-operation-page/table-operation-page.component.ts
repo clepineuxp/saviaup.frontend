@@ -9,6 +9,10 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError } from 'rxjs';
+import { Router } from '@angular/router';
+import { ToastService } from '../../../shared/services/toast.service';
+import { LocalizationService } from '../../../shared/i18n/localization.service';
+import { AuthenticatedContextStore } from '../../../core/context/authenticated-context.store';
 import { AppShellState } from '../../../layouts/app-layout/app-shell-state.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { CanvasRoomViewComponent } from '../canvas-room-view/canvas-room-view.component';
@@ -34,11 +38,34 @@ import { TableOperationDialogComponent } from '../table-operation-dialog/table-o
 export class TableOperationPageComponent implements OnInit, OnDestroy {
   readonly store = inject(TableStore);
   readonly shellState = inject(AppShellState);
+  readonly authContextStore = inject(AuthenticatedContextStore);
   readonly selectedTable = signal<RestaurantTable | null>(null);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
+  private readonly localization = inject(LocalizationService);
   private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
-    this.store.initializeOperation().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+    this.store
+      .initializeOperation()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((snapshot) => {
+        if (snapshot.cashRegister.isInteractionBlocked) {
+          const hasCashAccess = this.authContextStore.hasCashRegistersModule();
+          if (hasCashAccess) {
+            const message =
+              this.localization.translate('tables.cashGate.toast') ||
+              'Debe abrir una caja para ingresar a vender';
+            this.toastService.show(message, 'warning', 4000);
+            void this.router.navigate(['/app/cash-registers']);
+          } else {
+            const message =
+              this.localization.translate('tables.cashGate.waitToast') ||
+              'Debe esperar a que se abra una caja para ingresar a vender';
+            this.toastService.show(message, 'warning', 5000);
+          }
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -86,5 +113,9 @@ export class TableOperationPageComponent implements OnInit, OnDestroy {
         catchError(() => EMPTY),
       )
       .subscribe((updated) => this.selectedTable.set(updated));
+  }
+
+  reloadOperationState(): void {
+    this.store.initializeOperation().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 }

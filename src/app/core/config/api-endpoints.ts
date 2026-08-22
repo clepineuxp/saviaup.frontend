@@ -36,6 +36,15 @@ export const API_ENDPOINTS = {
       reorder: '/api/table-areas/reorder',
     },
   },
+  orders: {
+    root: '/api/orders',
+    items: '/api/orders/items',
+    activeByTable: (tableId: string) => `/api/orders/table/${tableId}/active`,
+    addItems: (tableId: string) => `/api/orders/table/${tableId}/items`,
+    moveTable: (tableId: string) => `/api/orders/table/${tableId}/move`,
+    cancelItem: (itemId: string) => `/api/orders/items/${itemId}/cancel`,
+    checkout: (tableId: string) => `/api/orders/table/${tableId}/checkout`,
+  },
   inventory: {
     root: '/api/inventory',
     ingredients: {

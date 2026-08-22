@@ -1,79 +1,891 @@
 <div class="backdrop" role="presentation">
-  <section class="dialog" role="dialog" aria-modal="true" [attr.aria-label]="table().name">
-    <header>
-      <span>
-        <small>{{ 'tables.dialog.eyebrow' | translate }}</small>
-        <h2>{{ table().name }}</h2>
-      </span>
-      <button
-        type="button"
-        (click)="closed.emit()"
-        [attr.aria-label]="'tables.dialog.close' | translate"
-      >
-        ×
-      </button>
+  <section class="dialog-container" role="dialog" aria-modal="true" [attr.aria-label]="table().name">
+    <!-- Header -->
+    <header class="dialog-header">
+      <div class="header-info">
+        <span class="eyebrow">
+          {{ 'tables.dialog.eyebrow' | translate }} · {{ table().name }}
+        </span>
+        <h2>
+          {{ table().name }}
+          @if (activeOrder(); as ord) {
+            <span class="order-number-tag">Comanda #{{ ord.orderNumber }}</span>
+          }
+        </h2>
+        <span class="header-status-pill" [class]="table().status.toLowerCase()">
+          {{ 'tables.status.' + table().status.toLowerCase() | translate }}
+          · Capacidad: {{ table().capacity }} p
+        </span>
+      </div>
+
+      <button type="button" class="close-button" (click)="closed.emit()" aria-label="Cerrar">✕</button>
     </header>
-    <div class="summary">
-      <span>{{ table().capacity }} {{ 'tables.people' | translate }}</span>
-      <strong>{{ 'tables.status.' + table().status.toLowerCase() | translate }}</strong>
-    </div>
 
     @if (blocked()) {
-      <div class="gate" role="alert">
-        <strong>{{ 'tables.cashGate.title' | translate }}</strong>
-        <span>{{ 'tables.cashGate.description' | translate }}</span>
+      <div class="gate-warning" role="alert">
+        <strong>⚠️ Turno de caja requerido</strong>
+        <span>Debes abrir un turno de caja antes de realizar transacciones en esta mesa.</span>
       </div>
     } @else if (!canOperate()) {
-      <div class="gate" role="alert">{{ 'tables.readOnly' | translate }}</div>
+      <div class="gate-warning info" role="alert">
+        ℹ️ Modo vista: Necesitas el permiso <code>tables.operate</code> para tomar pedidos o facturar.
+      </div>
     }
 
-    @if (table().status === 'AVAILABLE') {
-      <p>
-        {{
-          table().isCashRegister
-            ? ('tables.dialog.cashDescription' | translate)
-            : ('tables.dialog.openDescription' | translate)
-        }}
-      </p>
-      <button
-        class="primary"
-        type="button"
-        [disabled]="blocked() || !canOperate() || busy()"
-        (click)="opened.emit()"
-      >
-        {{
-          table().isCashRegister
-            ? ('tables.dialog.createImmediate' | translate)
-            : ('tables.dialog.openOrder' | translate)
-        }}
-      </button>
-    } @else if (table().status === 'OCCUPIED') {
-      <div class="order-total">
-        <small>{{ 'tables.dialog.currentTotal' | translate }}</small>
-        <strong>{{
-          table().activeOrderTotal | currency: 'COP' : 'symbol-narrow' : '1.0-0'
-        }}</strong>
+    <!-- Main Navigation Tabs for Occupied Table -->
+    @if (table().status === 'OCCUPIED') {
+      <nav class="main-tabs" role="tablist">
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="activeMainTab() === 'add'"
+          (click)="activeMainTab.set('add')"
+        >
+          ➕ Agregar productos
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="activeMainTab() === 'billing'"
+          (click)="activeMainTab.set('billing')"
+        >
+          🧾 Facturación y Operaciones
+          @if (activeItemsPending().length > 0) {
+            <span class="badge-count">{{ activeItemsPending().length }}</span>
+          }
+        </button>
+      </nav>
+    }
+
+    <!-- TAB 1: ADD PRODUCTS / ORDER TAKING -->
+    @if (table().status === 'AVAILABLE' || (table().status === 'OCCUPIED' && activeMainTab() === 'add')) {
+      <div class="order-taking-layout">
+        <!-- Left Column: Product Catalogue -->
+        <main class="catalogue-panel">
+          <div class="catalogue-header">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input
+                type="text"
+                placeholder="Buscar por nombre, código o equivalente…"
+                [ngModel]="searchQuery()"
+                (ngModelChange)="onSearchChange($event)"
+              />
+            </div>
+
+            @if (settingsStore.business()?.enableCustomSales) {
+              <button type="button" class="custom-sale-btn" (click)="openCustomSaleModal()">
+                ✨ Venta Libre +
+              </button>
+            }
+          </div>
+
+          <!-- Category Filter Chips -->
+          <div class="categories-bar">
+            <button
+              type="button"
+              class="cat-chip"
+              [class.active]="selectedCategoryId() === null"
+              (click)="selectCategory(null)"
+            >
+              Todas
+            </button>
+            @for (cat of categories(); track cat.id) {
+              <button
+                type="button"
+                class="cat-chip"
+                [class.active]="selectedCategoryId() === cat.id"
+                (click)="selectCategory(cat.id)"
+              >
+                {{ cat.name }}
+              </button>
+            }
+          </div>
+
+          <!-- Products Grid -->
+          <div class="products-grid">
+            @if (loadingCatalog()) {
+              <div class="catalog-loading">Cargando catálogo de productos…</div>
+            } @else if (products().length === 0) {
+              <div class="catalog-empty">
+                No se encontraron productos coincidentes.
+              </div>
+            } @else {
+              @for (product of products(); track product.id) {
+                <div class="product-card" (click)="openProductConfig(product)">
+                  <div class="product-thumb">
+                    @if (product.imageUrl) {
+                      <img [src]="product.imageUrl" [alt]="product.name" />
+                    } @else {
+                      <span class="thumb-placeholder">☕</span>
+                    }
+                  </div>
+                  <div class="product-info">
+                    <strong class="product-name">{{ product.name }}</strong>
+                    <span class="product-price">
+                      {{ product.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                    </span>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+
+          @if (catalogTotalPages() > 1) {
+            <div class="catalog-pagination">
+              <button
+                type="button"
+                class="page-btn"
+                [disabled]="catalogPage() <= 1"
+                (click)="goToCatalogPage(catalogPage() - 1)"
+              >
+                ‹ Anterior
+              </button>
+              <span class="page-info">
+                Pág. {{ catalogPage() }} de {{ catalogTotalPages() }} ({{ catalogTotalCount() }} prods)
+              </span>
+              <button
+                type="button"
+                class="page-btn"
+                [disabled]="catalogPage() >= catalogTotalPages()"
+                (click)="goToCatalogPage(catalogPage() + 1)"
+              >
+                Siguiente ›
+              </button>
+            </div>
+          }
+        </main>
+
+        <!-- Right Column: Draft Order Summary -->
+        <aside class="draft-panel">
+          <div class="draft-header">
+            <h3>Resumen del Pedido</h3>
+            @if (draftItems().length > 0) {
+              <button type="button" class="clear-btn" (click)="clearDraft()">Limpiar</button>
+            }
+          </div>
+
+          <div class="draft-items-list">
+            @if (draftItems().length === 0) {
+              <div class="draft-empty">
+                Selecciona productos del catálogo o usa <strong>Venta Libre</strong> para armar el pedido.
+              </div>
+            } @else {
+              @for (item of draftItems(); track $index) {
+                <div class="draft-item-row">
+                  <div class="draft-item-details">
+                    <strong>{{ item.productName }}</strong>
+                    @if (item.notes) {
+                      <small class="item-notes">📝 {{ item.notes }}</small>
+                    }
+                    <span class="item-price">
+                      {{ item.unitPrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} x {{ item.quantity }}
+                    </span>
+                  </div>
+                  <div class="draft-item-controls">
+                    <button type="button" class="qty-btn" (click)="updateDraftQty($index, -1)">-</button>
+                    <span class="qty-val">{{ item.quantity }}</span>
+                    <button type="button" class="qty-btn" (click)="updateDraftQty($index, 1)">+</button>
+                    <button type="button" class="remove-btn" (click)="removeDraftItem($index)">✕</button>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+
+          @if (draftItems().length > 0) {
+            <div class="draft-footer">
+              <label class="obs-field">
+                <span>Observaciones generales para la mesa:</span>
+                <input
+                  type="text"
+                  placeholder="Ej. Servir bebidas primero…"
+                  [ngModel]="draftObservations()"
+                  (ngModelChange)="draftObservations.set($event)"
+                />
+              </label>
+
+              <div class="total-row">
+                <span>Subtotal:</span>
+                <strong>{{ draftTotal() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+              </div>
+
+              <button
+                type="button"
+                class="confirm-btn primary"
+                [disabled]="submittingOrder() || blocked() || !canOperate()"
+                (click)="confirmSendDraft()"
+              >
+                {{ submittingOrder() ? 'Procesando…' : 'Confirmar e ingresar pedido' }}
+              </button>
+            </div>
+          }
+        </aside>
       </div>
-      <label>
-        <span>{{ 'tables.dialog.updateTotal' | translate }}</span>
-        <input type="number" min="0" step="100" [formControl]="total" />
-      </label>
-      <div class="actions">
-        <button
-          type="button"
-          [disabled]="blocked() || !canOperate() || busy() || total.invalid"
-          (click)="updateTotal()"
-        >
-          {{ 'tables.dialog.saveOrder' | translate }}
-        </button>
-        <button
-          class="primary"
-          type="button"
-          [disabled]="blocked() || !canOperate() || busy()"
-          (click)="released.emit()"
-        >
-          {{ 'tables.dialog.payAndClose' | translate }}
-        </button>
+    }
+
+    <!-- TAB 2: BILLING & OPERATIONS -->
+    @if (table().status === 'OCCUPIED' && activeMainTab() === 'billing') {
+      <div class="billing-layout">
+        <!-- Traceability & Item List -->
+        <div class="active-items-section">
+          <div class="section-title-row">
+            <h3>Ítems de la Comanda (Trazabilidad y Estado)</h3>
+            <span class="order-total-badge">
+              Total Activo: {{ table().activeOrderTotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+            </span>
+          </div>
+
+          @if (loadingOrder()) {
+            <div class="loading-box">Cargando ítems de la orden…</div>
+          } @else if (!activeOrder()) {
+            <div class="empty-box">No se pudo cargar la orden activa.</div>
+          } @else {
+            <div class="items-status-groups">
+              <!-- Pending Items -->
+              @if (activeItemsPending().length > 0) {
+                <div class="status-group pending">
+                  <div class="group-header">
+                    <h4>🟡 En Espera / En Preparación ({{ activeItemsPending().length }})</h4>
+                  </div>
+                  @for (item of activeItemsPending(); track item.id) {
+                    <div class="item-traceability-card">
+                      <div class="item-main-info">
+                        <strong>{{ item.quantity }}x {{ item.productName }}</strong>
+                        <span class="item-subtotal">
+                          {{ item.subtotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                        </span>
+                      </div>
+                      @if (item.notes) {
+                        <div class="item-notes">📝 Observaciones: {{ item.notes }}</div>
+                      }
+                      <div class="item-audit-info">
+                        Ingresado por <strong>{{ item.createdByUserName }}</strong> el {{ item.createdAt | date: 'shortTime' }}
+                      </div>
+                      @if (canOperate() && !blocked()) {
+                        <button type="button" class="cancel-item-btn" (click)="openCancelItemModal(item)">
+                          🚫 Cancelar este producto
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- Paid Items -->
+              @if (activeItemsPaid().length > 0) {
+                <div class="status-group paid">
+                  <div class="group-header">
+                    <h4>🟢 Pagados ({{ activeItemsPaid().length }})</h4>
+                  </div>
+                  @for (item of activeItemsPaid(); track item.id) {
+                    <div class="item-traceability-card paid">
+                      <div class="item-main-info">
+                        <strong>{{ item.quantity }}x {{ item.productName }}</strong>
+                        <span class="item-subtotal">
+                          {{ item.subtotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                        </span>
+                      </div>
+                      <div class="item-audit-info">
+                        Pagado · Última mod. por {{ item.lastModifiedByUserName }} el {{ item.updatedAt | date: 'shortTime' }}
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- Cancelled Items -->
+              @if (activeItemsCancelled().length > 0) {
+                <div class="status-group cancelled">
+                  <div class="group-header">
+                    <h4>🔴 Cancelados ({{ activeItemsCancelled().length }})</h4>
+                  </div>
+                  @for (item of activeItemsCancelled(); track item.id) {
+                    <div class="item-traceability-card cancelled">
+                      <div class="item-main-info">
+                        <strong>{{ item.quantity }}x {{ item.productName }}</strong>
+                        <span class="item-subtotal strike">
+                          {{ item.subtotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                        </span>
+                      </div>
+                      <div class="item-notes danger">
+                        ❌ Motivo de cancelación: {{ item.cancellationReason }}
+                      </div>
+                      <div class="item-audit-info">
+                        Cancelado por <strong>{{ item.cancelledByUserName }}</strong> el {{ item.cancelledAt | date: 'shortTime' }}
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Operations Toolbar -->
+        <div class="operations-bar">
+          <div class="operations-header">
+            <h3>Acciones de Mesa</h3>
+          </div>
+
+          <button
+            type="button"
+            class="op-btn secondary"
+            [disabled]="blocked() || !canOperate()"
+            (click)="openMoveTableModal()"
+          >
+            🔄 Mover / Cambiar de Mesa
+          </button>
+
+          <button
+            type="button"
+            class="op-btn secondary partial-pay-btn"
+            [disabled]="blocked() || !canOperate() || activeItemsPending().length === 0"
+            (click)="openPartialPaySelectorModal()"
+          >
+            💳 Pago Parcial
+          </button>
+
+          <button
+            type="button"
+            class="op-btn primary large"
+            [disabled]="blocked() || !canOperate() || activeItemsPending().length === 0"
+            (click)="openFullCheckoutModal()"
+          >
+            💰 Cerrar Mesa y Pagar (Total)
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- SUB-MODAL 1: PRODUCT CONFIGURATION -->
+    @if (configuredProduct(); as cfg) {
+      <div class="sub-modal-backdrop">
+        <div class="sub-modal">
+          <header class="sub-modal-header">
+            <h3>{{ cfg.product.name }}</h3>
+            <button type="button" class="close-btn-icon" (click)="closeProductConfig()">✕</button>
+          </header>
+
+          <div class="sub-modal-body">
+            <div class="sub-modal-price">
+              <span>Precio unitario:</span>
+              <strong>{{ cfg.product.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+            </div>
+
+            <div class="qty-picker">
+              <span>Cantidad de unidades:</span>
+              <div class="qty-controls">
+                <button type="button" class="qty-ctrl-btn" (click)="updateProductConfigQty(-1)">-</button>
+                <strong class="qty-val-badge">{{ cfg.quantity }}</strong>
+                <button type="button" class="qty-ctrl-btn" (click)="updateProductConfigQty(1)">+</button>
+              </div>
+            </div>
+
+            <div class="sub-tabs">
+              <button
+                type="button"
+                class="sub-tab"
+                [class.active]="cfg.activeSubTab === 'notes'"
+                (click)="configuredProduct.set({ ...cfg, activeSubTab: 'notes' })"
+              >
+                Observaciones
+              </button>
+              <button
+                type="button"
+                class="sub-tab disabled"
+                title="Funcionalidad futura de adiciones"
+              >
+                Modificadores / Adiciones 🔒
+              </button>
+            </div>
+
+            @if (cfg.activeSubTab === 'notes') {
+              <div class="notes-field-group">
+                <label for="prodNotesInput" class="notes-label">Observaciones del producto:</label>
+                <textarea
+                  id="prodNotesInput"
+                  rows="3"
+                  placeholder="Ej. Sin cebolla, término medio, sin hielo, etc."
+                  [ngModel]="cfg.notes"
+                  (ngModelChange)="configuredProduct.set({ ...cfg, notes: $event })"
+                ></textarea>
+              </div>
+            }
+          </div>
+
+          <footer class="sub-modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeProductConfig()">Cancelar</button>
+            <button type="button" class="btn-confirm primary" (click)="confirmAddProductConfig()">
+              Agregar ({{ cfg.product.salePrice * cfg.quantity | currency: 'COP' : 'symbol-narrow' : '1.0-0' }})
+            </button>
+          </footer>
+        </div>
+      </div>
+    }
+
+    <!-- SUB-MODAL 2: VENTA LIBRE (CUSTOM SALE) -->
+    @if (customSaleState(); as cs) {
+      <div class="sub-modal-backdrop">
+        <div class="sub-modal">
+          <header class="sub-modal-header">
+            <h3>✨ Venta Libre (Producto Personalizado)</h3>
+            <button type="button" class="close-btn-icon" (click)="closeCustomSaleModal()">✕</button>
+          </header>
+
+          <div class="sub-modal-body">
+            <label class="form-label">
+              <span>Descripción del producto / servicio *</span>
+              <input
+                type="text"
+                placeholder="Ej. Plato del día especial, Menú personalizado"
+                [ngModel]="cs.description"
+                (ngModelChange)="customSaleState.set({ ...cs, description: $event })"
+              />
+            </label>
+
+            <div class="form-row">
+              <label class="form-label">
+                <span>Valor unitario ($) *</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="100"
+                  placeholder="0"
+                  [ngModel]="cs.price"
+                  (ngModelChange)="customSaleState.set({ ...cs, price: +$event })"
+                />
+                @if (cs.price > 0) {
+                  <span class="input-currency-hint">💵 {{ cs.price | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+                }
+              </label>
+
+              <label class="form-label">
+                <span>Cantidad *</span>
+                <input
+                  type="number"
+                  min="1"
+                  [ngModel]="cs.quantity"
+                  (ngModelChange)="customSaleState.set({ ...cs, quantity: +$event })"
+                />
+              </label>
+            </div>
+
+            <label class="form-label">
+              <span>Observaciones adicionales</span>
+              <input
+                type="text"
+                placeholder="Ej. Detalle o especificación del cobro"
+                [ngModel]="cs.notes"
+                (ngModelChange)="customSaleState.set({ ...cs, notes: $event })"
+              />
+            </label>
+          </div>
+
+          <footer class="sub-modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeCustomSaleModal()">Cancelar</button>
+            <button type="button" class="btn-confirm primary" (click)="confirmCustomSale()">
+              Agregar Venta Libre
+            </button>
+          </footer>
+        </div>
+      </div>
+    }
+
+    <!-- SUB-MODAL 3: CANCEL ITEM PROMPT -->
+    @if (cancellingItemState(); as ci) {
+      <div class="sub-modal-backdrop">
+        <div class="sub-modal danger-theme">
+          <header class="sub-modal-header">
+            <h3>🚫 Cancelar producto: {{ ci.item.productName }}</h3>
+            <button type="button" class="close-btn-icon" (click)="closeCancelItemModal()">✕</button>
+          </header>
+
+          <div class="sub-modal-body">
+            <p class="warning-text">
+              Para cancelar este producto debes ingresar obligatoriamente un motivo de cancelación.
+            </p>
+
+            <label class="form-label">
+              <span>Motivo de cancelación *</span>
+              <textarea
+                rows="3"
+                placeholder="Ej. Cliente cambió de opinión / Error de pedido..."
+                [ngModel]="ci.reason"
+                (ngModelChange)="cancellingItemState.set({ ...ci, reason: $event })"
+              ></textarea>
+            </label>
+          </div>
+
+          <footer class="sub-modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeCancelItemModal()">Volver</button>
+            <button type="button" class="btn-confirm danger" (click)="confirmCancelItem()">
+              Confirmar Cancelación
+            </button>
+          </footer>
+        </div>
+      </div>
+    }
+
+    <!-- SUB-MODAL 4: MOVE TABLE PROMPT -->
+    @if (movingTableState(); as mt) {
+      <div class="sub-modal-backdrop">
+        <div class="sub-modal">
+          <header class="sub-modal-header">
+            <h3>🔄 Mover comanda a otra mesa</h3>
+            <button type="button" class="close-btn-icon" (click)="closeMoveTableModal()">✕</button>
+          </header>
+
+          <div class="sub-modal-body">
+            <p>Selecciona la mesa disponible a la cual deseas trasladar la orden activa:</p>
+
+            <label class="form-label">
+              <span>Mesa destino disponible *</span>
+              <select
+                class="sav-select"
+                [ngModel]="mt.targetTableId"
+                (ngModelChange)="movingTableState.set({ ...mt, targetTableId: $event })"
+              >
+                @for (availTable of availableTablesToMove(); track availTable.id) {
+                  <option [value]="availTable.id">
+                    {{ availTable.name }} (Capacidad: {{ availTable.capacity }} p)
+                  </option>
+                }
+              </select>
+            </label>
+          </div>
+
+          <footer class="sub-modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeMoveTableModal()">Cancelar</button>
+            <button type="button" class="btn-confirm primary" (click)="confirmMoveTable()">
+              Confirmar Traslado
+            </button>
+          </footer>
+        </div>
+      </div>
+    }
+
+    <!-- SUB-MODAL 5: PARTIAL PAY SELECTOR MODAL -->
+    @if (partialPaySelectorState(); as pps) {
+      <div class="sub-modal-backdrop">
+        <div class="sub-modal large-modal">
+          <header class="sub-modal-header">
+            <h3>💳 Seleccionar Productos para Pago Parcial</h3>
+            <button type="button" class="close-btn-icon" (click)="closePartialPaySelectorModal()">✕</button>
+          </header>
+
+          <div class="sub-modal-body">
+            <p class="helper-subtitle">
+              Elige los productos y la cantidad exacta que deseas pagar en esta transacción:
+            </p>
+
+            <div class="partial-items-selector-list">
+              @for (entry of pps.itemsSelection; track entry.item.id; let idx = $index) {
+                <div class="partial-item-row" [class.selected]="entry.selected">
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      [checked]="entry.selected"
+                      (change)="togglePartialItemSelection(idx)"
+                    />
+                    <span class="item-name-text">{{ entry.item.productName }}</span>
+                  </label>
+
+                  @if (entry.selected) {
+                    <div class="qty-selector-inline">
+                      <button type="button" class="qty-ctrl-btn" (click)="updatePartialItemQty(idx, -1)">-</button>
+                      <span class="qty-val-text">{{ entry.quantityToPay }} de {{ entry.item.quantity }}</span>
+                      <button type="button" class="qty-ctrl-btn" (click)="updatePartialItemQty(idx, 1)">+</button>
+                    </div>
+                  } @else {
+                    <span class="qty-val-text muted">{{ entry.item.quantity }} disp.</span>
+                  }
+
+                  <span class="item-calc-subtotal">
+                    {{ (entry.item.unitPrice * (entry.selected ? entry.quantityToPay : 0)) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                  </span>
+                </div>
+              }
+            </div>
+
+            <div class="partial-subtotal-summary">
+              <span>Subtotal Parcial Seleccionado:</span>
+              <strong>{{ partialSubtotalToPay() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+            </div>
+          </div>
+
+          <footer class="sub-modal-footer">
+            <button type="button" class="btn-cancel" (click)="closePartialPaySelectorModal()">Cancelar</button>
+            <button
+              type="button"
+              class="btn-confirm primary"
+              [disabled]="partialSubtotalToPay() <= 0"
+              (click)="confirmPartialSelectionAndProceedToCheckout()"
+            >
+              Continuar a Pagar ({{ partialSubtotalToPay() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }})
+            </button>
+          </footer>
+        </div>
+      </div>
+    }
+
+    <!-- SUB-MODAL 6: CHECKOUT / BILLING PROMPT (CON TIRILLA, VALOR MONEDA Y PAGO MIXTO/EFECTIVO) -->
+    @if (checkoutState(); as co) {
+      <div class="sub-modal-backdrop">
+        <div class="sub-modal large-modal">
+          <header class="sub-modal-header">
+            <h3>💰 {{ co.isPartial ? 'Pago Parcial de Mesa' : 'Facturar y Cerrar Mesa' }} {{ table().name }}</h3>
+            <button type="button" class="close-btn-icon" (click)="closeCheckoutModal()">✕</button>
+          </header>
+
+          <div class="sub-modal-body">
+            <!-- Receipt Ticket Itemized Breakdown (Tirilla para imprimir) -->
+            <div class="receipt-ticket-box">
+              <div class="ticket-header">
+                <strong>🧾 Detalle de Tirilla (A Pagar)</strong>
+                <small>{{ co.isPartial ? 'Cobro Parcial' : 'Cobro Total' }}</small>
+              </div>
+
+              <div class="ticket-items-list">
+                @for (itemPay of co.itemsToPay; track itemPay.item.id) {
+                  <div class="ticket-item-row">
+                    <span class="t-name">
+                      • {{ itemPay.quantityToPay }}x {{ itemPay.item.productName }}
+                    </span>
+                    <span class="t-subtotal">
+                      {{ itemPay.subtotalToPay | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                    </span>
+                  </div>
+                }
+              </div>
+
+              <div class="ticket-divider"></div>
+
+              <div class="ticket-summary-lines">
+                <div class="t-line">
+                  <span>Subtotal:</span>
+                  <strong>{{ co.subtotalToPay | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                </div>
+
+                <div class="t-line tip-row">
+                  <label class="tip-label">
+                    <span>Propina voluntaria ($):</span>
+                    <div class="input-currency-wrapper">
+                      <input
+                        type="number"
+                        min="0"
+                        step="500"
+                        placeholder="0"
+                        [ngModel]="co.tipAmount"
+                        (ngModelChange)="updateTipAmount($event)"
+                      />
+                      @if (co.tipAmount > 0) {
+                        <span class="formatted-hint">💵 {{ co.tipAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+                      }
+                    </div>
+                  </label>
+                </div>
+
+                <div class="ticket-divider"></div>
+
+                <div class="t-line total-big">
+                  <span>Total a Pagar:</span>
+                  <strong>
+                    {{ targetTotalToPay() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Type Option with Switch Knob Toggle -->
+            <div class="payment-toggle-bar">
+              <span class="toggle-label">Habilitar Pago Mixto (Dividir cobro en varios medios)</span>
+              <button
+                type="button"
+                class="toggle-switch-btn"
+                [class.active]="co.isMixed"
+                (click)="toggleMixedPayment()"
+                role="switch"
+                [attr.aria-checked]="co.isMixed"
+              >
+                <span class="switch-knob"></span>
+              </button>
+            </div>
+
+            <!-- LIVE BALANCE INDICATOR BADGE (Active in both Single and Mixed Payment Modes) -->
+            @let diff = balanceDifference();
+            <div
+              class="balance-indicator-badge"
+              [class.warning]="diff > 0"
+              [class.success]="diff === 0"
+              [class.error]="diff < 0"
+            >
+              @if (diff > 0) {
+                ⚠️ Falta por ingresar en el medio de pago: {{ diff | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+              } @else if (diff === 0) {
+                ✅ Monto cubierto correctamente
+              } @else {
+                ❌ El monto ingresado excede el total por: {{ Math.abs(diff) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+              }
+            </div>
+
+            @if (!co.isMixed) {
+              <!-- Single Payment Method -->
+              <div class="single-payment-group">
+                <div class="form-row">
+                  <label class="form-label">
+                    <span>Medio de Pago *</span>
+                    <select
+                      class="sav-select"
+                      [ngModel]="co.splits[0].method"
+                      (ngModelChange)="co.splits[0].method = $event"
+                    >
+                      @for (pm of settingsStore.paymentMethods(); track pm.id) {
+                        @if (pm.isActive) {
+                          <option [value]="pm.name">{{ pm.name }}</option>
+                        }
+                      }
+                    </select>
+                  </label>
+
+                  <label class="form-label">
+                    <span>Monto a cobrar con este medio ($) *</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="500"
+                      [ngModel]="co.splits[0].amount"
+                      (ngModelChange)="updateSinglePaymentAmount($event)"
+                    />
+                    @if (co.splits[0].amount > 0) {
+                      <span class="input-currency-hint">💵 {{ co.splits[0].amount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+                    }
+                  </label>
+                </div>
+
+                <!-- Cash Calculator for Single Payment -->
+                @if (co.splits[0].method === 'Efectivo') {
+                  <div class="cash-calculator-box">
+                    <label class="form-label">
+                      <span>💵 Efectivo recibido / Con cuánto paga ($):</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1000"
+                        placeholder="Ej. 100000"
+                        [ngModel]="co.singleCashReceived"
+                        (ngModelChange)="co.singleCashReceived = +$event"
+                      />
+                    </label>
+
+                    @if (co.singleCashReceived !== undefined && co.singleCashReceived > 0) {
+                      @let change = co.singleCashReceived - co.splits[0].amount;
+                      <div class="change-badge" [class.success]="change >= 0" [class.warning]="change < 0">
+                        @if (change >= 0) {
+                          💵 Cambio / Devuelta: {{ change | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                        } @else {
+                          ⚠️ Falta efectivo: {{ Math.abs(change) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <!-- Mixed Payment Method Splits -->
+              <div class="mixed-payment-section">
+                <div class="mixed-header">
+                  <h4>División de Medios de Pago</h4>
+                </div>
+
+                @for (split of co.splits; track $index) {
+                  <div class="split-card">
+                    <div class="split-row">
+                      <select
+                        class="sav-select"
+                        [ngModel]="split.method"
+                        (ngModelChange)="split.method = $event"
+                      >
+                        @for (pm of settingsStore.paymentMethods(); track pm.id) {
+                          @if (pm.isActive) {
+                            <option [value]="pm.name">{{ pm.name }}</option>
+                          }
+                        }
+                      </select>
+
+                      <div class="input-currency-wrapper">
+                        <input
+                          type="number"
+                          min="0"
+                          step="500"
+                          placeholder="Monto"
+                          [ngModel]="split.amount"
+                          (ngModelChange)="updateSplitAmount($index, $event)"
+                        />
+                        @if (split.amount > 0) {
+                          <span class="formatted-hint mini">💵 {{ split.amount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+                        }
+                      </div>
+
+                      <button
+                        type="button"
+                        class="btn-remove-split"
+                        [disabled]="co.splits.length <= 1"
+                        (click)="removePaymentSplit($index)"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    <!-- Cash Calculator per split if method is Efectivo -->
+                    @if (split.method === 'Efectivo') {
+                      <div class="split-cash-box">
+                        <label class="form-label inline">
+                          <span>Efectivo recibido:</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="1000"
+                            placeholder="Ej. 50000"
+                            [ngModel]="split.cashReceived"
+                            (ngModelChange)="split.cashReceived = +$event"
+                          />
+                        </label>
+
+                        @if (split.cashReceived !== undefined && split.cashReceived > 0) {
+                          @let splitChange = split.cashReceived - split.amount;
+                          <span class="split-change-tag" [class.success]="splitChange >= 0" [class.warning]="splitChange < 0">
+                            @if (splitChange >= 0) {
+                              Cambio: {{ splitChange | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                            } @else {
+                              Falta: {{ Math.abs(splitChange) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                            }
+                          </span>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+
+                <button type="button" class="btn-add-split" (click)="addPaymentSplit()">
+                  + Agregar otro medio de pago
+                </button>
+              </div>
+            }
+          </div>
+
+          <footer class="sub-modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeCheckoutModal()">Cancelar</button>
+            <button
+              type="button"
+              class="btn-confirm primary"
+              [disabled]="balanceDifference() !== 0"
+              (click)="confirmCheckout()"
+            >
+              {{ co.isPartial ? 'Procesar Pago Parcial' : 'Procesar Pago y Liberar Mesa' }}
+            </button>
+          </footer>
+        </div>
       </div>
     }
   </section>

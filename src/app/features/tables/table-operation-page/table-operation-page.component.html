@@ -103,8 +103,6 @@
     [canOperate]="store.canOperate()"
     [busy]="store.mutating()"
     (closed)="selectedTable.set(null)"
-    (opened)="openOrder(table)"
-    (released)="closeOrder(table)"
-    (totalUpdated)="updateTotal(table, $event)"
+    (orderUpdated)="reloadOperationState()"
   />
 }
