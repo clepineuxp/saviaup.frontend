@@ -657,10 +657,7 @@ export class TableOperationDialogComponent {
       return;
     }
 
-    let splitsToSend: PaymentSplit[] | undefined = undefined;
-    if (state.isMixed) {
-      splitsToSend = state.splits.map((s) => ({ method: s.method, amount: s.amount }));
-    }
+    const splitsToSend: PaymentSplit[] = state.splits.map((s) => ({ method: s.method, amount: s.amount }));
 
     const itemsToPayPayload: PartialItemPay[] | undefined = state.itemsToPay.map((i) => ({
       itemId: i.item.id,

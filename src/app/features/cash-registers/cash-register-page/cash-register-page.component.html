@@ -57,7 +57,7 @@
     }
   </div>
 
-  <!-- SECCIÓN 8: HISTORIAL PAGINADO DE TURNOS DE CAJA -->
+  <!-- HISTORIAL PAGINADO DE TURNOS DE CAJA -->
   <section class="shifts-history-section">
     <div class="section-header">
       <div class="header-text">
@@ -176,7 +176,7 @@
     </div>
   </section>
 
-  <!-- MODAL DE APERTURA DE CAJA (REGLA 2) -->
+  <!-- MODAL DE APERTURA DE CAJA -->
   @if (openShiftModalRegister(); as register) {
     <div class="modal-overlay">
       <div class="modal-card opening-modal">
@@ -239,7 +239,7 @@
     </div>
   }
 
-  <!-- MODAL DE CIERRE Y ARQUEO DE CAJA (REGLAS 6.1 & 6.2) -->
+  <!-- MODAL DE CIERRE Y ARQUEO DE CAJA -->
   @if (closingShiftState(); as state) {
     <div class="modal-overlay">
       <div class="modal-card closing-modal">
@@ -259,9 +259,9 @@
             <app-ui-alert [message]="err" />
           }
 
-          <!-- SECCIÓN 6.1: DETALLE DE VENTAS -->
+          <!-- DETALLE DE VENTAS DEL TURNO -->
           <section class="closing-section sales-detail-section">
-            <h4>📊 6.1 Detalle de Ventas del Turno</h4>
+            <h4>📊 Detalle de Ventas del Turno</h4>
             <div class="metrics-grid">
               <div class="metric-card">
                 <span class="metric-label">Total Ventas (Subtotal)</span>
@@ -278,11 +278,11 @@
             </div>
           </section>
 
-          <!-- SECCIÓN 6.2: DETALLE DE CIERRE Y ARQUEO -->
+          <!-- DETALLE DE CIERRE Y ARQUEO DE VALORES -->
           <section class="closing-section cash-audit-section">
-            <h4>💵 6.2 Detalle de Cierre y Arqueo de Valores por Medio de Pago</h4>
+            <h4>💵 Detalle de Cierre y Arqueo de Valores por Medio de Pago</h4>
             <p class="section-hint">
-              Revisa los valores recolectados en ventas más el saldo inicial menos gastos. Ingresa el dinero real contado en caja.
+              Revisa las ventas y propinas recolectadas por medio de pago más el saldo inicial menos gastos.
             </p>
 
             <div class="table-responsive">
@@ -290,44 +290,25 @@
                 <thead>
                   <tr>
                     <th>Medio de Pago</th>
-                    <th>Fondo Inicial</th>
-                    <th>Ventas Cobradas</th>
-                    <th>Gastos Salidos</th>
-                    <th>Total Esperado en Caja</th>
-                    <th>Monto Real Contado</th>
-                    <th>Diferencia</th>
+                    <th>Inicial</th>
+                    <th>Ventas</th>
+                    <th>Propinas</th>
+                    <th>Gastos</th>
+                    <th>Total</th>
+                    <th>Total en caja</th>
                   </tr>
                 </thead>
                 <tbody>
                   @for (m of state.summary.methodSummaries; track m.methodName) {
-                    @let diff = getCalculatedDifference(m.methodName, m.expectedTotalAmount);
+                    @let totalCol = (m.totalCollectedAmount !== undefined && m.totalCollectedAmount !== null) ? m.totalCollectedAmount : (m.salesCollectedAmount + (m.tipsCollectedAmount || 0));
                     <tr>
                       <td><strong>{{ m.methodName }}</strong></td>
                       <td>{{ m.initialOpeningAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
                       <td>{{ m.salesCollectedAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
+                      <td>{{ (m.tipsCollectedAmount || 0) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
                       <td>{{ m.expensesAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
+                      <td><strong class="collected-val">{{ totalCol | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></td>
                       <td><strong class="expected-val">{{ m.expectedTotalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></td>
-                      <td>
-                        @if (state.isReadOnly) {
-                          <strong>{{ m.actualAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
-                        } @else {
-                          <input
-                            type="number"
-                            class="actual-input"
-                            min="0"
-                            step="500"
-                            [ngModel]="state.actualAmounts[m.methodName]"
-                            (ngModelChange)="updateClosingActualAmount(m.methodName, $event)"
-                          />
-                        }
-                      </td>
-                      <td>
-                        <span class="diff-tag" [class.exact]="diff === 0" [class.surplus]="diff > 0" [class.deficit]="diff < 0">
-                          @if (diff === 0) { ✓ Exacto }
-                          @else if (diff > 0) { +{{ diff | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} (Sobrante) }
-                          @else { {{ diff | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} (Faltante) }
-                        </span>
-                      </td>
                     </tr>
                   }
                 </tbody>

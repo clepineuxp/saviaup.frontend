@@ -48,10 +48,12 @@ export interface PaymentMethodClosingSummary {
   readonly methodName: string;
   readonly initialOpeningAmount: number;
   readonly salesCollectedAmount: number;
+  readonly tipsCollectedAmount?: number;
   readonly expensesAmount: number;
+  readonly totalCollectedAmount?: number;
   readonly expectedTotalAmount: number;
-  readonly actualAmount: number;
-  readonly differenceAmount: number;
+  readonly actualAmount?: number;
+  readonly differenceAmount?: number;
 }
 
 export interface CashRegisterShiftSummary {
