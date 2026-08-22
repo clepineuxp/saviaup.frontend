@@ -1,0 +1,358 @@
+<div class="cash-registers-page">
+  <!-- Header de Sección -->
+  <header class="page-header">
+    <div class="header-copy">
+      <span class="badge-module">Uso y Manejo de Cajas</span>
+      <h2>Apertura, Arqueo y Cierre de Cajas</h2>
+      <p>Realiza la apertura de turnos de caja, registra montos iniciales, efectúa el arqueo de ventas y cierra la caja al finalizar la jornada.</p>
+    </div>
+  </header>
+
+  <!-- Tarjetas de Cajas Registradoras Activas -->
+  <div class="registers-grid">
+    @for (register of store.cashRegisters(); track register.id) {
+      <div class="register-card" [class.has-open-shift]="register.hasOpenShift">
+        <div class="card-top">
+          <div class="title-group">
+            <span class="icon-glyph">◫</span>
+            <div>
+              <h3>{{ register.name }}</h3>
+              <small class="location">{{ register.location || 'Sin ubicación' }}</small>
+            </div>
+          </div>
+
+          <div class="status-tags">
+            @if (register.hasOpenShift) {
+              <span class="shift-badge open">🟢 CAJA ABIERTA</span>
+            } @else {
+              <span class="shift-badge closed">🔴 CAJA CERRADA</span>
+            }
+          </div>
+        </div>
+
+        <div class="card-actions">
+          @if (register.hasOpenShift && register.activeShiftId) {
+            <button
+              type="button"
+              class="action-btn close-shift-btn"
+              (click)="openCloseShiftModal(register.activeShiftId)"
+            >
+              🔒 Cerrar Caja y Arqueo
+            </button>
+          } @else if (register.isActive) {
+            <button
+              type="button"
+              class="action-btn open-shift-btn"
+              (click)="openOpenShiftModal(register)"
+            >
+              ➕ Abrir Turno de Caja
+            </button>
+          }
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-card-banner">
+        <p>No hay cajas registradoras activas. Activa una caja desde la sección de administración.</p>
+      </div>
+    }
+  </div>
+
+  <!-- SECCIÓN 8: HISTORIAL PAGINADO DE TURNOS DE CAJA -->
+  <section class="shifts-history-section">
+    <div class="section-header">
+      <div class="header-text">
+        <h3>📋 Historial de Turnos de Caja</h3>
+        <p>Listado paginado de turnos indicando quién abrió, quién cerró, fechas y montos recolectados.</p>
+      </div>
+      <button type="button" class="refresh-btn" (click)="loadShiftsPage(shiftsPage()?.pageNumber || 1)">
+        🔄 Actualizar Historial
+      </button>
+    </div>
+
+    <div class="card table-card">
+      <div class="table-responsive">
+        <table class="shifts-table">
+          <thead>
+            <tr>
+              <th>Caja Registradora</th>
+              <th>Estado</th>
+              <th>Abierta Por (Email)</th>
+              <th>Fecha Apertura</th>
+              <th>Cerrada Por (Email)</th>
+              <th>Fecha Cierre</th>
+              <th>Total Recolectado</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (loadingShifts()) {
+              <tr>
+                <td colspan="8" class="loading-cell">Cargando historial de turnos...</td>
+              </tr>
+            } @else if (shiftsPage()?.items?.length === 0) {
+              <tr>
+                <td colspan="8" class="empty-cell">No hay registros de turnos de caja en el sistema.</td>
+              </tr>
+            } @else {
+              @for (shift of shiftsPage()?.items; track shift.id) {
+                <tr [class.shift-open-row]="shift.status === 'OPEN'">
+                  <td>
+                    <strong>{{ shift.cashRegisterName }}</strong>
+                  </td>
+                  <td>
+                    @if (shift.status === 'OPEN') {
+                      <span class="status-tag open">ABIERTA</span>
+                    } @else {
+                      <span class="status-tag closed">CERRADA</span>
+                    }
+                  </td>
+                  <td>
+                    <span class="user-email-tag">✉️ {{ shift.openedByUserName }}</span>
+                  </td>
+                  <td>
+                    <span class="date-text">{{ shift.openedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                  </td>
+                  <td>
+                    @if (shift.closedByUserName) {
+                      <span class="user-email-tag">✉️ {{ shift.closedByUserName }}</span>
+                    } @else {
+                      <span class="muted-dash">-</span>
+                    }
+                  </td>
+                  <td>
+                    @if (shift.closedAt) {
+                      <span class="date-text">{{ shift.closedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                    } @else {
+                      <span class="muted-dash">-</span>
+                    }
+                  </td>
+                  <td>
+                    <strong class="total-text">{{ shift.totalCollectedAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                  </td>
+                  <td class="text-end">
+                    @if (shift.status === 'OPEN') {
+                      <button type="button" class="table-action-btn close-btn" (click)="openCloseShiftModal(shift.id)">
+                        🔒 Cerrar Caja
+                      </button>
+                    } @else {
+                      <button type="button" class="table-action-btn view-btn" (click)="openCloseShiftModal(shift.id, true)">
+                        👁️ Ver Arqueo
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Controles de Paginación -->
+      @if (shiftsPage(); as p) {
+        @if (p.totalPages > 1) {
+          <div class="pagination-footer">
+            <button
+              type="button"
+              class="page-btn"
+              [disabled]="p.pageNumber <= 1"
+              (click)="loadShiftsPage(p.pageNumber - 1)"
+            >
+              ‹ Anterior
+            </button>
+            <span class="page-info">
+              Página {{ p.pageNumber }} de {{ p.totalPages }} ({{ p.totalItems }} turnos)
+            </span>
+            <button
+              type="button"
+              class="page-btn"
+              [disabled]="p.pageNumber >= p.totalPages"
+              (click)="loadShiftsPage(p.pageNumber + 1)"
+            >
+              Siguiente ›
+            </button>
+          </div>
+        }
+      }
+    </div>
+  </section>
+
+  <!-- MODAL DE APERTURA DE CAJA (REGLA 2) -->
+  @if (openShiftModalRegister(); as register) {
+    <div class="modal-overlay">
+      <div class="modal-card opening-modal">
+        <header class="modal-header">
+          <div class="title-group">
+            <span class="icon">🔓</span>
+            <h3>Apertura de Caja · {{ register.name }}</h3>
+          </div>
+          <button type="button" class="close-button" (click)="closeOpenShiftModal()">✕</button>
+        </header>
+
+        <main class="modal-body">
+          <p class="modal-desc">
+            Indica los fondos o montos iniciales con los que se inicia la jornada para los medios de pago configurados:
+          </p>
+
+          @if (shiftErrorMessage(); as err) {
+            <app-ui-alert [message]="err" />
+          }
+
+          <div class="opening-methods-grid">
+            @for (method of openingMethodsList(); track method.id) {
+              <div class="method-field">
+                <label>
+                  <span>💰 Fondo Inicial en <strong>{{ method.name }}</strong>:</span>
+                  <div class="input-currency-wrap">
+                    <span class="currency-prefix">$</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="500"
+                      [ngModel]="openingBalancesMap()[method.name]"
+                      (ngModelChange)="updateOpeningBalance(method.name, $event)"
+                    />
+                  </div>
+                </label>
+              </div>
+            } @empty {
+              <p class="no-methods-warning">
+                No hay medios de pago configurados con la opción "Registra al abrir caja".
+              </p>
+            }
+          </div>
+        </main>
+
+        <footer class="modal-footer">
+          <app-ui-button variant="secondary" type="button" (click)="closeOpenShiftModal()">
+            Cancelar
+          </app-ui-button>
+          <app-ui-button
+            variant="primary"
+            type="button"
+            [disabled]="submittingShift()"
+            (click)="confirmOpenShift()"
+          >
+            {{ submittingShift() ? 'Abriendo Caja...' : '✓ Confirmar y Abrir Turno' }}
+          </app-ui-button>
+        </footer>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL DE CIERRE Y ARQUEO DE CAJA (REGLAS 6.1 & 6.2) -->
+  @if (closingShiftState(); as state) {
+    <div class="modal-overlay">
+      <div class="modal-card closing-modal">
+        <header class="modal-header">
+          <div class="title-group">
+            <span class="icon">🔒</span>
+            <h3>
+              {{ state.isReadOnly ? 'Resumen de Cierre de Caja' : 'Cierre de Caja y Arqueo de Valores' }}
+              · {{ state.summary.cashRegisterName }}
+            </h3>
+          </div>
+          <button type="button" class="close-button" (click)="closeCloseShiftModal()">✕</button>
+        </header>
+
+        <main class="modal-body">
+          @if (shiftErrorMessage(); as err) {
+            <app-ui-alert [message]="err" />
+          }
+
+          <!-- SECCIÓN 6.1: DETALLE DE VENTAS -->
+          <section class="closing-section sales-detail-section">
+            <h4>📊 6.1 Detalle de Ventas del Turno</h4>
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <span class="metric-label">Total Ventas (Subtotal)</span>
+                <strong class="metric-val">{{ state.summary.totalSalesAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Total Propinas</span>
+                <strong class="metric-val tip">{{ state.summary.totalTipsAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+              </div>
+              <div class="metric-card highlight">
+                <span class="metric-label">Total Recolectado</span>
+                <strong class="metric-val collected">{{ state.summary.totalCollectedAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+              </div>
+            </div>
+          </section>
+
+          <!-- SECCIÓN 6.2: DETALLE DE CIERRE Y ARQUEO -->
+          <section class="closing-section cash-audit-section">
+            <h4>💵 6.2 Detalle de Cierre y Arqueo de Valores por Medio de Pago</h4>
+            <p class="section-hint">
+              Revisa los valores recolectados en ventas más el saldo inicial menos gastos. Ingresa el dinero real contado en caja.
+            </p>
+
+            <div class="table-responsive">
+              <table class="audit-table">
+                <thead>
+                  <tr>
+                    <th>Medio de Pago</th>
+                    <th>Fondo Inicial</th>
+                    <th>Ventas Cobradas</th>
+                    <th>Gastos Salidos</th>
+                    <th>Total Esperado en Caja</th>
+                    <th>Monto Real Contado</th>
+                    <th>Diferencia</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (m of state.summary.methodSummaries; track m.methodName) {
+                    @let diff = getCalculatedDifference(m.methodName, m.expectedTotalAmount);
+                    <tr>
+                      <td><strong>{{ m.methodName }}</strong></td>
+                      <td>{{ m.initialOpeningAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
+                      <td>{{ m.salesCollectedAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
+                      <td>{{ m.expensesAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
+                      <td><strong class="expected-val">{{ m.expectedTotalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></td>
+                      <td>
+                        @if (state.isReadOnly) {
+                          <strong>{{ m.actualAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                        } @else {
+                          <input
+                            type="number"
+                            class="actual-input"
+                            min="0"
+                            step="500"
+                            [ngModel]="state.actualAmounts[m.methodName]"
+                            (ngModelChange)="updateClosingActualAmount(m.methodName, $event)"
+                          />
+                        }
+                      </td>
+                      <td>
+                        <span class="diff-tag" [class.exact]="diff === 0" [class.surplus]="diff > 0" [class.deficit]="diff < 0">
+                          @if (diff === 0) { ✓ Exacto }
+                          @else if (diff > 0) { +{{ diff | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} (Sobrante) }
+                          @else { {{ diff | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} (Faltante) }
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </main>
+
+        <footer class="modal-footer">
+          <app-ui-button variant="secondary" type="button" (click)="closeCloseShiftModal()">
+            {{ state.isReadOnly ? 'Cerrar' : 'Cancelar' }}
+          </app-ui-button>
+
+          @if (!state.isReadOnly) {
+            <app-ui-button
+              variant="primary"
+              type="button"
+              [disabled]="submittingShift()"
+              (click)="confirmCloseShift()"
+            >
+              {{ submittingShift() ? 'Procesando Cierre...' : '🔒 Confirmar y Cerrar Caja' }}
+            </app-ui-button>
+          }
+        </footer>
+      </div>
+    </div>
+  }
+</div>

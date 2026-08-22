@@ -84,6 +84,10 @@ export const API_ENDPOINTS = {
     root: '/api/cash-registers',
     detail: (cashRegisterId: string) => `/api/cash-registers/${cashRegisterId}`,
     status: (cashRegisterId: string) => `/api/cash-registers/${cashRegisterId}/status`,
+    openShift: '/api/cash-registers/shifts/open',
+    closeShift: (shiftId: string) => `/api/cash-registers/shifts/${shiftId}/close`,
+    shiftSummary: (shiftId: string) => `/api/cash-registers/shifts/${shiftId}/summary`,
+    shiftsPage: '/api/cash-registers/shifts',
   },
   i18n: {
     language: (language: string) => `/api/i18n/${language}`,

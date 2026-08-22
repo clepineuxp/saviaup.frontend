@@ -90,6 +90,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'cash-registers',
+        title: 'Manejo de cajas · Savia Up',
+        canActivate: [
+          () =>
+            import('./features/cash-registers/guards/cash-register-permission.guard').then(
+              (m) => m.cashRegisterPermissionGuard,
+            ),
+        ],
+        loadComponent: () =>
+          import(
+            './features/cash-registers/cash-register-page/cash-register-page.component'
+          ).then((m) => m.CashRegisterPageComponent),
+      },
+      {
         path: 'products',
         title: 'Productos · Savia Up',
         loadChildren: () =>
@@ -138,6 +152,11 @@ export const routes: Routes = [
     path: 'configuration/cash-registers/manage',
     pathMatch: 'full',
     redirectTo: 'app/configuration/cash-registers/manage',
+  },
+  {
+    path: 'cash-registers',
+    pathMatch: 'full',
+    redirectTo: 'app/cash-registers',
   },
   { path: '**', redirectTo: '' },
 ];
