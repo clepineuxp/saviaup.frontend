@@ -23,6 +23,29 @@ export interface OrderItem {
   readonly updatedAt: string;
 }
 
+export interface OrderItemReport {
+  readonly itemId: string;
+  readonly orderId: string;
+  readonly orderNumber: number;
+  readonly tableName: string | null;
+  readonly productId: string | null;
+  readonly productName: string;
+  readonly unitPrice: number;
+  readonly quantity: number;
+  readonly subtotal: number;
+  readonly status: OrderItemStatus;
+  readonly notes: string | null;
+  readonly isCustomSale: boolean;
+  readonly cancellationReason: string | null;
+  readonly cancelledAt: string | null;
+  readonly cancelledByUserId: string | null;
+  readonly cancelledByUserName: string | null;
+  readonly createdByUserId: string;
+  readonly createdByUserName: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
 export interface Order {
   readonly id: string;
   readonly tenantId: string;

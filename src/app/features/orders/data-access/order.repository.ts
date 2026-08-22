@@ -8,11 +8,13 @@ import {
   CheckoutOrderRequest,
   MoveTableOrderRequest,
   Order,
+  OrderItemReport,
   OrderQueryRequest,
 } from '../models/order.model';
 
 export interface OrderRepository {
   listOrders(request: OrderQueryRequest): Observable<PagedResponse<Order>>;
+  listOrderItems(request: OrderQueryRequest): Observable<PagedResponse<OrderItemReport>>;
   getActiveByTable(tableId: string): Observable<Order>;
   addItems(tableId: string, request: AddOrderItemsRequest): Observable<Order>;
   moveTable(tableId: string, request: MoveTableOrderRequest): Observable<RestaurantTable>;

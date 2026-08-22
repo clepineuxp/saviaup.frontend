@@ -599,21 +599,54 @@
     }
   }
 
-  .grand-total-badge-card {
-    background: var(--color-savia-50, #f4faf5);
-    border: 1px solid #bbf7d0;
-    padding: 0.35rem 0.9rem;
-    border-radius: 8px;
+  .grand-total-summary-group {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.825rem;
-    color: var(--color-ink, #0f172a);
+    gap: 0.65rem;
+    flex-wrap: wrap;
 
-    .grand-total-val {
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: var(--color-savia-700, #15803d);
+    .grand-total-badge-card {
+      padding: 0.35rem 0.85rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.8rem;
+
+      .grand-total-val {
+        font-size: 1.05rem;
+        font-weight: 800;
+      }
+
+      &.subtotal-card {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        color: var(--color-ink, #0f172a);
+
+        .subtotal-val {
+          color: var(--color-ink, #0f172a);
+        }
+      }
+
+      &.tip-card {
+        background: #fefce8;
+        border: 1px solid #fef08a;
+        color: #854d0e;
+
+        .tip-val {
+          color: #854d0e;
+        }
+      }
+
+      &.total-card {
+        background: var(--color-savia-50, #f4faf5);
+        border: 1px solid #bbf7d0;
+        color: var(--color-ink, #0f172a);
+
+        .total-val {
+          color: var(--color-savia-700, #15803d);
+        }
+      }
     }
   }
 
@@ -743,11 +776,20 @@
     gap: 0.85rem;
 
     .page-size-selector,
-    .grand-total-badge-card,
+    .grand-total-summary-group,
     .pagination-info,
     .pagination-controls {
       justify-content: center;
       width: 100%;
+    }
+
+    .grand-total-summary-group {
+      flex-direction: column;
+
+      .grand-total-badge-card {
+        width: 100%;
+        justify-content: space-between;
+      }
     }
 
     .pagination-controls .page-btn {

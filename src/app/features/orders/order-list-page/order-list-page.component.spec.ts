@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { ORDER_REPOSITORY } from '../data-access/order.repository';
-import { Order } from '../models/order.model';
+import { Order, OrderItemReport } from '../models/order.model';
 import { OrderListPageComponent } from './order-list-page.component';
 import { vi } from 'vitest';
 
@@ -9,6 +9,7 @@ describe('OrderListPageComponent', () => {
   let component: OrderListPageComponent;
   let fixture: ComponentFixture<OrderListPageComponent>;
   let listOrdersSpy: ReturnType<typeof vi.fn>;
+  let listOrderItemsSpy: ReturnType<typeof vi.fn>;
 
   const dummyOrder: Order = {
     id: 'ord-1',
@@ -59,10 +60,43 @@ describe('OrderListPageComponent', () => {
     ],
   };
 
+  const dummyOrderItem: OrderItemReport = {
+    itemId: 'item-1',
+    orderId: 'ord-1',
+    orderNumber: 101,
+    tableName: 'Mesa 5',
+    productId: 'prod-1',
+    productName: 'Hamburguesa Especial',
+    unitPrice: 25000,
+    quantity: 2,
+    subtotal: 50000,
+    status: 'PAID',
+    notes: null,
+    isCustomSale: false,
+    cancellationReason: null,
+    cancelledAt: null,
+    cancelledByUserId: null,
+    cancelledByUserName: null,
+    createdByUserId: 'usr-1',
+    createdByUserName: 'admin@saviaup.com',
+    createdAt: '2026-08-21T15:30:00Z',
+    updatedAt: '2026-08-21T16:00:00Z',
+  };
+
   beforeEach(async () => {
     listOrdersSpy = vi.fn().mockReturnValue(
       of({
         items: [dummyOrder],
+        pageNumber: 1,
+        pageSize: 25,
+        totalItems: 1,
+        totalPages: 1,
+      }),
+    );
+
+    listOrderItemsSpy = vi.fn().mockReturnValue(
+      of({
+        items: [dummyOrderItem],
         pageNumber: 1,
         pageSize: 25,
         totalItems: 1,
@@ -77,6 +111,7 @@ describe('OrderListPageComponent', () => {
           provide: ORDER_REPOSITORY,
           useValue: {
             listOrders: listOrdersSpy,
+            listOrderItems: listOrderItemsSpy,
           },
         },
       ],
@@ -95,16 +130,19 @@ describe('OrderListPageComponent', () => {
     expect(component.orders()[0].createdByUserName).toBe('admin@saviaup.com');
   });
 
-  it('should compute totals sum for orders and flat items', () => {
+  it('should compute discriminated totals sum for products, tip and total order amount', () => {
+    expect(component.ordersSubtotalProductsSum()).toBe(50000);
+    expect(component.ordersTipsSum()).toBe(5000);
     expect(component.ordersTotalSum()).toBe(55000);
-    expect(component.flatItems().length).toBe(1);
-    expect(component.flatItemsTotalSum()).toBe(50000);
   });
 
-  it('should switch tabs between orders and items breakdown', () => {
+  it('should switch tabs between orders and items breakdown and load backend items endpoint', () => {
     expect(component.activeTab()).toBe('orders');
     component.setTab('items');
     expect(component.activeTab()).toBe('items');
+    expect(listOrderItemsSpy).toHaveBeenCalled();
+    expect(component.orderItems().length).toBe(1);
+    expect(component.flatItemsTotalSum()).toBe(50000);
   });
 
   it('should toggle multi-status filters correctly', () => {

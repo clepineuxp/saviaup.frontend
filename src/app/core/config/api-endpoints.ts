@@ -38,6 +38,7 @@ export const API_ENDPOINTS = {
   },
   orders: {
     root: '/api/orders',
+    items: '/api/orders/items',
     activeByTable: (tableId: string) => `/api/orders/table/${tableId}/active`,
     addItems: (tableId: string) => `/api/orders/table/${tableId}/items`,
     moveTable: (tableId: string) => `/api/orders/table/${tableId}/move`,

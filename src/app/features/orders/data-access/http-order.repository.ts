@@ -11,6 +11,7 @@ import {
   CheckoutOrderRequest,
   MoveTableOrderRequest,
   Order,
+  OrderItemReport,
   OrderQueryRequest,
 } from '../models/order.model';
 import { OrderRepository } from './order.repository';
@@ -47,6 +48,36 @@ export class HttpOrderRepository implements OrderRepository {
     }
 
     return this.api.get<PagedResponse<Order>>(API_ENDPOINTS.orders.root, { params });
+  }
+
+  listOrderItems(request: OrderQueryRequest): Observable<PagedResponse<OrderItemReport>> {
+    let params = new HttpParams()
+      .set('page', (request.page ?? 1).toString())
+      .set('pageSize', (request.pageSize ?? 25).toString());
+
+    if (request.search?.trim()) {
+      params = params.set('search', request.search.trim());
+    }
+
+    if (request.statuses && request.statuses.length > 0) {
+      request.statuses.forEach((s) => {
+        params = params.append('statuses', s);
+      });
+    }
+
+    if (request.fromDate) {
+      params = params.set('fromDate', request.fromDate);
+    }
+
+    if (request.toDate) {
+      params = params.set('toDate', request.toDate);
+    }
+
+    if (request.tableId) {
+      params = params.set('tableId', request.tableId);
+    }
+
+    return this.api.get<PagedResponse<OrderItemReport>>(API_ENDPOINTS.orders.items, { params });
   }
 
   getActiveByTable(tableId: string): Observable<Order> {

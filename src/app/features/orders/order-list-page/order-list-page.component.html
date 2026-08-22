@@ -4,7 +4,9 @@
     <div class="header-titles">
       <h1 class="page-title">
         Gestión de Comandas y Pedidos
-        <span class="total-badge" *ngIf="!loading()">{{ totalItems() }} comandas</span>
+        <span class="total-badge" *ngIf="!loading()">
+          {{ totalItems() }} {{ activeTab() === 'orders' ? 'comandas' : 'ítems' }}
+        </span>
       </h1>
       <p class="page-subtitle">Historial de comandas, productos vendidos, estados y auditoría por usuario.</p>
     </div>
@@ -34,7 +36,7 @@
         </div>
       </div>
 
-      <button type="button" class="sav-btn sav-btn-primary" (click)="loadOrders()">
+      <button type="button" class="sav-btn sav-btn-primary" (click)="loadData()">
         🔄 Actualizar
       </button>
     </div>
@@ -155,7 +157,9 @@
             <th *ngIf="isColumnVisible('tableName')">Mesa</th>
             <th *ngIf="isColumnVisible('status')">Estado</th>
             <th *ngIf="isColumnVisible('itemCount')">Ítems</th>
-            <th *ngIf="isColumnVisible('totalAmount')" class="text-right">Total</th>
+            <th *ngIf="isColumnVisible('subtotalAmount')" class="text-right">Total Productos</th>
+            <th *ngIf="isColumnVisible('tipAmount')" class="text-right">Propina</th>
+            <th *ngIf="isColumnVisible('totalAmount')" class="text-right">Total Pagado</th>
             <th *ngIf="isColumnVisible('createdBy')">Creado Por (Email)</th>
             <th *ngIf="isColumnVisible('createdAt')">Fecha Creación</th>
             <th *ngIf="isColumnVisible('paidBy')">Pagado / Cierre Por</th>
@@ -193,6 +197,12 @@
             </td>
             <td *ngIf="isColumnVisible('itemCount')">
               <span class="items-count">{{ order.items.length }} prod.</span>
+            </td>
+            <td *ngIf="isColumnVisible('subtotalAmount')" class="text-right bold-text">
+              {{ order.subtotalAmount | currency: 'COP': 'symbol': '1.0-0' }}
+            </td>
+            <td *ngIf="isColumnVisible('tipAmount')" class="text-right text-success">
+              {{ order.tipAmount > 0 ? ('+ ' + (order.tipAmount | currency: 'COP': 'symbol': '1.0-0')) : '$0' }}
             </td>
             <td *ngIf="isColumnVisible('totalAmount')" class="text-right bold-text primary-val">
               {{ order.totalAmount | currency: 'COP': 'symbol': '1.0-0' }}
@@ -250,9 +260,20 @@
         </select>
       </div>
 
-      <div class="grand-total-badge-card">
-        <span>Suma Total Registros Vista:</span>
-        <strong class="grand-total-val">{{ ordersTotalSum() | currency: 'COP': 'symbol': '1.0-0' }}</strong>
+      <!-- Discriminated Totals Summary -->
+      <div class="grand-total-summary-group">
+        <div class="grand-total-badge-card subtotal-card">
+          <span>Prod. Vista:</span>
+          <strong class="grand-total-val subtotal-val">{{ ordersSubtotalProductsSum() | currency: 'COP': 'symbol': '1.0-0' }}</strong>
+        </div>
+        <div class="grand-total-badge-card tip-card">
+          <span>Propina:</span>
+          <strong class="grand-total-val tip-val">+ {{ ordersTipsSum() | currency: 'COP': 'symbol': '1.0-0' }}</strong>
+        </div>
+        <div class="grand-total-badge-card total-card">
+          <span>Total Pagado:</span>
+          <strong class="grand-total-val total-val">{{ ordersTotalSum() | currency: 'COP': 'symbol': '1.0-0' }}</strong>
+        </div>
       </div>
 
       <div class="pagination-info">
@@ -280,7 +301,7 @@
     </footer>
   </main>
 
-  <!-- TAB 2: Items Breakdown View Table -->
+  <!-- TAB 2: Items Breakdown View Table (Paginated directly from backend endpoint) -->
   <main class="table-card-container" *ngIf="activeTab() === 'items'">
     <div class="loading-overlay" *ngIf="loading()">
       <span class="spinner"></span>
@@ -288,7 +309,7 @@
     </div>
 
     <div class="table-responsive" *ngIf="!loading()">
-      <table class="sav-data-table" *ngIf="flatItems().length > 0; else emptyStateItems">
+      <table class="sav-data-table" *ngIf="orderItems().length > 0; else emptyStateItems">
         <thead>
           <tr>
             <th *ngIf="isColumnVisible('orderNumber')"># Comanda</th>
@@ -304,7 +325,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let itemRow of flatItems()" (click)="openOrderDetails(itemRow.order)" class="order-row" [class.cancelled-row]="itemRow.status === 'CANCELLED'">
+          <tr *ngFor="let itemRow of orderItems()" (click)="openOrderItemDetails(itemRow)" class="order-row" [class.cancelled-row]="itemRow.status === 'CANCELLED'">
             <td *ngIf="isColumnVisible('orderNumber')">
               <span class="order-number-badge">#{{ itemRow.orderNumber }}</span>
             </td>
@@ -359,7 +380,7 @@
               <span class="time-text">{{ itemRow.createdAt | date: 'dd/MM/yyyy, HH:mm' }}</span>
             </td>
             <td *ngIf="isColumnVisible('actions')" class="text-center" (click)="$event.stopPropagation()">
-              <button type="button" class="btn-detail-action" (click)="openOrderDetails(itemRow.order)">
+              <button type="button" class="btn-detail-action" (click)="openOrderItemDetails(itemRow)">
                 👁️ Comanda
               </button>
             </td>
@@ -379,7 +400,7 @@
     </div>
 
     <!-- Pagination Footer Bar for Items Tab -->
-    <footer class="table-pagination-footer" *ngIf="!loading() && flatItems().length > 0">
+    <footer class="table-pagination-footer" *ngIf="!loading() && orderItems().length > 0">
       <div class="page-size-selector">
         <label>Mostrar por página:</label>
         <select class="sav-select-sm" [ngModel]="pageSize()" (ngModelChange)="changePageSize($event)">
@@ -390,13 +411,13 @@
         </select>
       </div>
 
-      <div class="grand-total-badge-card">
-        <span>Suma Total Subtotales Ítems:</span>
-        <strong class="grand-total-val">{{ flatItemsTotalSum() | currency: 'COP': 'symbol': '1.0-0' }}</strong>
+      <div class="grand-total-badge-card total-card">
+        <span>Suma Total Ítems en Pantalla:</span>
+        <strong class="grand-total-val total-val">{{ flatItemsTotalSum() | currency: 'COP': 'symbol': '1.0-0' }}</strong>
       </div>
 
       <div class="pagination-info">
-        <span>Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong> ({{ flatItems().length }} ítems cargados)</span>
+        <span>Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong> ({{ totalItems() }} ítems)</span>
       </div>
 
       <div class="pagination-controls">
