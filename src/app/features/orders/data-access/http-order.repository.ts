@@ -13,6 +13,7 @@ import {
   Order,
   OrderItemReport,
   OrderQueryRequest,
+  OrderReceipt,
 } from '../models/order.model';
 import { OrderRepository } from './order.repository';
 
@@ -98,5 +99,13 @@ export class HttpOrderRepository implements OrderRepository {
 
   checkout(tableId: string, request: CheckoutOrderRequest): Observable<Order> {
     return this.api.post<Order>(API_ENDPOINTS.orders.checkout(tableId), request);
+  }
+
+  generateSummaryReceipt(orderId: string): Observable<OrderReceipt> {
+    return this.api.post<OrderReceipt>(API_ENDPOINTS.orders.summaryReceipt(orderId), {});
+  }
+
+  getOrderReceipts(orderId: string): Observable<readonly OrderReceipt[]> {
+    return this.api.get<readonly OrderReceipt[]>(API_ENDPOINTS.orders.receipts(orderId));
   }
 }

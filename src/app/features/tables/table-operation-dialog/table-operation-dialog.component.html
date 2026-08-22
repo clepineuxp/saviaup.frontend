@@ -344,6 +344,42 @@
               }
             </div>
           }
+
+          <!-- SECCIÓN DE HISTORIAL DE COMPROBANTES / RE-IMPRESIÓN -->
+          <div class="receipts-history-section">
+            <div class="section-title-row">
+              <h3>📄 Comprobantes e Historial de Facturas (Re-impresión)</h3>
+              @if (loadingReceipts()) {
+                <small class="loading-text">Cargando comprobantes…</small>
+              }
+            </div>
+
+            <div class="receipts-list">
+              @for (receipt of orderReceipts(); track receipt.id) {
+                <div class="receipt-history-card">
+                  <div class="receipt-info-left">
+                    <strong class="receipt-title">{{ receipt.title }} (#{{ receipt.receiptNumber }})</strong>
+                    <span class="receipt-meta">
+                      Emitido el {{ receipt.createdAt | date: 'dd/MM/yyyy HH:mm' }} por {{ receipt.issuedByUserName }}
+                    </span>
+                    @if (receipt.paymentMethod) {
+                      <span class="receipt-payment-tag">💳 Medio: {{ receipt.paymentMethod }}</span>
+                    }
+                  </div>
+                  <div class="receipt-info-right">
+                    <strong class="receipt-total">{{ receipt.totalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                    <button type="button" class="reprint-btn" (click)="openPrintReceiptModal(receipt)">
+                      🖨️ Re-imprimir
+                    </button>
+                  </div>
+                </div>
+              } @empty {
+                <div class="empty-receipts-hint">
+                  No hay comprobantes o facturas guardadas para esta comanda aún.
+                </div>
+              }
+            </div>
+          </div>
         </div>
 
         <!-- Operations Toolbar -->
@@ -351,6 +387,15 @@
           <div class="operations-header">
             <h3>Acciones de Mesa</h3>
           </div>
+
+          <button
+            type="button"
+            class="op-btn secondary print-summary-btn"
+            [disabled]="blocked() || !activeOrder()"
+            (click)="generateAndPrintSummaryReceipt()"
+          >
+            🖨️ Imprimir Resumen (Pre-factura)
+          </button>
 
           <button
             type="button"
@@ -801,32 +846,30 @@
                         (ngModelChange)="co.singleCashReceived = +$event"
                       />
                     </label>
-
-                    @if (co.singleCashReceived !== undefined && co.singleCashReceived > 0) {
-                      @let change = co.singleCashReceived - co.splits[0].amount;
-                      <div class="change-badge" [class.success]="change >= 0" [class.warning]="change < 0">
-                        @if (change >= 0) {
-                          💵 Cambio / Devuelta: {{ change | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
-                        } @else {
-                          ⚠️ Falta efectivo: {{ Math.abs(change) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
-                        }
+                    @if (co.singleCashReceived && co.singleCashReceived >= co.splits[0].amount) {
+                      <div class="change-due-badge">
+                        <span>💰 Cambio a entregar al cliente:</span>
+                        <strong>{{ (co.singleCashReceived - co.splits[0].amount) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
                       </div>
                     }
                   </div>
                 }
               </div>
             } @else {
-              <!-- Mixed Payment Method Splits -->
-              <div class="mixed-payment-section">
-                <div class="mixed-header">
-                  <h4>División de Medios de Pago</h4>
+              <!-- Mixed Payment Method Splits Builder -->
+              <div class="mixed-payment-builder">
+                <div class="builder-header">
+                  <span>División de Medios de Pago</span>
+                  <button type="button" class="add-split-btn" (click)="addPaymentSplit()">
+                    + Agregar Medio
+                  </button>
                 </div>
 
-                @for (split of co.splits; track $index) {
-                  <div class="split-card">
+                <div class="splits-list">
+                  @for (split of co.splits; track $index) {
                     <div class="split-row">
                       <select
-                        class="sav-select"
+                        class="sav-select split-method-select"
                         [ngModel]="split.method"
                         (ngModelChange)="split.method = $event"
                       >
@@ -837,63 +880,29 @@
                         }
                       </select>
 
-                      <div class="input-currency-wrapper">
+                      <div class="split-amount-input-wrap">
+                        <span class="currency-prefix">$</span>
                         <input
                           type="number"
                           min="0"
                           step="500"
-                          placeholder="Monto"
                           [ngModel]="split.amount"
                           (ngModelChange)="updateSplitAmount($index, $event)"
                         />
-                        @if (split.amount > 0) {
-                          <span class="formatted-hint mini">💵 {{ split.amount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
-                        }
                       </div>
 
-                      <button
-                        type="button"
-                        class="btn-remove-split"
-                        [disabled]="co.splits.length <= 1"
-                        (click)="removePaymentSplit($index)"
-                      >
-                        ✕
-                      </button>
+                      @if (co.splits.length > 1) {
+                        <button
+                          type="button"
+                          class="remove-split-btn"
+                          (click)="removePaymentSplit($index)"
+                        >
+                          ✕
+                        </button>
+                      }
                     </div>
-
-                    <!-- Cash Calculator per split if method is Efectivo -->
-                    @if (split.method === 'Efectivo') {
-                      <div class="split-cash-box">
-                        <label class="form-label inline">
-                          <span>Efectivo recibido:</span>
-                          <input
-                            type="number"
-                            min="0"
-                            step="1000"
-                            placeholder="Ej. 50000"
-                            [ngModel]="split.cashReceived"
-                            (ngModelChange)="split.cashReceived = +$event"
-                          />
-                        </label>
-
-                        @if (split.cashReceived !== undefined && split.cashReceived > 0) {
-                          @let splitChange = split.cashReceived - split.amount;
-                          <span class="split-change-tag" [class.success]="splitChange >= 0" [class.warning]="splitChange < 0">
-                            @if (splitChange >= 0) {
-                              Cambio: {{ splitChange | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
-                            } @else {
-                              Falta: {{ Math.abs(splitChange) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
-                            }
-                          </span>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
-
-                <button type="button" class="btn-add-split" (click)="addPaymentSplit()">
-                  + Agregar otro medio de pago
-                </button>
+                  }
+                </div>
               </div>
             }
           </div>
@@ -902,92 +911,157 @@
             <button type="button" class="btn-cancel" (click)="closeCheckoutModal()">Cancelar</button>
             <button
               type="button"
-              class="btn-confirm primary"
-              [disabled]="balanceDifference() !== 0"
+              class="btn-confirm primary large-btn"
+              [disabled]="Math.abs(balanceDifference()) > 0.01"
               (click)="confirmCheckout()"
             >
-              {{ co.isPartial ? 'Procesar Pago Parcial' : 'Procesar Pago y Liberar Mesa' }}
+              ✓ Confirmar Pago y Generar Factura
             </button>
           </footer>
         </div>
       </div>
     }
-    <!-- Mobile Draft Summary Drawer / Modal -->
-    @if (showMobileDraftModal()) {
-      <div class="sub-modal-backdrop" (click)="closeMobileDraftModal()">
-        <div class="mobile-draft-drawer" (click)="$event.stopPropagation()">
-          <header class="drawer-header">
-            <div class="drawer-title-group">
-              <span class="drawer-icon">🛒</span>
-              <h3>Resumen del Pedido</h3>
-              <span class="items-badge">{{ draftItems().length }} ítems</span>
-            </div>
-            <button type="button" class="drawer-close-btn" (click)="closeMobileDraftModal()">✕</button>
+
+    <!-- SUB-MODAL 7: MODAL DE IMPRESIÓN DE TIRILLA TÉRMICA (PRINTABLE TICKET) -->
+    @if (activePrintReceiptState(); as receipt) {
+      @let org = settingsStore.organization();
+      @let parsedItems = receipt.items || [];
+      @let parsedSplits = receipt.paymentDetails || [];
+
+      <div class="sub-modal-backdrop print-modal-backdrop">
+        <div class="sub-modal print-modal">
+          <header class="sub-modal-header no-print">
+            <h3>🖨️ Comprobante de Tirilla (#{{ receipt.receiptNumber }})</h3>
+            <button type="button" class="close-btn-icon" (click)="closePrintReceiptModal()">✕</button>
           </header>
 
-          <main class="drawer-body">
-            @if (draftItems().length > 0) {
-              <div class="drawer-action-row">
-                <button type="button" class="clear-btn" (click)="clearDraft(); closeMobileDraftModal()">🗑️ Limpiar todo</button>
-              </div>
-            }
-
-            <div class="draft-items-list">
-              @if (draftItems().length === 0) {
-                <div class="draft-empty">
-                  Selecciona productos del catálogo para armar el pedido de esta mesa.
+          <div class="sub-modal-body print-modal-body">
+            <div class="thermal-ticket-container printable-area">
+              <!-- 1- LOGO -->
+              @if (logoUrl(); as logoSrc) {
+                <div class="ticket-logo-wrap">
+                  <img [src]="logoSrc" alt="Logo" class="ticket-logo-img" />
                 </div>
-              } @else {
-                @for (item of draftItems(); track $index) {
-                  <div class="draft-item-row">
-                    <div class="draft-item-details">
-                      <strong>{{ item.productName }}</strong>
-                      @if (item.notes) {
-                        <small class="item-notes">📝 {{ item.notes }}</small>
-                      }
-                      <span class="item-price">
-                        {{ item.unitPrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} x {{ item.quantity }}
-                      </span>
-                    </div>
-                    <div class="draft-item-controls">
-                      <button type="button" class="qty-btn" (click)="updateDraftQty($index, -1)">-</button>
-                      <span class="qty-val">{{ item.quantity }}</span>
-                      <button type="button" class="qty-btn" (click)="updateDraftQty($index, 1)">+</button>
-                      <button type="button" class="remove-btn" (click)="removeDraftItem($index)">✕</button>
-                    </div>
+              }
+
+              <!-- 2, 3, 4, 5, 6 - HEADER DE ORGANIZACIÓN -->
+              <div class="ticket-header-block">
+                <h2 class="commerce-name">{{ org?.name || 'SAVIA GASTROBAR' }}</h2>
+                @if (org?.document) {
+                  <div class="ticket-header-line">NIT / DOC: {{ org?.document }}</div>
+                }
+                @if (org?.email) {
+                  <div class="ticket-header-line">Email: {{ org?.email }}</div>
+                }
+                @if (org?.phone) {
+                  <div class="ticket-header-line">Tel: {{ org?.phone }}</div>
+                }
+                @if (org?.address) {
+                  <div class="ticket-header-line">
+                    {{ org?.address }}{{ org?.city ? ', ' + org?.city : '' }}
                   </div>
                 }
-              }
-            </div>
-
-            @if (draftItems().length > 0) {
-              <div class="draft-observations-container">
-                <label class="obs-field">
-                  <span>Observaciones generales para la mesa:</span>
-                  <input
-                    type="text"
-                    placeholder="Ej. Servir bebidas primero..."
-                    [ngModel]="draftObservations()"
-                    (ngModelChange)="draftObservations.set($event)"
-                  />
-                </label>
               </div>
-            }
-          </main>
 
-          <footer class="drawer-footer">
-            <div class="drawer-total-row">
-              <span>Subtotal:</span>
-              <strong class="total-amount-val">{{ draftTotal() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+              <!-- 7- LÍNEA DIVISORIA -->
+              <div class="ticket-divider-dash">------------------------------------------</div>
+
+              <!-- META TRANSACCIÓN -->
+              <div class="ticket-meta-block">
+                <div class="ticket-meta-line">
+                  <span>TICKET N°: <strong>#{{ receipt.receiptNumber }}</strong></span>
+                  <span>COMANDA: <strong>#{{ activeOrder()?.orderNumber || '-' }}</strong></span>
+                </div>
+                <div class="ticket-meta-line">
+                  <span>MESA: <strong>{{ table().name }}</strong></span>
+                  <span>FECHA: {{ receipt.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <div class="ticket-meta-line">
+                  <span>ATENDIDO POR: {{ receipt.issuedByUserName }}</span>
+                </div>
+              </div>
+
+              <div class="ticket-divider-dash">------------------------------------------</div>
+
+              <!-- 8- RESUMEN DE LA COMPRA (ÍTEMS) -->
+              <div class="ticket-items-block">
+                <div class="ticket-items-header">
+                  <span>CANT x PRODUCTO</span>
+                  <span class="text-end">SUBTOTAL</span>
+                </div>
+
+                @for (item of parsedItems; track $index) {
+                  <div class="ticket-item-row">
+                    <div class="t-item-name">{{ item.quantity }}x {{ item.productName }}</div>
+                    <div class="t-item-val">{{ item.subtotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</div>
+                  </div>
+                }
+              </div>
+
+              <div class="ticket-divider-dash">------------------------------------------</div>
+
+              <!-- 9, 10, 11, 12 - TOTALES -->
+              <div class="ticket-totals-block">
+                <!-- 11- TOTAL SIN PROPINA -->
+                <div class="ticket-total-line">
+                  <span>Subtotal (Sin Propina):</span>
+                  <span>{{ receipt.subtotalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+                </div>
+
+                <!-- 9- PROPINA VOLUNTARIA -->
+                @if (receipt.tipAmount > 0) {
+                  <div class="ticket-total-line">
+                    <span>Propina Voluntaria:</span>
+                    <span>{{ receipt.tipAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+                  </div>
+                }
+
+                <!-- 10- IMPUESTOS -->
+                @if (receipt.taxAmount > 0) {
+                  <div class="ticket-total-line">
+                    <span>Impuestos Incluidos:</span>
+                    <span>{{ receipt.taxAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+                  </div>
+                }
+
+                <div class="ticket-divider-dash">------------------------------------------</div>
+
+                <!-- 12- TOTAL A PAGAR CON PROPINA (EN NEGRITA Y TAMAÑO DESTACADO) -->
+                <div class="ticket-total-line total-grand">
+                  <span>TOTAL A PAGAR:</span>
+                  <strong>{{ receipt.totalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                </div>
+              </div>
+
+              <!-- DESGLOSE DE MEDIOS DE PAGO (Si es comprobante de pago) -->
+              @if (receipt.receiptType === 'PAYMENT' && parsedSplits.length > 0) {
+                <div class="ticket-divider-dash">------------------------------------------</div>
+                <div class="ticket-payment-methods-block">
+                  <strong class="section-sm-title">MEDIOS DE PAGO RECIBIDOS:</strong>
+                  @for (split of parsedSplits; track $index) {
+                    <div class="payment-split-line">
+                      <span>• {{ split.method }}:</span>
+                      <strong>{{ split.amount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                    </div>
+                  }
+                </div>
+              }
+
+              <div class="ticket-divider-dash">------------------------------------------</div>
+
+              <!-- 13- PIE DE COMPROBANTE -->
+              <footer class="ticket-footer-block">
+                <h3 class="ticket-footer-title">*** {{ receipt.title }} ***</h3>
+                <p class="ticket-footer-msg">¡Gracias por su visita!</p>
+                <small class="ticket-software-credit">SaviaUp SaaS · Sistema POS</small>
+              </footer>
             </div>
+          </div>
 
-            <button
-              type="button"
-              class="confirm-btn primary big-mobile-btn"
-              [disabled]="draftItems().length === 0 || submittingOrder() || blocked() || !canOperate()"
-              (click)="confirmSendDraft()"
-            >
-              {{ submittingOrder() ? 'Procesando...' : '✓ Confirmar e ingresar pedido' }}
+          <footer class="sub-modal-footer no-print">
+            <button type="button" class="btn-cancel" (click)="closePrintReceiptModal()">Cerrar</button>
+            <button type="button" class="btn-confirm primary print-btn" (click)="triggerPrint()">
+              🖨️ Imprimir Tirilla
             </button>
           </footer>
         </div>

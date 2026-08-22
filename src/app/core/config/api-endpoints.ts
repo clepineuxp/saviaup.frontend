@@ -44,6 +44,8 @@ export const API_ENDPOINTS = {
     moveTable: (tableId: string) => `/api/orders/table/${tableId}/move`,
     cancelItem: (itemId: string) => `/api/orders/items/${itemId}/cancel`,
     checkout: (tableId: string) => `/api/orders/table/${tableId}/checkout`,
+    summaryReceipt: (orderId: string) => `/api/orders/${orderId}/receipts/summary`,
+    receipts: (orderId: string) => `/api/orders/${orderId}/receipts`,
   },
   inventory: {
     root: '/api/inventory',

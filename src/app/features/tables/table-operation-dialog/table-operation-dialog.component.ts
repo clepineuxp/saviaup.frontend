@@ -21,6 +21,8 @@ import {
   CreateOrderItem,
   Order,
   OrderItem,
+  OrderReceipt,
+  OrderReceiptItem,
   PartialItemPay,
   PaymentSplit,
 } from '../../orders/models/order.model';
@@ -124,6 +126,15 @@ export class TableOperationDialogComponent {
   readonly partialPaySelectorState = signal<PartialPaySelectorModalState | null>(null);
   readonly checkoutState = signal<CheckoutModalState | null>(null);
 
+  // Receipt / Printable Ticket Signals
+  readonly orderReceipts = signal<readonly OrderReceipt[]>([]);
+  readonly activePrintReceiptState = signal<OrderReceipt | null>(null);
+  readonly loadingReceipts = signal<boolean>(false);
+  readonly generatingSummary = signal<boolean>(false);
+  readonly logoUrl = signal<string | null>(null);
+
+  private shouldCloseMainModalOnPrintClose = false;
+
   openMobileDraftModal(): void {
     if (this.draftItems().length === 0) {
       this.toastService.show('El pedido está vacío. Selecciona productos del catálogo primero.', 'warning', 3000);
@@ -168,12 +179,40 @@ export class TableOperationDialogComponent {
       } else {
         this.activeOrder.set(null);
         this.activeMainTab.set('add');
+        this.orderReceipts.set([]);
+      }
+    });
+
+    effect(() => {
+      const org = this.settingsStore.organization();
+      if (org?.hasLogo) {
+        this.loadLogoUrl();
+      } else {
+        this.logoUrl.set(null);
       }
     });
 
     this.loadCategories();
     this.loadCatalog(1);
     this.settingsStore.load().pipe(takeUntilDestroyed(), catchError(() => EMPTY)).subscribe();
+  }
+
+  private loadLogoUrl(): void {
+    this.settingsStore
+      .getLogo()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => of(null)),
+      )
+      .subscribe((blob) => {
+        if (blob) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            this.logoUrl.set(reader.result as string);
+          };
+          reader.readAsDataURL(blob);
+        }
+      });
   }
 
   private loadCategories(): void {
@@ -238,7 +277,95 @@ export class TableOperationDialogComponent {
       .subscribe((order) => {
         this.activeOrder.set(order);
         this.loadingOrder.set(false);
+        if (order) {
+          this.loadOrderReceipts(order.id);
+
+          // REQUISITO 3: Si ya no hay mas productos activos PENDING por pagar, marcar para cerrar o cerrar modal
+          const hasPendingItems = order.items.some((i) => i.status === 'PENDING');
+          if (!hasPendingItems) {
+            if (this.activePrintReceiptState() !== null) {
+              this.shouldCloseMainModalOnPrintClose = true;
+            } else {
+              this.closed.emit();
+            }
+          }
+        } else {
+          this.orderReceipts.set([]);
+          if (this.activePrintReceiptState() !== null) {
+            this.shouldCloseMainModalOnPrintClose = true;
+          } else {
+            this.closed.emit();
+          }
+        }
       });
+  }
+
+  loadOrderReceipts(orderId: string): void {
+    this.loadingReceipts.set(true);
+    this.orderRepo
+      .getOrderReceipts(orderId)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => of([])),
+      )
+      .subscribe((receipts) => {
+        this.orderReceipts.set(receipts);
+        this.loadingReceipts.set(false);
+      });
+  }
+
+  generateAndPrintSummaryReceipt(): void {
+    const order = this.activeOrder();
+    if (!order) return;
+
+    const pendingItems = order.items.filter((i) => i.status === 'PENDING');
+    const itemsToSummarize = pendingItems.length > 0 ? pendingItems : order.items.filter((i) => i.status !== 'CANCELLED');
+    const subtotal = itemsToSummarize.reduce((sum, item) => sum + item.subtotal, 0);
+    const total = subtotal + (order.tipAmount || 0);
+
+    const itemsDto: OrderReceiptItem[] = itemsToSummarize.map((item) => ({
+      productName: item.productName,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      subtotal: item.subtotal,
+    }));
+
+    const summaryReceipt: OrderReceipt = {
+      id: 'draft-summary',
+      tenantId: order.tenantId,
+      orderId: order.id,
+      receiptNumber: order.orderNumber,
+      receiptType: 'PRE_BILLING',
+      title: 'RESUMEN DE CUENTA (PRE-FACTURA)',
+      subtotalAmount: subtotal,
+      taxAmount: 0,
+      tipAmount: order.tipAmount || 0,
+      totalAmount: total,
+      paymentMethod: null,
+      paymentDetails: null,
+      items: itemsDto,
+      issuedByUserId: order.createdByUserId,
+      issuedByUserName: order.createdByUserName || 'Camarero',
+      createdAt: new Date().toISOString(),
+    };
+
+    this.openPrintReceiptModal(summaryReceipt);
+  }
+
+  openPrintReceiptModal(receipt: OrderReceipt): void {
+    this.activePrintReceiptState.set(receipt);
+  }
+
+  closePrintReceiptModal(): void {
+    this.activePrintReceiptState.set(null);
+    if (this.shouldCloseMainModalOnPrintClose) {
+      this.shouldCloseMainModalOnPrintClose = false;
+      this.closed.emit();
+    }
+  }
+
+  triggerPrint(): void {
+    window.print();
   }
 
   // Sub-modal product configuration
@@ -664,6 +791,9 @@ export class TableOperationDialogComponent {
       quantity: i.quantityToPay,
     }));
 
+    const currentOrderId = this.activeOrder()?.id;
+    const isFullPayment = !state.isPartial;
+
     this.orderRepo
       .checkout(this.table().id, {
         paymentMethod: state.isMixed ? 'Pago Mixto' : state.splits[0]?.method ?? 'Efectivo',
@@ -685,8 +815,19 @@ export class TableOperationDialogComponent {
           : '¡Mesa cobrada y liberada exitosamente!';
         this.toastService.show(msg, 'success', 3000);
         this.orderUpdated.emit();
-        if (!state.isPartial) {
-          this.closed.emit();
+
+        if (currentOrderId) {
+          this.orderRepo.getOrderReceipts(currentOrderId).subscribe((receipts) => {
+            this.orderReceipts.set(receipts);
+            const latestPaymentReceipt = receipts.find((r) => r.receiptType === 'PAYMENT');
+            if (latestPaymentReceipt) {
+              this.openPrintReceiptModal(latestPaymentReceipt);
+            }
+          });
+        }
+
+        if (isFullPayment) {
+          this.shouldCloseMainModalOnPrintClose = true;
         } else {
           this.loadActiveOrder(this.table().id);
         }
