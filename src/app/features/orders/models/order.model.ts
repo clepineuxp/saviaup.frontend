@@ -27,6 +27,7 @@ export interface Order {
   readonly id: string;
   readonly tenantId: string;
   readonly tableId: string | null;
+  readonly tableName: string | null;
   readonly orderNumber: number;
   readonly status: 'PENDING' | 'PAID' | 'CANCELLED';
   readonly subtotalAmount: number;
@@ -46,6 +47,16 @@ export interface Order {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly items: readonly OrderItem[];
+}
+
+export interface OrderQueryRequest {
+  readonly page?: number;
+  readonly pageSize?: number;
+  readonly search?: string | null;
+  readonly statuses?: readonly string[] | null;
+  readonly fromDate?: string | null;
+  readonly toDate?: string | null;
+  readonly tableId?: string | null;
 }
 
 export interface CreateOrderItem {

@@ -14,6 +14,7 @@ const knownModuleRoutes: Routes = KNOWN_MODULE_NAVIGATION.filter(
     code !== 'inventory' &&
     code !== 'products' &&
     code !== 'tables' &&
+    code !== 'orders' &&
     code !== 'settings',
 ).map(({ code, path }) => ({
   path,
@@ -48,6 +49,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/app/placeholder/app-placeholder.component').then(
             (component) => component.AppPlaceholderComponent,
+          ),
+      },
+      {
+        path: 'orders',
+        title: 'Comandas · Savia Up',
+        loadComponent: () =>
+          import('./features/orders/order-list-page/order-list-page.component').then(
+            (c) => c.OrderListPageComponent,
           ),
       },
       {
