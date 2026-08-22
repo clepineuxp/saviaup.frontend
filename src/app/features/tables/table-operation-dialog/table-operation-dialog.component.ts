@@ -346,8 +346,7 @@ export class TableOperationDialogComponent {
         this.clearDraft();
         this.toastService.show('Pedido ingresado correctamente', 'success', 3000);
         this.orderUpdated.emit();
-        this.loadActiveOrder(this.table().id);
-        this.activeMainTab.set('billing');
+        this.closed.emit();
       });
   }
 
@@ -675,7 +674,11 @@ export class TableOperationDialogComponent {
           : '¡Mesa cobrada y liberada exitosamente!';
         this.toastService.show(msg, 'success', 3000);
         this.orderUpdated.emit();
-        this.loadActiveOrder(this.table().id);
+        if (!state.isPartial) {
+          this.closed.emit();
+        } else {
+          this.loadActiveOrder(this.table().id);
+        }
       });
   }
 }
