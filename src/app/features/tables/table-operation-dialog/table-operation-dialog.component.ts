@@ -361,7 +361,192 @@ export class TableOperationDialogComponent {
   }
 
   triggerPrint(): void {
-    window.print();
+    const ticketEl = document.querySelector('.thermal-ticket-container') as HTMLElement;
+    if (!ticketEl) {
+      window.print();
+      return;
+    }
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      document.body.removeChild(iframe);
+      window.print();
+      return;
+    }
+
+    const ticketHtml = ticketEl.outerHTML;
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Impresión de Tirilla</title>
+          <style>
+            @page {
+              size: 80mm auto;
+              margin: 0;
+            }
+            html, body {
+              margin: 0;
+              padding: 0;
+              background: #ffffff;
+              width: 80mm;
+              font-family: 'Courier New', Courier, monospace, sans-serif;
+              color: #000000;
+            }
+            .thermal-ticket-container {
+              width: 80mm;
+              max-width: 80mm;
+              padding: 4mm 2mm;
+              box-sizing: border-box;
+              background: #ffffff;
+              color: #000000;
+              font-size: 11px;
+              line-height: 1.4;
+            }
+            .ticket-logo-wrap {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              text-align: center;
+              margin: 0 auto 0.5rem auto;
+            }
+            .ticket-logo-img {
+              max-width: 140px;
+              max-height: 70px;
+              object-fit: contain;
+              display: block;
+              margin: 0 auto;
+            }
+            .ticket-header-block {
+              text-align: center;
+              margin-bottom: 0.5rem;
+            }
+            .commerce-name {
+              font-size: 15px;
+              font-weight: 900;
+              margin: 0 0 0.25rem 0;
+              text-transform: uppercase;
+            }
+            .ticket-header-line {
+              font-size: 11px;
+            }
+            .ticket-divider-dash {
+              text-align: center;
+              font-weight: 700;
+              margin: 0.4rem 0;
+              white-space: nowrap;
+              overflow: hidden;
+            }
+            .ticket-meta-block {
+              display: flex;
+              flex-direction: column;
+              gap: 0.2rem;
+              font-size: 11px;
+            }
+            .ticket-meta-line {
+              display: flex;
+              justify-content: space-between;
+            }
+            .ticket-items-block {
+              margin: 0.4rem 0;
+            }
+            .ticket-items-header {
+              display: flex;
+              justify-content: space-between;
+              font-weight: 800;
+              font-size: 11px;
+              border-bottom: 1px dashed #000;
+              padding-bottom: 0.2rem;
+              margin-bottom: 0.3rem;
+            }
+            .ticket-item-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              margin-bottom: 0.25rem;
+            }
+            .t-item-name {
+              flex: 1;
+              font-weight: 700;
+              padding-right: 0.5rem;
+            }
+            .t-item-val {
+              font-weight: 800;
+              white-space: nowrap;
+            }
+            .ticket-totals-block {
+              display: flex;
+              flex-direction: column;
+              gap: 0.25rem;
+            }
+            .ticket-total-line {
+              display: flex;
+              justify-content: space-between;
+            }
+            .ticket-total-line.total-grand {
+              font-size: 14px;
+              font-weight: 900;
+              padding-top: 0.2rem;
+            }
+            .ticket-payment-methods-block {
+              display: flex;
+              flex-direction: column;
+              gap: 0.2rem;
+            }
+            .payment-split-line {
+              display: flex;
+              justify-content: space-between;
+              font-size: 11px;
+            }
+            .ticket-footer-block {
+              text-align: center;
+              margin-top: 0.5rem;
+            }
+            .ticket-footer-title {
+              font-size: 13px;
+              font-weight: 900;
+              margin: 0 0 0.2rem 0;
+            }
+            .ticket-footer-msg {
+              font-size: 11px;
+              margin: 0 0 0.2rem 0;
+            }
+            .ticket-software-credit {
+              font-size: 9px;
+              color: #444444;
+            }
+            .no-print {
+              display: none !important;
+            }
+          </style>
+        </head>
+        <body>
+          ${ticketHtml}
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 1000);
+    }, 250);
   }
 
   // Sub-modal product configuration
