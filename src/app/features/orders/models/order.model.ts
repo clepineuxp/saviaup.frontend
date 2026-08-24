@@ -120,3 +120,29 @@ export interface CheckoutOrderRequest {
   readonly tipAmount?: number;
   readonly itemsToPay?: readonly PartialItemPay[];
 }
+
+export interface OrderReceiptItem {
+  readonly productName: string;
+  readonly quantity: number;
+  readonly unitPrice: number;
+  readonly subtotal: number;
+}
+
+export interface OrderReceipt {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly orderId: string;
+  readonly receiptNumber: number;
+  readonly receiptType: string;
+  readonly title: string;
+  readonly subtotalAmount: number;
+  readonly taxAmount: number;
+  readonly tipAmount: number;
+  readonly totalAmount: number;
+  readonly paymentMethod: string | null;
+  readonly paymentDetails: readonly PaymentSplit[] | null;
+  readonly items: readonly OrderReceiptItem[];
+  readonly issuedByUserId: string;
+  readonly issuedByUserName: string;
+  readonly createdAt: string;
+}

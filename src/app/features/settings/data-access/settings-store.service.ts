@@ -67,14 +67,15 @@ export class SettingsStore {
       switchMap((user) => {
         this.userPermissionsState.set(new Set(user.permissions));
         const can = (permission: string) => user.permissions.includes(permission);
+        const canOperateOrRead = can('orders.create') || can('tables.operate') || can('orders.read') || can('tables.read');
         return forkJoin({
-          organization: can(SETTINGS_PERMISSIONS.organizationRead)
+          organization: (can(SETTINGS_PERMISSIONS.organizationRead) || canOperateOrRead)
             ? this.repository.getOrganization()
             : of(null),
-          business: can(SETTINGS_PERMISSIONS.businessRead)
+          business: (can(SETTINGS_PERMISSIONS.businessRead) || canOperateOrRead)
             ? this.repository.getBusiness()
             : of(null),
-          payments: can(SETTINGS_PERMISSIONS.paymentsRead)
+          payments: (can(SETTINGS_PERMISSIONS.paymentsRead) || canOperateOrRead)
             ? this.repository.listPaymentMethods()
             : of([]),
           roles: can(SETTINGS_PERMISSIONS.rolesRead) ? this.repository.listRoles() : of([]),

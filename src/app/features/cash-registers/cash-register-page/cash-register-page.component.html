@@ -2,9 +2,9 @@
   <!-- Header de Sección -->
   <header class="page-header">
     <div class="header-copy">
-      <span class="badge-module">Uso y Manejo de Cajas</span>
-      <h2>Apertura, Arqueo y Cierre de Cajas</h2>
-      <p>Realiza la apertura de turnos de caja, registra montos iniciales, efectúa el arqueo de ventas y cierra la caja al finalizar la jornada.</p>
+      <span class="badge-module">{{ 'cashRegisters.shift.title' | translate }}</span>
+      <h2>{{ 'cashRegisters.shift.title' | translate }}</h2>
+      <p>{{ 'cashRegisters.shift.subtitle' | translate }}</p>
     </div>
   </header>
 
@@ -17,15 +17,15 @@
             <span class="icon-glyph">◫</span>
             <div>
               <h3>{{ register.name }}</h3>
-              <small class="location">{{ register.location || 'Sin ubicación' }}</small>
+              <small class="location">{{ register.location || ('cashRegisters.shift.noLocation' | translate) }}</small>
             </div>
           </div>
 
           <div class="status-tags">
             @if (register.hasOpenShift) {
-              <span class="shift-badge open">🟢 CAJA ABIERTA</span>
+              <span class="shift-badge open">🟢 {{ 'cashRegisters.shift.activeShiftBadge' | translate }}</span>
             } @else {
-              <span class="shift-badge closed">🔴 CAJA CERRADA</span>
+              <span class="shift-badge closed">🔴 {{ 'cashRegisters.status.inactive' | translate }}</span>
             }
           </div>
         </div>
@@ -37,7 +37,7 @@
               class="action-btn close-shift-btn"
               (click)="openCloseShiftModal(register.activeShiftId)"
             >
-              🔒 Cerrar Caja y Arqueo
+              🔒 {{ 'cashRegisters.shift.closeShiftBtn' | translate }}
             </button>
           } @else if (register.isActive) {
             <button
@@ -45,27 +45,26 @@
               class="action-btn open-shift-btn"
               (click)="openOpenShiftModal(register)"
             >
-              ➕ Abrir Turno de Caja
+              ➕ {{ 'cashRegisters.shift.openShift' | translate }}
             </button>
           }
         </div>
       </div>
     } @empty {
       <div class="empty-card-banner">
-        <p>No hay cajas registradoras activas. Activa una caja desde la sección de administración.</p>
+        <p>{{ 'cashRegisters.management.noActiveNotice' | translate }}</p>
       </div>
     }
   </div>
 
-  <!-- SECCIÓN 8: HISTORIAL PAGINADO DE TURNOS DE CAJA -->
+  <!-- HISTORIAL PAGINADO DE TURNOS DE CAJA -->
   <section class="shifts-history-section">
     <div class="section-header">
       <div class="header-text">
-        <h3>📋 Historial de Turnos de Caja</h3>
-        <p>Listado paginado de turnos indicando quién abrió, quién cerró, fechas y montos recolectados.</p>
+        <h3>📋 {{ 'cashRegisters.shift.historyTitle' | translate }}</h3>
       </div>
       <button type="button" class="refresh-btn" (click)="loadShiftsPage(shiftsPage()?.pageNumber || 1)">
-        🔄 Actualizar Historial
+        🔄 {{ 'orders.refresh' | translate }}
       </button>
     </div>
 
@@ -74,24 +73,24 @@
         <table class="shifts-table">
           <thead>
             <tr>
-              <th>Caja Registradora</th>
-              <th>Estado</th>
-              <th>Abierta Por (Email)</th>
-              <th>Fecha Apertura</th>
-              <th>Cerrada Por (Email)</th>
-              <th>Fecha Cierre</th>
-              <th>Total Recolectado</th>
-              <th class="text-end">Acciones</th>
+              <th>{{ 'cashRegisters.table.name' | translate }}</th>
+              <th>{{ 'cashRegisters.table.status' | translate }}</th>
+              <th>{{ 'orders.cols.createdBy' | translate }}</th>
+              <th>{{ 'orders.cols.createdAt' | translate }}</th>
+              <th>{{ 'orders.cols.paidBy' | translate }}</th>
+              <th>{{ 'orders.cols.paidAt' | translate }}</th>
+              <th>{{ 'cashRegisters.shift.totalInCash' | translate }}</th>
+              <th class="text-end">{{ 'cashRegisters.table.actions' | translate }}</th>
             </tr>
           </thead>
           <tbody>
             @if (loadingShifts()) {
               <tr>
-                <td colspan="8" class="loading-cell">Cargando historial de turnos...</td>
+                <td colspan="8" class="loading-cell">{{ 'common.loading' | translate }}</td>
               </tr>
             } @else if (shiftsPage()?.items?.length === 0) {
               <tr>
-                <td colspan="8" class="empty-cell">No hay registros de turnos de caja en el sistema.</td>
+                <td colspan="8" class="empty-cell">{{ 'cashRegisters.management.emptyState' | translate }}</td>
               </tr>
             } @else {
               @for (shift of shiftsPage()?.items; track shift.id) {
@@ -101,9 +100,9 @@
                   </td>
                   <td>
                     @if (shift.status === 'OPEN') {
-                      <span class="status-tag open">ABIERTA</span>
+                      <span class="status-tag open">{{ 'cashRegisters.shift.activeShiftBadge' | translate }}</span>
                     } @else {
-                      <span class="status-tag closed">CERRADA</span>
+                      <span class="status-tag closed">{{ 'cashRegisters.status.inactive' | translate }}</span>
                     }
                   </td>
                   <td>
@@ -132,11 +131,11 @@
                   <td class="text-end">
                     @if (shift.status === 'OPEN') {
                       <button type="button" class="table-action-btn close-btn" (click)="openCloseShiftModal(shift.id)">
-                        🔒 Cerrar Caja
+                        🔒 {{ 'cashRegisters.shift.closeShiftBtn' | translate }}
                       </button>
                     } @else {
                       <button type="button" class="table-action-btn view-btn" (click)="openCloseShiftModal(shift.id, true)">
-                        👁️ Ver Arqueo
+                        👁️ {{ 'orders.viewDetails' | translate }}
                       </button>
                     }
                   </td>
@@ -157,7 +156,7 @@
               [disabled]="p.pageNumber <= 1"
               (click)="loadShiftsPage(p.pageNumber - 1)"
             >
-              ‹ Anterior
+              ‹
             </button>
             <span class="page-info">
               Página {{ p.pageNumber }} de {{ p.totalPages }} ({{ p.totalItems }} turnos)
@@ -168,7 +167,7 @@
               [disabled]="p.pageNumber >= p.totalPages"
               (click)="loadShiftsPage(p.pageNumber + 1)"
             >
-              Siguiente ›
+              ›
             </button>
           </div>
         }
@@ -176,23 +175,19 @@
     </div>
   </section>
 
-  <!-- MODAL DE APERTURA DE CAJA (REGLA 2) -->
+  <!-- MODAL DE APERTURA DE CAJA -->
   @if (openShiftModalRegister(); as register) {
     <div class="modal-overlay">
       <div class="modal-card opening-modal">
         <header class="modal-header">
           <div class="title-group">
             <span class="icon">🔓</span>
-            <h3>Apertura de Caja · {{ register.name }}</h3>
+            <h3>{{ 'cashRegisters.shift.openShiftModalTitle' | translate }} · {{ register.name }}</h3>
           </div>
           <button type="button" class="close-button" (click)="closeOpenShiftModal()">✕</button>
         </header>
 
         <main class="modal-body">
-          <p class="modal-desc">
-            Indica los fondos o montos iniciales con los que se inicia la jornada para los medios de pago configurados:
-          </p>
-
           @if (shiftErrorMessage(); as err) {
             <app-ui-alert [message]="err" />
           }
@@ -201,7 +196,7 @@
             @for (method of openingMethodsList(); track method.id) {
               <div class="method-field">
                 <label>
-                  <span>💰 Fondo Inicial en <strong>{{ method.name }}</strong>:</span>
+                  <span>💰 {{ 'cashRegisters.shift.initialFund' | translate }} <strong>{{ method.name }}</strong>:</span>
                   <div class="input-currency-wrap">
                     <span class="currency-prefix">$</span>
                     <input
@@ -214,17 +209,13 @@
                   </div>
                 </label>
               </div>
-            } @empty {
-              <p class="no-methods-warning">
-                No hay medios de pago configurados con la opción "Registra al abrir caja".
-              </p>
             }
           </div>
         </main>
 
         <footer class="modal-footer">
           <app-ui-button variant="secondary" type="button" (click)="closeOpenShiftModal()">
-            Cancelar
+            {{ 'common.cancel' | translate }}
           </app-ui-button>
           <app-ui-button
             variant="primary"
@@ -232,14 +223,14 @@
             [disabled]="submittingShift()"
             (click)="confirmOpenShift()"
           >
-            {{ submittingShift() ? 'Abriendo Caja...' : '✓ Confirmar y Abrir Turno' }}
+            {{ submittingShift() ? ('common.loading' | translate) : ('cashRegisters.shift.openSubmitBtn' | translate) }}
           </app-ui-button>
         </footer>
       </div>
     </div>
   }
 
-  <!-- MODAL DE CIERRE Y ARQUEO DE CAJA (REGLAS 6.1 & 6.2) -->
+  <!-- MODAL DE CIERRE Y ARQUEO DE CAJA -->
   @if (closingShiftState(); as state) {
     <div class="modal-overlay">
       <div class="modal-card closing-modal">
@@ -247,7 +238,7 @@
           <div class="title-group">
             <span class="icon">🔒</span>
             <h3>
-              {{ state.isReadOnly ? 'Resumen de Cierre de Caja' : 'Cierre de Caja y Arqueo de Valores' }}
+              {{ (state.isReadOnly ? 'orders.details.totalsTitle' : 'cashRegisters.shift.closeShiftModalTitle') | translate }}
               · {{ state.summary.cashRegisterName }}
             </h3>
           </div>
@@ -259,75 +250,53 @@
             <app-ui-alert [message]="err" />
           }
 
-          <!-- SECCIÓN 6.1: DETALLE DE VENTAS -->
+          <!-- DETALLE DE VENTAS DEL TURNO -->
           <section class="closing-section sales-detail-section">
-            <h4>📊 6.1 Detalle de Ventas del Turno</h4>
+            <h4>📊 {{ 'cashRegisters.shift.summaryTitle' | translate }}</h4>
             <div class="metrics-grid">
               <div class="metric-card">
-                <span class="metric-label">Total Ventas (Subtotal)</span>
+                <span class="metric-label">{{ 'orders.cols.subtotalAmount' | translate }}</span>
                 <strong class="metric-val">{{ state.summary.totalSalesAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
               </div>
               <div class="metric-card">
-                <span class="metric-label">Total Propinas</span>
+                <span class="metric-label">{{ 'cashRegisters.shift.tips' | translate }}</span>
                 <strong class="metric-val tip">{{ state.summary.totalTipsAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
               </div>
               <div class="metric-card highlight">
-                <span class="metric-label">Total Recolectado</span>
+                <span class="metric-label">{{ 'cashRegisters.shift.totalInCash' | translate }}</span>
                 <strong class="metric-val collected">{{ state.summary.totalCollectedAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
               </div>
             </div>
           </section>
 
-          <!-- SECCIÓN 6.2: DETALLE DE CIERRE Y ARQUEO -->
+          <!-- DETALLE DE CIERRE Y ARQUEO DE VALORES -->
           <section class="closing-section cash-audit-section">
-            <h4>💵 6.2 Detalle de Cierre y Arqueo de Valores por Medio de Pago</h4>
-            <p class="section-hint">
-              Revisa los valores recolectados en ventas más el saldo inicial menos gastos. Ingresa el dinero real contado en caja.
-            </p>
+            <h4>💵 {{ 'settings.tabs.payments' | translate }}</h4>
 
             <div class="table-responsive">
               <table class="audit-table">
                 <thead>
                   <tr>
-                    <th>Medio de Pago</th>
-                    <th>Fondo Inicial</th>
-                    <th>Ventas Cobradas</th>
-                    <th>Gastos Salidos</th>
-                    <th>Total Esperado en Caja</th>
-                    <th>Monto Real Contado</th>
-                    <th>Diferencia</th>
+                    <th>{{ 'settings.tabs.payments' | translate }}</th>
+                    <th>{{ 'cashRegisters.shift.initialFund' | translate }}</th>
+                    <th>{{ 'cashRegisters.shift.sales' | translate }}</th>
+                    <th>{{ 'cashRegisters.shift.tips' | translate }}</th>
+                    <th>{{ 'cashRegisters.shift.expenses' | translate }}</th>
+                    <th>{{ 'cashRegisters.shift.total' | translate }}</th>
+                    <th>{{ 'cashRegisters.shift.totalInCash' | translate }}</th>
                   </tr>
                 </thead>
                 <tbody>
                   @for (m of state.summary.methodSummaries; track m.methodName) {
-                    @let diff = getCalculatedDifference(m.methodName, m.expectedTotalAmount);
+                    @let totalCol = (m.totalCollectedAmount !== undefined && m.totalCollectedAmount !== null) ? m.totalCollectedAmount : (m.salesCollectedAmount + (m.tipsCollectedAmount || 0));
                     <tr>
                       <td><strong>{{ m.methodName }}</strong></td>
                       <td>{{ m.initialOpeningAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
                       <td>{{ m.salesCollectedAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
+                      <td>{{ (m.tipsCollectedAmount || 0) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
                       <td>{{ m.expensesAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
+                      <td><strong class="collected-val">{{ totalCol | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></td>
                       <td><strong class="expected-val">{{ m.expectedTotalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></td>
-                      <td>
-                        @if (state.isReadOnly) {
-                          <strong>{{ m.actualAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
-                        } @else {
-                          <input
-                            type="number"
-                            class="actual-input"
-                            min="0"
-                            step="500"
-                            [ngModel]="state.actualAmounts[m.methodName]"
-                            (ngModelChange)="updateClosingActualAmount(m.methodName, $event)"
-                          />
-                        }
-                      </td>
-                      <td>
-                        <span class="diff-tag" [class.exact]="diff === 0" [class.surplus]="diff > 0" [class.deficit]="diff < 0">
-                          @if (diff === 0) { ✓ Exacto }
-                          @else if (diff > 0) { +{{ diff | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} (Sobrante) }
-                          @else { {{ diff | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} (Faltante) }
-                        </span>
-                      </td>
                     </tr>
                   }
                 </tbody>
@@ -338,7 +307,7 @@
 
         <footer class="modal-footer">
           <app-ui-button variant="secondary" type="button" (click)="closeCloseShiftModal()">
-            {{ state.isReadOnly ? 'Cerrar' : 'Cancelar' }}
+            {{ (state.isReadOnly ? 'common.cancel' : 'common.cancel') | translate }}
           </app-ui-button>
 
           @if (!state.isReadOnly) {
@@ -348,7 +317,7 @@
               [disabled]="submittingShift()"
               (click)="confirmCloseShift()"
             >
-              {{ submittingShift() ? 'Procesando Cierre...' : '🔒 Confirmar y Cerrar Caja' }}
+              {{ submittingShift() ? ('common.loading' | translate) : ('cashRegisters.shift.closeSubmitBtn' | translate) }}
             </app-ui-button>
           }
         </footer>

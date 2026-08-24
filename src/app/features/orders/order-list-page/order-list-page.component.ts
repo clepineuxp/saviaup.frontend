@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ORDER_REPOSITORY } from '../data-access/order.repository';
 import { Order, OrderItemReport, OrderQueryRequest } from '../models/order.model';
 import { OrderDetailsDialogComponent } from '../order-details-dialog/order-details-dialog.component';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 export interface ColumnDefinition {
   readonly id: string;
@@ -14,7 +15,7 @@ export interface ColumnDefinition {
 @Component({
   selector: 'app-order-list-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe, DatePipe, OrderDetailsDialogComponent],
+  imports: [CommonModule, FormsModule, CurrencyPipe, DatePipe, TranslatePipe, OrderDetailsDialogComponent],
   templateUrl: './order-list-page.component.html',
   styleUrl: './order-list-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,32 +46,32 @@ export class OrderListPageComponent implements OnInit {
   // Column visibility selector state for Orders Tab
   readonly showColumnPicker = signal<boolean>(false);
   readonly orderColumns = signal<ColumnDefinition[]>([
-    { id: 'orderNumber', label: '# Comanda', visible: true },
-    { id: 'tableName', label: 'Mesa', visible: true },
-    { id: 'status', label: 'Estado', visible: true },
-    { id: 'itemCount', label: 'Ítems', visible: true },
-    { id: 'subtotalAmount', label: 'Total Productos', visible: true },
-    { id: 'tipAmount', label: 'Propina', visible: true },
-    { id: 'totalAmount', label: 'Total Pagado', visible: true },
-    { id: 'createdBy', label: 'Creado Por', visible: true },
-    { id: 'createdAt', label: 'Fecha Creación', visible: true },
-    { id: 'paidBy', label: 'Pagado / Cierre', visible: true },
-    { id: 'paidAt', label: 'Fecha Pago', visible: true },
-    { id: 'actions', label: 'Acciones', visible: true },
+    { id: 'orderNumber', label: 'orders.cols.orderNumber', visible: true },
+    { id: 'tableName', label: 'orders.cols.tableName', visible: true },
+    { id: 'status', label: 'orders.cols.status', visible: true },
+    { id: 'itemCount', label: 'orders.cols.itemCount', visible: true },
+    { id: 'subtotalAmount', label: 'orders.cols.subtotalAmount', visible: true },
+    { id: 'tipAmount', label: 'orders.cols.tipAmount', visible: true },
+    { id: 'totalAmount', label: 'orders.cols.totalAmount', visible: true },
+    { id: 'createdBy', label: 'orders.cols.createdBy', visible: true },
+    { id: 'createdAt', label: 'orders.cols.createdAt', visible: true },
+    { id: 'paidBy', label: 'orders.cols.paidBy', visible: true },
+    { id: 'paidAt', label: 'orders.cols.paidAt', visible: true },
+    { id: 'actions', label: 'orders.cols.actions', visible: true },
   ]);
 
   // Column visibility selector state for Items Tab
   readonly itemColumns = signal<ColumnDefinition[]>([
-    { id: 'orderNumber', label: '# Comanda', visible: true },
-    { id: 'tableName', label: 'Mesa', visible: true },
-    { id: 'productName', label: 'Producto / Descripción', visible: true },
-    { id: 'quantity', label: 'Cantidad', visible: true },
-    { id: 'unitPrice', label: 'Precio Unit.', visible: true },
-    { id: 'subtotal', label: 'Subtotal Ítem', visible: true },
-    { id: 'status', label: 'Estado Ítem', visible: true },
-    { id: 'createdBy', label: 'Creado Por', visible: true },
-    { id: 'createdAt', label: 'Fecha Creación', visible: true },
-    { id: 'actions', label: 'Ver Orden', visible: true },
+    { id: 'orderNumber', label: 'orders.cols.orderNumber', visible: true },
+    { id: 'tableName', label: 'orders.cols.tableName', visible: true },
+    { id: 'productName', label: 'orders.cols.productName', visible: true },
+    { id: 'quantity', label: 'orders.cols.quantity', visible: true },
+    { id: 'unitPrice', label: 'orders.cols.unitPrice', visible: true },
+    { id: 'subtotal', label: 'orders.cols.subtotal', visible: true },
+    { id: 'status', label: 'orders.cols.status', visible: true },
+    { id: 'createdBy', label: 'orders.cols.createdBy', visible: true },
+    { id: 'createdAt', label: 'orders.cols.createdAt', visible: true },
+    { id: 'actions', label: 'orders.cols.viewOrder', visible: true },
   ]);
 
   // Computed total sum of subtotalAmount (Total Productos) for visible non-cancelled orders
@@ -93,7 +94,18 @@ export class OrderListPageComponent implements OnInit {
     this.orderItems().reduce((sum, item) => sum + item.subtotal, 0),
   );
 
+  private getTodayDateString(): string {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   ngOnInit(): void {
+    const todayStr = this.getTodayDateString();
+    this.fromDate.set(todayStr);
+    this.toDate.set(todayStr);
     this.loadData();
   }
 
@@ -112,7 +124,7 @@ export class OrderListPageComponent implements OnInit {
       pageSize: this.pageSize(),
       search: this.searchQuery(),
       statuses: this.selectedStatuses().length > 0 ? this.selectedStatuses() : null,
-      fromDate: this.fromDate() ? new Date(this.fromDate()).toISOString() : null,
+      fromDate: this.fromDate() ? new Date(this.fromDate() + 'T00:00:00').toISOString() : null,
       toDate: this.toDate() ? new Date(this.toDate() + 'T23:59:59').toISOString() : null,
     };
 
@@ -174,8 +186,9 @@ export class OrderListPageComponent implements OnInit {
   resetFilters(): void {
     this.searchQuery.set('');
     this.selectedStatuses.set([]);
-    this.fromDate.set('');
-    this.toDate.set('');
+    const todayStr = this.getTodayDateString();
+    this.fromDate.set(todayStr);
+    this.toDate.set(todayStr);
     this.currentPage.set(1);
     this.loadData();
   }

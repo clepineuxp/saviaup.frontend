@@ -21,6 +21,8 @@ import {
   CreateOrderItem,
   Order,
   OrderItem,
+  OrderReceipt,
+  OrderReceiptItem,
   PartialItemPay,
   PaymentSplit,
 } from '../../orders/models/order.model';
@@ -124,6 +126,15 @@ export class TableOperationDialogComponent {
   readonly partialPaySelectorState = signal<PartialPaySelectorModalState | null>(null);
   readonly checkoutState = signal<CheckoutModalState | null>(null);
 
+  // Receipt / Printable Ticket Signals
+  readonly orderReceipts = signal<readonly OrderReceipt[]>([]);
+  readonly activePrintReceiptState = signal<OrderReceipt | null>(null);
+  readonly loadingReceipts = signal<boolean>(false);
+  readonly generatingSummary = signal<boolean>(false);
+  readonly logoUrl = signal<string | null>(null);
+
+  private shouldCloseMainModalOnPrintClose = false;
+
   openMobileDraftModal(): void {
     if (this.draftItems().length === 0) {
       this.toastService.show('El pedido está vacío. Selecciona productos del catálogo primero.', 'warning', 3000);
@@ -168,12 +179,40 @@ export class TableOperationDialogComponent {
       } else {
         this.activeOrder.set(null);
         this.activeMainTab.set('add');
+        this.orderReceipts.set([]);
+      }
+    });
+
+    effect(() => {
+      const org = this.settingsStore.organization();
+      if (org?.hasLogo) {
+        this.loadLogoUrl();
+      } else {
+        this.logoUrl.set(null);
       }
     });
 
     this.loadCategories();
     this.loadCatalog(1);
     this.settingsStore.load().pipe(takeUntilDestroyed(), catchError(() => EMPTY)).subscribe();
+  }
+
+  private loadLogoUrl(): void {
+    this.settingsStore
+      .getLogo()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => of(null)),
+      )
+      .subscribe((blob) => {
+        if (blob) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            this.logoUrl.set(reader.result as string);
+          };
+          reader.readAsDataURL(blob);
+        }
+      });
   }
 
   private loadCategories(): void {
@@ -238,7 +277,276 @@ export class TableOperationDialogComponent {
       .subscribe((order) => {
         this.activeOrder.set(order);
         this.loadingOrder.set(false);
+        if (order) {
+          this.loadOrderReceipts(order.id);
+
+          const hasPendingItems = order.items.some((i) => i.status === 'PENDING');
+          if (!hasPendingItems) {
+            this.shouldCloseMainModalOnPrintClose = true;
+          }
+        } else {
+          this.orderReceipts.set([]);
+          this.shouldCloseMainModalOnPrintClose = true;
+        }
       });
+  }
+
+  loadOrderReceipts(orderId: string): void {
+    this.loadingReceipts.set(true);
+    this.orderRepo
+      .getOrderReceipts(orderId)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => of([])),
+      )
+      .subscribe((receipts) => {
+        this.orderReceipts.set(receipts);
+        this.loadingReceipts.set(false);
+      });
+  }
+
+  generateAndPrintSummaryReceipt(): void {
+    const order = this.activeOrder();
+    if (!order) return;
+
+    const pendingItems = order.items.filter((i) => i.status === 'PENDING');
+    const itemsToSummarize = pendingItems.length > 0 ? pendingItems : order.items.filter((i) => i.status !== 'CANCELLED');
+    const subtotal = itemsToSummarize.reduce((sum, item) => sum + item.subtotal, 0);
+
+    const business = this.settingsStore.business();
+    const showTip = business?.showVoluntaryTip ?? true;
+    const tipPct = business?.suggestedTipPercentage ?? 10;
+    const suggestedTip = showTip ? Math.round(subtotal * (tipPct / 100)) : 0;
+    const total = subtotal + suggestedTip;
+
+    const itemsDto: OrderReceiptItem[] = itemsToSummarize.map((item) => ({
+      productName: item.productName,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      subtotal: item.subtotal,
+    }));
+
+    const summaryReceipt: OrderReceipt = {
+      id: 'draft-summary',
+      tenantId: order.tenantId,
+      orderId: order.id,
+      receiptNumber: order.orderNumber,
+      receiptType: 'PRE_BILLING',
+      title: 'RESUMEN DE CUENTA (PRE-FACTURA)',
+      subtotalAmount: subtotal,
+      taxAmount: 0,
+      tipAmount: suggestedTip,
+      totalAmount: total,
+      paymentMethod: null,
+      paymentDetails: null,
+      items: itemsDto,
+      issuedByUserId: order.createdByUserId,
+      issuedByUserName: order.createdByUserName || 'Camarero',
+      createdAt: new Date().toISOString(),
+    };
+
+    this.openPrintReceiptModal(summaryReceipt);
+  }
+
+  openPrintReceiptModal(receipt: OrderReceipt): void {
+    this.activePrintReceiptState.set(receipt);
+  }
+
+  closePrintReceiptModal(): void {
+    this.activePrintReceiptState.set(null);
+    if (this.shouldCloseMainModalOnPrintClose) {
+      this.shouldCloseMainModalOnPrintClose = false;
+      this.closed.emit();
+    }
+  }
+
+  triggerPrint(): void {
+    const ticketEl = document.querySelector('.thermal-ticket-container') as HTMLElement;
+    if (!ticketEl) {
+      window.print();
+      return;
+    }
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      document.body.removeChild(iframe);
+      window.print();
+      return;
+    }
+
+    const ticketHtml = ticketEl.outerHTML;
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Impresión de Tirilla</title>
+          <style>
+            @page {
+              size: 80mm auto;
+              margin: 0;
+            }
+            html, body {
+              margin: 0;
+              padding: 0;
+              background: #ffffff;
+              width: 80mm;
+              font-family: 'Courier New', Courier, monospace, sans-serif;
+              color: #000000;
+            }
+            .thermal-ticket-container {
+              width: 80mm;
+              max-width: 80mm;
+              padding: 4mm 2mm;
+              box-sizing: border-box;
+              background: #ffffff;
+              color: #000000;
+              font-size: 11px;
+              line-height: 1.4;
+            }
+            .ticket-logo-wrap {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              text-align: center;
+              margin: 0 auto 0.5rem auto;
+            }
+            .ticket-logo-img {
+              max-width: 140px;
+              max-height: 70px;
+              object-fit: contain;
+              display: block;
+              margin: 0 auto;
+            }
+            .ticket-header-block {
+              text-align: center;
+              margin-bottom: 0.5rem;
+            }
+            .commerce-name {
+              font-size: 15px;
+              font-weight: 900;
+              margin: 0 0 0.25rem 0;
+              text-transform: uppercase;
+            }
+            .ticket-header-line {
+              font-size: 11px;
+            }
+            .ticket-divider-dash {
+              text-align: center;
+              font-weight: 700;
+              margin: 0.4rem 0;
+              white-space: nowrap;
+              overflow: hidden;
+            }
+            .ticket-meta-block {
+              display: flex;
+              flex-direction: column;
+              gap: 0.2rem;
+              font-size: 11px;
+            }
+            .ticket-meta-line {
+              display: flex;
+              justify-content: space-between;
+            }
+            .ticket-items-block {
+              margin: 0.4rem 0;
+            }
+            .ticket-items-header {
+              display: flex;
+              justify-content: space-between;
+              font-weight: 800;
+              font-size: 11px;
+              border-bottom: 1px dashed #000;
+              padding-bottom: 0.2rem;
+              margin-bottom: 0.3rem;
+            }
+            .ticket-item-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              margin-bottom: 0.25rem;
+            }
+            .t-item-name {
+              flex: 1;
+              font-weight: 700;
+              padding-right: 0.5rem;
+            }
+            .t-item-val {
+              font-weight: 800;
+              white-space: nowrap;
+            }
+            .ticket-totals-block {
+              display: flex;
+              flex-direction: column;
+              gap: 0.25rem;
+            }
+            .ticket-total-line {
+              display: flex;
+              justify-content: space-between;
+            }
+            .ticket-total-line.total-grand {
+              font-size: 14px;
+              font-weight: 900;
+              padding-top: 0.2rem;
+            }
+            .ticket-payment-methods-block {
+              display: flex;
+              flex-direction: column;
+              gap: 0.2rem;
+            }
+            .payment-split-line {
+              display: flex;
+              justify-content: space-between;
+              font-size: 11px;
+            }
+            .ticket-footer-block {
+              text-align: center;
+              margin-top: 0.5rem;
+            }
+            .ticket-footer-title {
+              font-size: 13px;
+              font-weight: 900;
+              margin: 0 0 0.2rem 0;
+            }
+            .ticket-footer-msg {
+              font-size: 11px;
+              margin: 0 0 0.2rem 0;
+            }
+            .ticket-software-credit {
+              font-size: 9px;
+              color: #444444;
+            }
+            .no-print {
+              display: none !important;
+            }
+          </style>
+        </head>
+        <body>
+          ${ticketHtml}
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 1000);
+    }, 250);
   }
 
   // Sub-modal product configuration
@@ -657,15 +965,15 @@ export class TableOperationDialogComponent {
       return;
     }
 
-    let splitsToSend: PaymentSplit[] | undefined = undefined;
-    if (state.isMixed) {
-      splitsToSend = state.splits.map((s) => ({ method: s.method, amount: s.amount }));
-    }
+    const splitsToSend: PaymentSplit[] = state.splits.map((s) => ({ method: s.method, amount: s.amount }));
 
     const itemsToPayPayload: PartialItemPay[] | undefined = state.itemsToPay.map((i) => ({
       itemId: i.item.id,
       quantity: i.quantityToPay,
     }));
+
+    const currentOrderId = this.activeOrder()?.id;
+    const isFullPayment = !state.isPartial;
 
     this.orderRepo
       .checkout(this.table().id, {
@@ -688,8 +996,19 @@ export class TableOperationDialogComponent {
           : '¡Mesa cobrada y liberada exitosamente!';
         this.toastService.show(msg, 'success', 3000);
         this.orderUpdated.emit();
-        if (!state.isPartial) {
-          this.closed.emit();
+
+        if (currentOrderId) {
+          this.orderRepo.getOrderReceipts(currentOrderId).subscribe((receipts) => {
+            this.orderReceipts.set(receipts);
+            const latestPaymentReceipt = receipts.find((r) => r.receiptType === 'PAYMENT');
+            if (latestPaymentReceipt) {
+              this.openPrintReceiptModal(latestPaymentReceipt);
+            }
+          });
+        }
+
+        if (isFullPayment) {
+          this.shouldCloseMainModalOnPrintClose = true;
         } else {
           this.loadActiveOrder(this.table().id);
         }

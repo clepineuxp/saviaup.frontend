@@ -10,6 +10,7 @@ import {
   Order,
   OrderItemReport,
   OrderQueryRequest,
+  OrderReceipt,
 } from '../models/order.model';
 
 export interface OrderRepository {
@@ -20,6 +21,8 @@ export interface OrderRepository {
   moveTable(tableId: string, request: MoveTableOrderRequest): Observable<RestaurantTable>;
   cancelItem(itemId: string, request: CancelOrderItemRequest): Observable<Order>;
   checkout(tableId: string, request: CheckoutOrderRequest): Observable<Order>;
+  generateSummaryReceipt(orderId: string): Observable<OrderReceipt>;
+  getOrderReceipts(orderId: string): Observable<readonly OrderReceipt[]>;
 }
 
 export const ORDER_REPOSITORY = new InjectionToken<OrderRepository>('ORDER_REPOSITORY');

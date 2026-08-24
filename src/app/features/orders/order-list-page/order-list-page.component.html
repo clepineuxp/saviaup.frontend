@@ -3,24 +3,24 @@
   <header class="page-header">
     <div class="header-titles">
       <h1 class="page-title">
-        Gestión de Comandas y Pedidos
+        {{ 'orders.title' | translate }}
         <span class="total-badge" *ngIf="!loading()">
-          {{ totalItems() }} {{ activeTab() === 'orders' ? 'comandas' : 'ítems' }}
+          {{ totalItems() }} {{ (activeTab() === 'orders' ? 'orders.badgeComandas' : 'orders.badgeItems') | translate }}
         </span>
       </h1>
-      <p class="page-subtitle">Historial de comandas, productos vendidos, estados y auditoría por usuario.</p>
+      <p class="page-subtitle">{{ 'orders.subtitle' | translate }}</p>
     </div>
 
     <div class="header-actions">
       <!-- Column Customizer Dropdown -->
       <div class="column-picker-dropdown">
         <button type="button" class="sav-btn sav-btn-outline" (click)="toggleColumnPicker()">
-          ⚙️ Personalizar Columnas
+          ⚙️ {{ 'orders.customizeColumns' | translate }}
         </button>
 
         <div class="column-picker-menu" *ngIf="showColumnPicker()">
           <div class="picker-header">
-            <span>Mostrar u ocultar columnas</span>
+            <span>{{ 'orders.toggleColumnsHeader' | translate }}</span>
             <button type="button" class="btn-close-sm" (click)="toggleColumnPicker()">✕</button>
           </div>
           <div class="picker-options">
@@ -30,14 +30,14 @@
                 [checked]="col.visible"
                 (change)="toggleColumn(col.id)"
               />
-              <span>{{ col.label }}</span>
+              <span>{{ col.label | translate }}</span>
             </label>
           </div>
         </div>
       </div>
 
       <button type="button" class="sav-btn sav-btn-primary" (click)="loadData()">
-        🔄 Actualizar
+        🔄 {{ 'orders.refresh' | translate }}
       </button>
     </div>
   </header>
@@ -50,7 +50,7 @@
       [class.active]="activeTab() === 'orders'"
       (click)="setTab('orders')"
     >
-      📋 Comandas por Orden
+      📋 {{ 'orders.tabOrders' | translate }}
     </button>
     <button
       type="button"
@@ -58,7 +58,7 @@
       [class.active]="activeTab() === 'items'"
       (click)="setTab('items')"
     >
-      📦 Detalle por Ítems Vendidos
+      📦 {{ 'orders.tabItems' | translate }}
     </button>
   </div>
 
@@ -66,11 +66,11 @@
   <section class="filters-toolbar">
     <!-- Search Bar -->
     <div class="filter-group search-group">
-      <label class="filter-label">🔍 Buscar Comanda / Mesa / Producto</label>
+      <label class="filter-label">🔍 {{ 'orders.searchLabel' | translate }}</label>
       <input
         type="text"
         class="sav-input"
-        placeholder="Nº comanda, mesa, usuario, producto..."
+        [placeholder]="'orders.searchPlaceholder' | translate"
         [ngModel]="searchQuery()"
         (ngModelChange)="onSearchChange($event)"
       />
@@ -80,7 +80,7 @@
     <div class="filters-row">
       <!-- Multi-Status Filter Pills -->
       <div class="filter-group status-group">
-        <label class="filter-label">📌 Filtrar por Estado (Multi-Selección)</label>
+        <label class="filter-label">📌 {{ 'orders.filterStatusLabel' | translate }}</label>
         <div class="status-pills-row">
           <button
             type="button"
@@ -88,7 +88,7 @@
             [class.active]="isStatusSelected('PENDING')"
             (click)="toggleStatus('PENDING')"
           >
-            ⚡ En Espera
+            ⚡ {{ 'orders.statusPending' | translate }}
           </button>
           <button
             type="button"
@@ -96,7 +96,7 @@
             [class.active]="isStatusSelected('PAID')"
             (click)="toggleStatus('PAID')"
           >
-            ✓ Pagados
+            ✓ {{ 'orders.statusPaid' | translate }}
           </button>
           <button
             type="button"
@@ -104,7 +104,7 @@
             [class.active]="isStatusSelected('CANCELLED')"
             (click)="toggleStatus('CANCELLED')"
           >
-            ✕ Cancelados
+            ✕ {{ 'orders.statusCancelled' | translate }}
           </button>
         </div>
       </div>
@@ -112,7 +112,7 @@
       <!-- Date Range Filters -->
       <div class="date-range-container">
         <div class="filter-group date-group">
-          <label class="filter-label">📅 Desde</label>
+          <label class="filter-label">📅 {{ 'orders.fromDate' | translate }}</label>
           <input
             type="date"
             class="sav-input date-input"
@@ -122,7 +122,7 @@
         </div>
 
         <div class="filter-group date-group">
-          <label class="filter-label">📅 Hasta</label>
+          <label class="filter-label">📅 {{ 'orders.toDate' | translate }}</label>
           <input
             type="date"
             class="sav-input date-input"
@@ -136,7 +136,7 @@
       <div class="filter-group action-group">
         <label class="filter-label">&nbsp;</label>
         <button type="button" class="sav-btn sav-btn-ghost" (click)="resetFilters()">
-          🧹 Limpiar Filtros
+          🧹 {{ 'orders.clearFilters' | translate }}
         </button>
       </div>
     </div>
@@ -146,25 +146,25 @@
   <main class="table-card-container" *ngIf="activeTab() === 'orders'">
     <div class="loading-overlay" *ngIf="loading()">
       <span class="spinner"></span>
-      <span>Cargando comandas...</span>
+      <span>{{ 'common.loading' | translate }}</span>
     </div>
 
     <div class="table-responsive" *ngIf="!loading()">
       <table class="sav-data-table" *ngIf="orders().length > 0; else emptyState">
         <thead>
           <tr>
-            <th *ngIf="isColumnVisible('orderNumber')"># Comanda</th>
-            <th *ngIf="isColumnVisible('tableName')">Mesa</th>
-            <th *ngIf="isColumnVisible('status')">Estado</th>
-            <th *ngIf="isColumnVisible('itemCount')">Ítems</th>
-            <th *ngIf="isColumnVisible('subtotalAmount')" class="text-right">Total Productos</th>
-            <th *ngIf="isColumnVisible('tipAmount')" class="text-right">Propina</th>
-            <th *ngIf="isColumnVisible('totalAmount')" class="text-right">Total Pagado</th>
-            <th *ngIf="isColumnVisible('createdBy')">Creado Por (Email)</th>
-            <th *ngIf="isColumnVisible('createdAt')">Fecha Creación</th>
-            <th *ngIf="isColumnVisible('paidBy')">Pagado / Cierre Por</th>
-            <th *ngIf="isColumnVisible('paidAt')">Fecha Pago</th>
-            <th *ngIf="isColumnVisible('actions')" class="text-center">Acciones</th>
+            <th *ngIf="isColumnVisible('orderNumber')">{{ 'orders.cols.orderNumber' | translate }}</th>
+            <th *ngIf="isColumnVisible('tableName')">{{ 'orders.cols.tableName' | translate }}</th>
+            <th *ngIf="isColumnVisible('status')">{{ 'orders.cols.status' | translate }}</th>
+            <th *ngIf="isColumnVisible('itemCount')">{{ 'orders.cols.itemCount' | translate }}</th>
+            <th *ngIf="isColumnVisible('subtotalAmount')" class="text-right">{{ 'orders.cols.subtotalAmount' | translate }}</th>
+            <th *ngIf="isColumnVisible('tipAmount')" class="text-right">{{ 'orders.cols.tipAmount' | translate }}</th>
+            <th *ngIf="isColumnVisible('totalAmount')" class="text-right">{{ 'orders.cols.totalAmount' | translate }}</th>
+            <th *ngIf="isColumnVisible('createdBy')">{{ 'orders.cols.createdBy' | translate }}</th>
+            <th *ngIf="isColumnVisible('createdAt')">{{ 'orders.cols.createdAt' | translate }}</th>
+            <th *ngIf="isColumnVisible('paidBy')">{{ 'orders.cols.paidBy' | translate }}</th>
+            <th *ngIf="isColumnVisible('paidAt')">{{ 'orders.cols.paidAt' | translate }}</th>
+            <th *ngIf="isColumnVisible('actions')" class="text-center">{{ 'orders.cols.actions' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -188,10 +188,10 @@
               >
                 {{
                   order.status === 'PENDING'
-                    ? 'En Espera'
+                    ? ('orders.statusPending' | translate)
                     : order.status === 'PAID'
-                    ? 'Pagado'
-                    : 'Cancelado'
+                    ? ('orders.statusPaid' | translate)
+                    : ('orders.statusCancelled' | translate)
                 }}
               </span>
             </td>
@@ -220,7 +220,7 @@
                 <span class="user-email text-success">💳 {{ order.paidByUserName || 'N/A' }}</span>
               </div>
               <div class="user-audit-tag" *ngIf="order.status === 'CANCELLED'">
-                <span class="user-email text-danger">✕ Cancelado</span>
+                <span class="user-email text-danger">✕ {{ 'orders.statusCancelled' | translate }}</span>
               </div>
               <span class="text-muted" *ngIf="order.status === 'PENDING'">-</span>
             </td>
@@ -230,7 +230,7 @@
             </td>
             <td *ngIf="isColumnVisible('actions')" class="text-center" (click)="$event.stopPropagation()">
               <button type="button" class="btn-detail-action" (click)="openOrderDetails(order)">
-                👁️ Ver Detalle
+                👁️ {{ 'orders.viewDetails' | translate }}
               </button>
             </td>
           </tr>
@@ -241,9 +241,8 @@
       <ng-template #emptyState>
         <div class="empty-data-card">
           <span class="empty-icon">📋</span>
-          <h3>No se encontraron comandas</h3>
-          <p>No existen registros que coincidan con los filtros aplicados.</p>
-          <button type="button" class="sav-btn sav-btn-ghost" (click)="resetFilters()">Reiniciar Filtros</button>
+          <h3>{{ 'orders.emptyOrders' | translate }}</h3>
+          <button type="button" class="sav-btn sav-btn-ghost" (click)="resetFilters()">{{ 'orders.clearFilters' | translate }}</button>
         </div>
       </ng-template>
     </div>
@@ -251,7 +250,7 @@
     <!-- Pagination Footer Bar with Grand Total -->
     <footer class="table-pagination-footer" *ngIf="!loading() && orders().length > 0">
       <div class="page-size-selector">
-        <label>Mostrar por página:</label>
+        <label>{{ 'orders.perPage' | translate }}</label>
         <select class="sav-select-sm" [ngModel]="pageSize()" (ngModelChange)="changePageSize($event)">
           <option [value]="10">10</option>
           <option [value]="25">25</option>
@@ -267,17 +266,17 @@
           <strong class="grand-total-val subtotal-val">{{ ordersSubtotalProductsSum() | currency: 'COP': 'symbol': '1.0-0' }}</strong>
         </div>
         <div class="grand-total-badge-card tip-card">
-          <span>Propina:</span>
+          <span>{{ 'orders.cols.tipAmount' | translate }}:</span>
           <strong class="grand-total-val tip-val">+ {{ ordersTipsSum() | currency: 'COP': 'symbol': '1.0-0' }}</strong>
         </div>
         <div class="grand-total-badge-card total-card">
-          <span>Total Pagado:</span>
+          <span>{{ 'orders.cols.totalAmount' | translate }}:</span>
           <strong class="grand-total-val total-val">{{ ordersTotalSum() | currency: 'COP': 'symbol': '1.0-0' }}</strong>
         </div>
       </div>
 
       <div class="pagination-info">
-        <span>Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong> ({{ totalItems() }} comandas)</span>
+        <span>Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong> ({{ totalItems() }} {{ 'orders.badgeComandas' | translate }})</span>
       </div>
 
       <div class="pagination-controls">
@@ -287,7 +286,7 @@
           [disabled]="currentPage() <= 1"
           (click)="changePage(currentPage() - 1)"
         >
-          ‹ Anterior
+          ‹
         </button>
         <button
           type="button"
@@ -295,7 +294,7 @@
           [disabled]="currentPage() >= totalPages()"
           (click)="changePage(currentPage() + 1)"
         >
-          Siguiente ›
+          ›
         </button>
       </div>
     </footer>
@@ -305,23 +304,23 @@
   <main class="table-card-container" *ngIf="activeTab() === 'items'">
     <div class="loading-overlay" *ngIf="loading()">
       <span class="spinner"></span>
-      <span>Cargando detalle de ítems vendidos...</span>
+      <span>{{ 'common.loading' | translate }}</span>
     </div>
 
     <div class="table-responsive" *ngIf="!loading()">
       <table class="sav-data-table" *ngIf="orderItems().length > 0; else emptyStateItems">
         <thead>
           <tr>
-            <th *ngIf="isColumnVisible('orderNumber')"># Comanda</th>
-            <th *ngIf="isColumnVisible('tableName')">Mesa</th>
-            <th *ngIf="isColumnVisible('productName')">Producto / Descripción</th>
-            <th *ngIf="isColumnVisible('quantity')">Cant.</th>
-            <th *ngIf="isColumnVisible('unitPrice')" class="text-right">Precio Unit.</th>
-            <th *ngIf="isColumnVisible('subtotal')" class="text-right">Subtotal Ítem</th>
-            <th *ngIf="isColumnVisible('status')">Estado Ítem</th>
-            <th *ngIf="isColumnVisible('createdBy')">Creado Por (Email)</th>
-            <th *ngIf="isColumnVisible('createdAt')">Fecha Creación</th>
-            <th *ngIf="isColumnVisible('actions')" class="text-center">Ver Comanda</th>
+            <th *ngIf="isColumnVisible('orderNumber')">{{ 'orders.cols.orderNumber' | translate }}</th>
+            <th *ngIf="isColumnVisible('tableName')">{{ 'orders.cols.tableName' | translate }}</th>
+            <th *ngIf="isColumnVisible('productName')">{{ 'orders.cols.productName' | translate }}</th>
+            <th *ngIf="isColumnVisible('quantity')">{{ 'orders.cols.quantity' | translate }}</th>
+            <th *ngIf="isColumnVisible('unitPrice')" class="text-right">{{ 'orders.cols.unitPrice' | translate }}</th>
+            <th *ngIf="isColumnVisible('subtotal')" class="text-right">{{ 'orders.cols.subtotal' | translate }}</th>
+            <th *ngIf="isColumnVisible('status')">{{ 'orders.cols.status' | translate }}</th>
+            <th *ngIf="isColumnVisible('createdBy')">{{ 'orders.cols.createdBy' | translate }}</th>
+            <th *ngIf="isColumnVisible('createdAt')">{{ 'orders.cols.createdAt' | translate }}</th>
+            <th *ngIf="isColumnVisible('actions')" class="text-center">{{ 'orders.cols.viewOrder' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -361,10 +360,10 @@
               >
                 {{
                   itemRow.status === 'PENDING'
-                    ? 'En Espera'
+                    ? ('orders.statusPending' | translate)
                     : itemRow.status === 'PAID'
-                    ? 'Pagado'
-                    : 'Cancelado'
+                    ? ('orders.statusPaid' | translate)
+                    : ('orders.statusCancelled' | translate)
                 }}
               </span>
               <div class="cancel-reason" *ngIf="itemRow.status === 'CANCELLED' && itemRow.cancellationReason">
@@ -381,7 +380,7 @@
             </td>
             <td *ngIf="isColumnVisible('actions')" class="text-center" (click)="$event.stopPropagation()">
               <button type="button" class="btn-detail-action" (click)="openOrderItemDetails(itemRow)">
-                👁️ Comanda
+                👁️ {{ 'orders.cols.viewOrder' | translate }}
               </button>
             </td>
           </tr>
@@ -392,9 +391,8 @@
       <ng-template #emptyStateItems>
         <div class="empty-data-card">
           <span class="empty-icon">📦</span>
-          <h3>No se encontraron productos vendidos</h3>
-          <p>No existen ítems que coincidan con los filtros aplicados.</p>
-          <button type="button" class="sav-btn sav-btn-ghost" (click)="resetFilters()">Reiniciar Filtros</button>
+          <h3>{{ 'orders.emptyItems' | translate }}</h3>
+          <button type="button" class="sav-btn sav-btn-ghost" (click)="resetFilters()">{{ 'orders.clearFilters' | translate }}</button>
         </div>
       </ng-template>
     </div>
@@ -402,7 +400,7 @@
     <!-- Pagination Footer Bar for Items Tab -->
     <footer class="table-pagination-footer" *ngIf="!loading() && orderItems().length > 0">
       <div class="page-size-selector">
-        <label>Mostrar por página:</label>
+        <label>{{ 'orders.perPage' | translate }}</label>
         <select class="sav-select-sm" [ngModel]="pageSize()" (ngModelChange)="changePageSize($event)">
           <option [value]="10">10</option>
           <option [value]="25">25</option>
@@ -417,7 +415,7 @@
       </div>
 
       <div class="pagination-info">
-        <span>Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong> ({{ totalItems() }} ítems)</span>
+        <span>Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong> ({{ totalItems() }} {{ 'orders.badgeItems' | translate }})</span>
       </div>
 
       <div class="pagination-controls">
@@ -427,7 +425,7 @@
           [disabled]="currentPage() <= 1"
           (click)="changePage(currentPage() - 1)"
         >
-          ‹ Anterior
+          ‹
         </button>
         <button
           type="button"
@@ -435,7 +433,7 @@
           [disabled]="currentPage() >= totalPages()"
           (click)="changePage(currentPage() + 1)"
         >
-          Siguiente ›
+          ›
         </button>
       </div>
     </footer>

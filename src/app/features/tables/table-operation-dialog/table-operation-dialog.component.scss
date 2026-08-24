@@ -1691,3 +1691,320 @@
     transform: translateY(0) scale(1);
   }
 }
+
+/* Thermal Ticket & Receipts History Styles */
+.print-summary-btn {
+  background: #f0fdf4 !important;
+  border-color: #86efac !important;
+  color: #166534 !important;
+  font-weight: 800 !important;
+
+  &:hover:not(:disabled) {
+    background: #dcfce7 !important;
+    border-color: #4ade80 !important;
+  }
+}
+
+.receipts-history-section {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 2px dashed #e2e8f0;
+
+  .section-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.85rem;
+
+    h3 {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .loading-text {
+      color: #64748b;
+      font-size: 0.8rem;
+    }
+  }
+
+  .receipts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .receipt-history-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    border-radius: 0.75rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: #cbd5e1;
+      background: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    .receipt-info-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+
+      .receipt-title {
+        font-size: 0.88rem;
+        color: #0f172a;
+        font-weight: 800;
+      }
+
+      .receipt-meta {
+        font-size: 0.76rem;
+        color: #64748b;
+      }
+
+      .receipt-payment-tag {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #166534;
+        background: #f0fdf4;
+        display: inline-block;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+        width: fit-content;
+        margin-top: 0.2rem;
+      }
+    }
+
+    .receipt-info-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.4rem;
+
+      .receipt-total {
+        font-size: 1rem;
+        font-weight: 850;
+        color: #15803d;
+      }
+
+      .reprint-btn {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #0f172a;
+        padding: 0.35rem 0.75rem;
+        border-radius: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 750;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #0f172a;
+          color: #ffffff;
+          border-color: #0f172a;
+        }
+      }
+    }
+  }
+
+  .empty-receipts-hint {
+    padding: 1rem;
+    text-align: center;
+    background: #f8fafc;
+    border-radius: 0.75rem;
+    border: 1px dashed #cbd5e1;
+    color: #64748b;
+    font-size: 0.82rem;
+  }
+}
+
+/* Thermal Printable Ticket Modal & Area */
+.print-modal {
+  width: min(92vw, 420px) !important;
+  max-height: 90vh !important;
+}
+
+.print-modal-body {
+  background: #f1f5f9;
+  padding: 1.25rem !important;
+  display: flex;
+  justify-content: center;
+}
+
+.thermal-ticket-container {
+  width: 100%;
+  max-width: 320px;
+  background: #ffffff;
+  padding: 1.25rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  font-family: 'Courier New', Courier, monospace, sans-serif;
+  color: #000000;
+  font-size: 12px;
+  line-height: 1.4;
+
+  .ticket-logo-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 0 auto 0.6rem auto;
+
+    .ticket-logo-img {
+      max-width: 140px;
+      max-height: 70px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+  }
+
+  .ticket-header-block {
+    text-align: center;
+    margin-bottom: 0.5rem;
+
+    .commerce-name {
+      font-size: 15px;
+      font-weight: 900;
+      margin: 0 0 0.25rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .ticket-header-line {
+      font-size: 11px;
+      color: #222222;
+    }
+  }
+
+  .ticket-divider-dash {
+    text-align: center;
+    font-weight: 700;
+    margin: 0.4rem 0;
+    overflow: hidden;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .ticket-meta-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 11px;
+
+    .ticket-meta-line {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+
+  .ticket-items-block {
+    margin: 0.4rem 0;
+
+    .ticket-items-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 800;
+      font-size: 11px;
+      border-bottom: 1px dashed #000;
+      padding-bottom: 0.2rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .ticket-item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.25rem;
+
+      .t-item-name {
+        flex: 1;
+        font-weight: 700;
+        padding-right: 0.5rem;
+      }
+
+      .t-item-val {
+        font-weight: 800;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .ticket-totals-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .ticket-total-line {
+      display: flex;
+      justify-content: space-between;
+
+      &.total-grand {
+        font-size: 14px;
+        font-weight: 900;
+        padding-top: 0.2rem;
+
+        strong {
+          font-size: 16px;
+        }
+      }
+    }
+
+    .ticket-tip-message {
+      font-size: 10px;
+      font-style: italic;
+      text-align: center;
+      color: #333333;
+      margin: 0.2rem 0;
+      padding: 0.25rem 0.4rem;
+      background: #f8fafc;
+      border-radius: 4px;
+      border: 1px dashed #cbd5e1;
+    }
+  }
+
+  .ticket-payment-methods-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+
+    .section-sm-title {
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 0.1rem;
+    }
+
+    .payment-split-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+  }
+
+  .ticket-footer-block {
+    text-align: center;
+    margin-top: 0.5rem;
+
+    .ticket-footer-title {
+      font-size: 13px;
+      font-weight: 900;
+      margin: 0 0 0.2rem 0;
+    }
+
+    .ticket-footer-msg {
+      font-size: 11px;
+      margin: 0 0 0.2rem 0;
+    }
+
+    .ticket-software-credit {
+      font-size: 9px;
+      color: #444444;
+    }
+  }
+}
+

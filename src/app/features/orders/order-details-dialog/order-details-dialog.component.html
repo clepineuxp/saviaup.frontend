@@ -2,7 +2,7 @@
   <div class="modal-card dialog-container" (click)="$event.stopPropagation()">
     <header class="modal-header">
       <div class="header-title-group">
-        <span class="order-badge">Comanda #{{ order().orderNumber }}</span>
+        <span class="order-badge">#{{ order().orderNumber }}</span>
         <h2 class="modal-title">
           {{ order().tableName || 'Venta Directa' }}
         </h2>
@@ -18,10 +18,10 @@
         >
           {{
             order().status === 'PENDING'
-              ? 'En Espera'
+              ? ('orders.statusPending' | translate)
               : order().status === 'PAID'
-              ? 'Pagado'
-              : 'Cancelado'
+              ? ('orders.statusPaid' | translate)
+              : ('orders.statusCancelled' | translate)
           }}
         </span>
         <button type="button" class="btn-close" (click)="close.emit()" title="Cerrar">✕</button>
@@ -32,45 +32,45 @@
       <!-- Summary Audit Grid -->
       <div class="audit-summary-grid">
         <div class="audit-item">
-          <span class="audit-label">✉️ Creado Por (Email):</span>
+          <span class="audit-label">✉️ {{ 'orders.details.createdBy' | translate }}</span>
           <span class="audit-val">{{ order().createdByUserName || 'N/A' }}</span>
           <span class="audit-time">{{ order().createdAt | date: 'dd/MM/yyyy, HH:mm' }}</span>
         </div>
         <div class="audit-item" *ngIf="order().status === 'PAID'">
-          <span class="audit-label">💳 Pagado Por (Email):</span>
+          <span class="audit-label">💳 {{ 'orders.details.paidBy' | translate }}</span>
           <span class="audit-val text-success">{{ order().paidByUserName || 'N/A' }}</span>
           <span class="audit-time">{{ order().paidAt | date: 'dd/MM/yyyy, HH:mm' }}</span>
         </div>
         <div class="audit-item" *ngIf="order().status === 'CANCELLED'">
-          <span class="audit-label">⚠️ Estado:</span>
-          <span class="audit-val text-danger">Comanda Cancelada</span>
+          <span class="audit-label">⚠️ {{ 'orders.details.status' | translate }}</span>
+          <span class="audit-val text-danger">{{ 'orders.statusCancelled' | translate }}</span>
           <span class="audit-time">{{ order().updatedAt | date: 'dd/MM/yyyy, HH:mm' }}</span>
         </div>
         <div class="audit-item" *ngIf="order().paymentMethod">
-          <span class="audit-label">💰 Medio de Pago:</span>
+          <span class="audit-label">💰 {{ 'settings.tabs.payments' | translate }}:</span>
           <span class="audit-val payment-tag">{{ order().paymentMethod }}</span>
         </div>
       </div>
 
       <!-- Observations -->
       <div class="observations-box" *ngIf="order().observations">
-        <span class="obs-title">📝 Observaciones de la Comanda:</span>
+        <span class="obs-title">📝 {{ 'orders.details.observations' | translate }}</span>
         <p class="obs-text">{{ order().observations }}</p>
       </div>
 
       <!-- Items List Table -->
       <div class="items-section">
-        <h3 class="section-title">Detalle de Ítems ({{ order().items.length }})</h3>
+        <h3 class="section-title">{{ 'orders.details.itemsTitle' | translate }} ({{ order().items.length }})</h3>
         
         <div class="table-responsive">
           <table class="items-table">
             <thead>
               <tr>
-                <th>Cant.</th>
-                <th>Producto / Descripción</th>
-                <th class="text-right">Precio Unit.</th>
-                <th class="text-right">Subtotal</th>
-                <th>Estado / Auditoría</th>
+                <th>{{ 'orders.details.qty' | translate }}</th>
+                <th>{{ 'orders.details.product' | translate }}</th>
+                <th class="text-right">{{ 'orders.cols.unitPrice' | translate }}</th>
+                <th class="text-right">{{ 'orders.details.subtotal' | translate }}</th>
+                <th>{{ 'orders.cols.status' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -89,7 +89,7 @@
                 <td class="text-right bold-text">{{ item.subtotal | currency: 'COP': 'symbol': '1.0-0' }}</td>
                 <td>
                   <span class="item-status-pill" [class.status-cancelled]="item.status === 'CANCELLED'" [class.status-paid]="item.status === 'PAID'">
-                    {{ item.status === 'PENDING' ? 'En Espera' : item.status === 'PAID' ? 'Pagado' : 'Cancelado' }}
+                    {{ item.status === 'PENDING' ? ('orders.statusPending' | translate) : item.status === 'PAID' ? ('orders.statusPaid' | translate) : ('orders.statusCancelled' | translate) }}
                   </span>
                   <div class="cancel-detail" *ngIf="item.status === 'CANCELLED'">
                     <small class="text-danger" *ngIf="item.cancellationReason">Motivo: {{ item.cancellationReason }}</small>
@@ -105,22 +105,22 @@
       <!-- Financial Totals -->
       <div class="totals-summary-card">
         <div class="totals-row">
-          <span>Subtotal Comanda:</span>
+          <span>{{ 'orders.details.subtotalLabel' | translate }}</span>
           <strong>{{ order().subtotalAmount | currency: 'COP': 'symbol': '1.0-0' }}</strong>
         </div>
         <div class="totals-row" *ngIf="order().tipAmount > 0">
-          <span>Propina Voluntaria:</span>
+          <span>{{ 'orders.details.tipLabel' | translate }}</span>
           <strong class="text-success">+ {{ order().tipAmount | currency: 'COP': 'symbol': '1.0-0' }}</strong>
         </div>
         <div class="totals-row grand-total">
-          <span>TOTAL COMPROBANTE:</span>
+          <span>{{ 'orders.details.totalLabel' | translate }}</span>
           <strong class="total-amount">{{ order().totalAmount | currency: 'COP': 'symbol': '1.0-0' }}</strong>
         </div>
       </div>
     </div>
 
     <footer class="modal-footer">
-      <button type="button" class="sav-btn sav-btn-secondary" (click)="close.emit()">Cerrar Detalle</button>
+      <button type="button" class="sav-btn sav-btn-secondary" (click)="close.emit()">{{ 'common.cancel' | translate }}</button>
     </footer>
   </div>
 </div>

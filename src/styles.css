@@ -171,3 +171,75 @@ input {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Global Thermal Printable Ticket @media print */
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    width: 80mm !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Ocultar visibilidad de todos los elementos del DOM por defecto */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Hacer visible únicamente la tirilla térmica y su contenido interno */
+  .printable-area,
+  .printable-area * {
+    visibility: visible !important;
+  }
+
+  /* Posicionar la tirilla térmica fija en la esquina superior izquierda del rollo de 80mm */
+  .printable-area {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 80mm !important;
+    max-width: 80mm !important;
+    margin: 0 !important;
+    padding: 4mm 2mm !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    font-size: 11px !important;
+    z-index: 999999 !important;
+  }
+
+  /* Asegurar que los contenedores padre de la tirilla sean transparentes y no bloqueen la tirilla */
+  .print-modal-backdrop,
+  .print-modal,
+  .print-modal-body,
+  .op-modal-backdrop,
+  .op-modal-container {
+    display: block !important;
+    position: static !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: auto !important;
+    height: auto !important;
+  }
+
+  /* Ocultar únicamente controles no imprimibles explícitos */
+  .no-print,
+  button,
+  .sub-modal-header,
+  .sub-modal-footer {
+    display: none !important;
+  }
+}
