@@ -1,0 +1,71 @@
+name: Compilar Dev y Enviar Frontend a Produccion (FTP)
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build-and-deploy-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Descargar el código fuente (desde dev)
+        uses: actions/checkout@v4
+
+      - name: 2. Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: 3. Instalar dependencias
+        run: npm ci
+
+      - name: 4. Compilar Angular en Producción
+        run: npx ng build --configuration production
+
+      - name: 5. Generar web.config para IIS (Angular SPA + PWA)
+        run: |
+          mkdir -p dist/savia-up-web/browser
+          cat << 'EOF' > dist/savia-up-web/browser/web.config
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <system.webServer>
+              <rewrite>
+                <rules>
+                  <rule name="Angular Routes" stopProcessing="true">
+                    <match url=".*" />
+                    <conditions logicalGrouping="MatchAll">
+                      <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" />
+                      <add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" />
+                    </conditions>
+                    <action type="Rewrite" url="/index.html" />
+                  </rule>
+                </rules>
+              </rewrite>
+              <staticContent>
+                <remove fileExtension=".webmanifest" />
+                <mimeMap fileExtension=".webmanifest" mimeType="application/manifest+json" />
+                <remove fileExtension=".json" />
+                <mimeMap fileExtension=".json" mimeType="application/json" />
+              </staticContent>
+            </system.webServer>
+          </configuration>
+          EOF
+
+      # --- Subir los archivos por FTP directo (igual que el API) ---
+      - name: 6. Despliegue DIRECTO al servidor por FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist/savia-up-web/browser/
+          server-dir: /
+          dangerous-clean-slate: true

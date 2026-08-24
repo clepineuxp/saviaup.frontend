@@ -9,14 +9,17 @@ La fase implementada cubre:
 - autenticación y persistencia de sesión;
 - registro y recuperación de acceso;
 - selección y creación de organizaciones (tenants);
-- internacionalización español/inglés;
+- internacionalización completo español/inglés;
 - infraestructura JWT, PWA, IndexedDB y SignalR;
-- navegación autenticada ordenada y agrupada con placeholders para módulos operativos;
+- navegación autenticada ordenada y agrupada con soporte para todos los módulos operativos;
 - administración de categorías de inventario con permisos de lectura y gestión;
 - administración paginada de productos y combos con filtros, estado e inventariabilidad condicionada;
-- inventario operativo con existencias, ingredientes, movimientos y unidades de medida.
-- operación y configuración de salas/mesas con permisos granulares, canvas 2D y SignalR por tenant.
-- configuración de organización, negocio, medios de pago, invitaciones, usuarios, roles y permisos.
+- inventario operativo con existencias, ingredientes, movimientos y unidades de medida;
+- operación y configuración de salas/mesas con permisos granulares, canvas 2D y SignalR por tenant;
+- control de órdenes (`/app/orders`) con búsqueda paginada, filtros por estado y acotación por defecto al día de hoy (`YYYY-MM-DD`);
+- control de turnos de caja (`/app/cash-registers`) con apertura por medio de pago, arqueo, egresos e historial;
+- motor de impresión térmica de tirillas de 80mm en `<iframe>` aislado para comandas y comprobantes de pago;
+- sistema de diseño con paleta de marca oficial y alternancia dinámica de **Modo Claro** y **Modo Oscuro** (`ThemeService`).
 
 No inventar todavía módulos de ventas, caja, recetas, compras, reportes o permisos si el requerimiento no los incluye expresamente.
 
@@ -87,13 +90,16 @@ src/
 │   │   ├── categories/      # administración de categorías por tenant
 │   │   ├── products/        # catálogo paginado de productos y combos
 │   │   ├── inventory/       # existencias, ingredientes, movimientos y complementos
-│   │   ├── tables/          # operación, realtime y configuración de salas/mesas
+│   │   ├── tables/          # operación, realtime e impresión de tirillas 80mm
+│   │   ├── orders/          # historial paginado de comandes y consumo diario
+│   │   ├── cash-registers/  # apertura, turnos, egresos y control de caja
 │   │   ├── settings/        # organización, negocio, pagos, usuarios y roles
 │   │   └── app/             # navegación dinámica y vistas privadas
 │   ├── layouts/             # auth, tenant y app shells
 │   └── shared/
 │       ├── api/             # ApiClient común
-│       ├── components/      # logo, botones, alertas e idioma
+│       ├── components/      # logo, botones, alertas, idioma y selector de tema (Light/Dark)
+│       ├── theme/           # servicio de conmutacion de modo claro / oscuro (ThemeService)
 │       ├── http/            # modelo y normalización de errores
 │       ├── i18n/            # traducciones remotas/mock/locales
 │       ├── models/          # estados de petición
