@@ -925,6 +925,7 @@
     <!-- SUB-MODAL 7: MODAL DE IMPRESIÓN DE TIRILLA TÉRMICA (PRINTABLE TICKET) -->
     @if (activePrintReceiptState(); as receipt) {
       @let org = settingsStore.organization();
+      @let biz = settingsStore.business();
       @let parsedItems = receipt.items || [];
       @let parsedSplits = receipt.paymentDetails || [];
 
@@ -1004,12 +1005,19 @@
               <div class="ticket-totals-block">
                 <!-- 11- TOTAL SIN PROPINA -->
                 <div class="ticket-total-line">
-                  <span>Subtotal (Sin Propina):</span>
+                  <span>Subtotal (Sin {{ biz?.tipMessage || 'Propina' }}):</span>
                   <span>{{ receipt.subtotalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
                 </div>
 
-                <!-- 9- PROPINA VOLUNTARIA -->
-                @if (receipt.tipAmount > 0) {
+                <!-- 9- PROPINA VOLUNTARIA O SUGERIDA -->
+                @if (receipt.receiptType === 'PRE_BILLING' && (biz?.showVoluntaryTip || receipt.tipAmount > 0)) {
+                  @if (receipt.tipAmount > 0) {
+                    <div class="ticket-total-line">
+                      <span>{{ biz?.tipMessage || 'Propina Sugerida' }} ({{ biz?.suggestedTipPercentage || 10 }}%):</span>
+                      <span>{{ receipt.tipAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+                    </div>
+                  }
+                } @else if (receipt.tipAmount > 0) {
                   <div class="ticket-total-line">
                     <span>Propina Voluntaria:</span>
                     <span>{{ receipt.tipAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
@@ -1028,7 +1036,7 @@
 
                 <!-- 12- TOTAL A PAGAR CON PROPINA (EN NEGRITA Y TAMAÑO DESTACADO) -->
                 <div class="ticket-total-line total-grand">
-                  <span>TOTAL A PAGAR:</span>
+                  <span>{{ receipt.receiptType === 'PRE_BILLING' && receipt.tipAmount > 0 ? ('Total con ' + (biz?.tipMessage || 'Propina Sugerida') + ':') : 'TOTAL A PAGAR:' }}</span>
                   <strong>{{ receipt.totalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
                 </div>
               </div>
@@ -1051,7 +1059,7 @@
 
               <!-- 13- PIE DE COMPROBANTE -->
               <footer class="ticket-footer-block">
-                <h3 class="ticket-footer-title">*** {{ receipt.title }} ***</h3>
+                <h3 class="ticket-footer-title">*** {{ receipt.receiptType === 'PAYMENT' ? 'COMPROBANTE DE PAGO' : receipt.title }} ***</h3>
                 <p class="ticket-footer-msg">¡Gracias por su visita!</p>
                 <small class="ticket-software-credit">SaviaUp SaaS · Sistema POS</small>
               </footer>

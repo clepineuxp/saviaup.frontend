@@ -280,22 +280,13 @@ export class TableOperationDialogComponent {
         if (order) {
           this.loadOrderReceipts(order.id);
 
-          // REQUISITO 3: Si ya no hay mas productos activos PENDING por pagar, marcar para cerrar o cerrar modal
           const hasPendingItems = order.items.some((i) => i.status === 'PENDING');
           if (!hasPendingItems) {
-            if (this.activePrintReceiptState() !== null) {
-              this.shouldCloseMainModalOnPrintClose = true;
-            } else {
-              this.closed.emit();
-            }
+            this.shouldCloseMainModalOnPrintClose = true;
           }
         } else {
           this.orderReceipts.set([]);
-          if (this.activePrintReceiptState() !== null) {
-            this.shouldCloseMainModalOnPrintClose = true;
-          } else {
-            this.closed.emit();
-          }
+          this.shouldCloseMainModalOnPrintClose = true;
         }
       });
   }
@@ -321,7 +312,12 @@ export class TableOperationDialogComponent {
     const pendingItems = order.items.filter((i) => i.status === 'PENDING');
     const itemsToSummarize = pendingItems.length > 0 ? pendingItems : order.items.filter((i) => i.status !== 'CANCELLED');
     const subtotal = itemsToSummarize.reduce((sum, item) => sum + item.subtotal, 0);
-    const total = subtotal + (order.tipAmount || 0);
+
+    const business = this.settingsStore.business();
+    const showTip = business?.showVoluntaryTip ?? true;
+    const tipPct = business?.suggestedTipPercentage ?? 10;
+    const suggestedTip = showTip ? Math.round(subtotal * (tipPct / 100)) : 0;
+    const total = subtotal + suggestedTip;
 
     const itemsDto: OrderReceiptItem[] = itemsToSummarize.map((item) => ({
       productName: item.productName,
@@ -339,7 +335,7 @@ export class TableOperationDialogComponent {
       title: 'RESUMEN DE CUENTA (PRE-FACTURA)',
       subtotalAmount: subtotal,
       taxAmount: 0,
-      tipAmount: order.tipAmount || 0,
+      tipAmount: suggestedTip,
       totalAmount: total,
       paymentMethod: null,
       paymentDetails: null,
