@@ -18,6 +18,8 @@ import {
   OpeningBalanceInput,
 } from '../models/cash-register.model';
 
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+
 @Component({
   selector: 'app-cash-register-page',
   standalone: true,
@@ -25,6 +27,7 @@ import {
     FormsModule,
     CurrencyPipe,
     DatePipe,
+    TranslatePipe,
     UiAlertComponent,
     UiButtonComponent,
   ],
