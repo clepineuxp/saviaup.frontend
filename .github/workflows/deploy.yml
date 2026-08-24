@@ -67,5 +67,5 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/savia-up-web/browser/
-          server-dir: /
+          server-dir: /savia-site/
           dangerous-clean-slate: true
