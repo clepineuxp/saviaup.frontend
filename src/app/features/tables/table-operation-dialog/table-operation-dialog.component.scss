@@ -2,11 +2,20 @@
   position: fixed;
   z-index: 90;
   inset: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 1rem;
   background: rgba(15, 23, 42, 0.65);
   backdrop-filter: blur(8px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+
+  @media (max-width: 900px) {
+    padding: 0.5rem;
+    align-items: flex-start;
+  }
 }
 
 .dialog-container {
@@ -17,10 +26,22 @@
   min-height: 520px;
   border: 1px solid var(--color-border);
   border-radius: 1.5rem;
-  background: white;
+  background: var(--color-surface, #ffffff);
   color: var(--color-ink);
   box-shadow: 0 30px 100px rgba(0, 0, 0, 0.35);
   overflow: hidden;
+
+  @media (max-width: 900px) {
+    width: 100%;
+    height: auto;
+    max-height: min(96vh, 96dvh);
+    min-height: 0;
+    margin: auto 0;
+    border-radius: 1rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 .dialog-header {
@@ -159,6 +180,26 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
+
+  @media (max-width: 900px) {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+
+    .catalogue-panel {
+      border-right: none;
+      padding: 1rem;
+      overflow-y: visible;
+    }
+
+    .draft-panel {
+      display: none;
+    }
+  }
 }
 
 .catalogue-panel {
@@ -523,6 +564,30 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
+
+  @media (max-width: 900px) {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+
+    .active-items-section {
+      border-right: none;
+      border-bottom: 1px solid var(--color-border);
+      padding: 1rem;
+      overflow-y: visible;
+      flex: 0 0 auto;
+    }
+
+    .operations-bar {
+      padding: 1rem;
+      overflow-y: visible;
+      flex: 0 0 auto;
+    }
+  }
 }
 
 .active-items-section {
