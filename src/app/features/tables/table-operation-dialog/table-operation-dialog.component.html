@@ -427,6 +427,81 @@
       </div>
     }
 
+    <!-- SUB-MODAL 0: MOBILE DRAFT ORDER SUMMARY MODAL -->
+    @if (showMobileDraftModal()) {
+      <div class="sub-modal-backdrop">
+        <div class="sub-modal mobile-draft-modal">
+          <header class="sub-modal-header">
+            <h3>🛒 Resumen del Pedido (Borrador)</h3>
+            <button type="button" class="close-btn-icon" (click)="closeMobileDraftModal()">✕</button>
+          </header>
+
+          <div class="sub-modal-body">
+            <div class="draft-items-list">
+              @if (draftItems().length === 0) {
+                <div class="draft-empty">
+                  No has seleccionado productos aún. Elige productos del catálogo o usa <strong>Venta Libre</strong>.
+                </div>
+              } @else {
+                @for (item of draftItems(); track $index) {
+                  <div class="draft-item-row">
+                    <div class="draft-item-details">
+                      <strong>{{ item.productName }}</strong>
+                      @if (item.notes) {
+                        <small class="item-notes">📝 {{ item.notes }}</small>
+                      }
+                      <span class="item-price">
+                        {{ item.unitPrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} x {{ item.quantity }}
+                      </span>
+                    </div>
+                    <div class="draft-item-controls">
+                      <button type="button" class="qty-btn" (click)="updateDraftQty($index, -1)">-</button>
+                      <span class="qty-val">{{ item.quantity }}</span>
+                      <button type="button" class="qty-btn" (click)="updateDraftQty($index, 1)">+</button>
+                      <button type="button" class="remove-btn" (click)="removeDraftItem($index)">✕</button>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+
+            @if (draftItems().length > 0) {
+              <label class="obs-field">
+                <span>Observaciones generales para la mesa:</span>
+                <input
+                  type="text"
+                  placeholder="Ej. Servir bebidas primero…"
+                  [ngModel]="draftObservations()"
+                  (ngModelChange)="draftObservations.set($event)"
+                />
+              </label>
+
+              <div class="total-row">
+                <span>Subtotal Pedido:</span>
+                <strong>{{ draftTotal() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+              </div>
+            }
+          </div>
+
+          <footer class="sub-modal-footer">
+            @if (draftItems().length > 0) {
+              <button type="button" class="btn-cancel" (click)="clearDraft()">Limpiar Todo</button>
+              <button
+                type="button"
+                class="btn-confirm primary"
+                [disabled]="submittingOrder() || blocked() || !canOperate()"
+                (click)="confirmSendDraft()"
+              >
+                {{ submittingOrder() ? 'Procesando…' : 'Confirmar e ingresar pedido' }}
+              </button>
+            } @else {
+              <button type="button" class="btn-cancel" (click)="closeMobileDraftModal()">Cerrar</button>
+            }
+          </footer>
+        </div>
+      </div>
+    }
+
     <!-- SUB-MODAL 1: PRODUCT CONFIGURATION -->
     @if (configuredProduct(); as cfg) {
       <div class="sub-modal-backdrop">

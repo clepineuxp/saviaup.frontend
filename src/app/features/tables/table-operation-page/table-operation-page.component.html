@@ -74,7 +74,7 @@
             [class.view-toggle__active]="store.viewMode() === 'icons'"
             (click)="setViewMode('icons')"
           >
-            {{ 'tables.view.icons' | translate }}
+            📋 Vista Lista
           </button>
         </div>
       </header>
@@ -83,9 +83,31 @@
         @if (store.viewMode() === 'room') {
           <app-canvas-room-view [area]="area" (tableSelected)="chooseTable($event)" />
         } @else {
-          <div class="table-grid">
-            @for (table of area.tables; track table.id) {
-              <app-table-card [table]="table" (selected)="chooseTable($event)" />
+          <!-- LIST VIEW DE MESAS -->
+          <div class="tables-list-view">
+            @for (table of sortedTables(area.tables); track table.id) {
+              <button
+                type="button"
+                class="table-list-item-btn"
+                [class]="table.status.toLowerCase()"
+                (click)="chooseTable(table)"
+              >
+                <div class="table-list-item-left">
+                  <span class="table-status-indicator"></span>
+                  <strong class="table-name">{{ table.name }}</strong>
+                </div>
+                <div class="table-list-item-center">
+                  <span class="table-total-amount">
+                    {{ (table.activeOrderTotal && table.activeOrderTotal > 0) ? (table.activeOrderTotal | currency: 'COP' : 'symbol-narrow' : '1.0-0') : '$0' }}
+                  </span>
+                </div>
+                <div class="table-list-item-right">
+                  <span class="table-status-pill">
+                    {{ 'tables.status.' + table.status.toLowerCase() | translate }}
+                  </span>
+                  <span class="table-arrow">›</span>
+                </div>
+              </button>
             } @empty {
               <p class="room-empty">{{ 'tables.emptyArea' | translate }}</p>
             }
