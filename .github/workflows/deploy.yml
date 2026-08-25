@@ -27,6 +27,18 @@ jobs:
       - name: 3. Instalar dependencias
         run: npm ci
 
+      - name: 3.5. Generar environment.production.ts con Variables de GitHub
+        run: |
+          cat << 'EOF' > src/environments/environment.production.ts
+          export const environment = {
+            production: true,
+            useMockApi: false,
+            apiUrl: '${{ vars.APIURL }}',
+            signalRUrl: '${{ vars.SIGNALRURL }}',
+          } as const;
+          EOF
+          cp src/environments/environment.production.ts src/environments/environment.ts
+
       - name: 4. Compilar Angular en Producción
         run: npx ng build --configuration production
 
