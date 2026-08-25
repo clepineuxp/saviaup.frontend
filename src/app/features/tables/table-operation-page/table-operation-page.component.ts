@@ -15,6 +15,7 @@ import { LocalizationService } from '../../../shared/i18n/localization.service';
 import { AuthenticatedContextStore } from '../../../core/context/authenticated-context.store';
 import { AppShellState } from '../../../layouts/app-layout/app-shell-state.service';
 import { CurrencyPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { CanvasRoomViewComponent } from '../canvas-room-view/canvas-room-view.component';
 import { TableStore } from '../data-access/table-store.service';
@@ -32,6 +33,7 @@ import { TableOperationDialogComponent } from '../table-operation-dialog/table-o
     TableOperationDialogComponent,
     TranslatePipe,
     CurrencyPipe,
+    FormsModule,
   ],
   templateUrl: './table-operation-page.component.html',
   styleUrl: './table-operation-page.component.scss',
@@ -42,6 +44,7 @@ export class TableOperationPageComponent implements OnInit, OnDestroy {
   readonly shellState = inject(AppShellState);
   readonly authContextStore = inject(AuthenticatedContextStore);
   readonly selectedTable = signal<RestaurantTable | null>(null);
+  readonly tableSearchQuery = signal<string>('');
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   private readonly localization = inject(LocalizationService);
@@ -118,7 +121,19 @@ export class TableOperationPageComponent implements OnInit, OnDestroy {
   }
 
   sortedTables(tables: readonly RestaurantTable[]): RestaurantTable[] {
-    return [...tables].sort((a, b) => {
+    const query = this.tableSearchQuery().trim().toLowerCase();
+    let result = [...tables];
+
+    if (query) {
+      result = result.filter(
+        (t) =>
+          t.name.toLowerCase().includes(query) ||
+          (t.activeOrderTotal && t.activeOrderTotal.toString().includes(query)) ||
+          t.capacity.toString().includes(query),
+      );
+    }
+
+    return result.sort((a, b) => {
       const isOccupiedA =
         a.status === 'OCCUPIED' ||
         (a.status as string) === 'ACCOUNT_REQUESTED' ||

@@ -22,9 +22,6 @@
             | translate
         }}</strong>
       </button>
-      <span class="realtime" [class.realtime--online]="store.realtimeState() === 'connected'">
-        <i></i>{{ 'tables.realtime.' + store.realtimeState() | translate }}
-      </span>
     </div>
   </header>
 
@@ -48,18 +45,35 @@
   } @else {
     <section class="room-workspace">
       <header class="room-toolbar">
-        <label class="room-selector">
-          <span class="visually-hidden">{{ 'tables.areas.label' | translate }}</span>
-          <select
-            [value]="store.selectedAreaId()"
-            (change)="selectArea($event)"
-            [attr.aria-label]="'tables.areas.label' | translate"
-          >
-            @for (item of store.operationAreas(); track item.area.id) {
-              <option [value]="item.area.id">{{ item.area.name }}</option>
-            }
-          </select>
-        </label>
+        <div class="toolbar-left-group">
+          <label class="room-selector">
+            <span class="visually-hidden">{{ 'tables.areas.label' | translate }}</span>
+            <select
+              [value]="store.selectedAreaId()"
+              (change)="selectArea($event)"
+              [attr.aria-label]="'tables.areas.label' | translate"
+            >
+              @for (item of store.operationAreas(); track item.area.id) {
+                <option [value]="item.area.id">{{ item.area.name }}</option>
+              }
+            </select>
+          </label>
+
+          @if (store.viewMode() === 'icons') {
+            <div class="table-search-box">
+              <span class="search-icon">🔍</span>
+              <input
+                type="text"
+                placeholder="Buscar mesa..."
+                [ngModel]="tableSearchQuery()"
+                (ngModelChange)="tableSearchQuery.set($event)"
+              />
+              @if (tableSearchQuery()) {
+                <button type="button" class="clear-search-btn" (click)="tableSearchQuery.set('')">✕</button>
+              }
+            </div>
+          }
+        </div>
 
         <div class="view-toggle" [attr.aria-label]="'tables.view.label' | translate">
           <button
@@ -96,12 +110,10 @@
                   <span class="table-status-indicator"></span>
                   <strong class="table-name">{{ table.name }}</strong>
                 </div>
-                <div class="table-list-item-center">
+                <div class="table-list-item-right">
                   <span class="table-total-amount">
                     {{ (table.activeOrderTotal && table.activeOrderTotal > 0) ? (table.activeOrderTotal | currency: 'COP' : 'symbol-narrow' : '1.0-0') : '$0' }}
                   </span>
-                </div>
-                <div class="table-list-item-right">
                   <span class="table-status-pill">
                     {{ 'tables.status.' + table.status.toLowerCase() | translate }}
                   </span>
