@@ -14,6 +14,7 @@ import { ToastService } from '../../../shared/services/toast.service';
 import { LocalizationService } from '../../../shared/i18n/localization.service';
 import { AuthenticatedContextStore } from '../../../core/context/authenticated-context.store';
 import { AppShellState } from '../../../layouts/app-layout/app-shell-state.service';
+import { CurrencyPipe } from '@angular/common';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { CanvasRoomViewComponent } from '../canvas-room-view/canvas-room-view.component';
 import { TableStore } from '../data-access/table-store.service';
@@ -30,6 +31,7 @@ import { TableOperationDialogComponent } from '../table-operation-dialog/table-o
     TableCardComponent,
     TableOperationDialogComponent,
     TranslatePipe,
+    CurrencyPipe,
   ],
   templateUrl: './table-operation-page.component.html',
   styleUrl: './table-operation-page.component.scss',
@@ -113,6 +115,24 @@ export class TableOperationPageComponent implements OnInit, OnDestroy {
         catchError(() => EMPTY),
       )
       .subscribe((updated) => this.selectedTable.set(updated));
+  }
+
+  sortedTables(tables: readonly RestaurantTable[]): RestaurantTable[] {
+    return [...tables].sort((a, b) => {
+      const isOccupiedA =
+        a.status === 'OCCUPIED' ||
+        (a.status as string) === 'ACCOUNT_REQUESTED' ||
+        (a.activeOrderTotal && a.activeOrderTotal > 0);
+      const isOccupiedB =
+        b.status === 'OCCUPIED' ||
+        (b.status as string) === 'ACCOUNT_REQUESTED' ||
+        (b.activeOrderTotal && b.activeOrderTotal > 0);
+
+      if (isOccupiedA && !isOccupiedB) return -1;
+      if (!isOccupiedA && isOccupiedB) return 1;
+
+      return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+    });
   }
 
   reloadOperationState(): void {

@@ -136,10 +136,6 @@ export class TableOperationDialogComponent {
   private shouldCloseMainModalOnPrintClose = false;
 
   openMobileDraftModal(): void {
-    if (this.draftItems().length === 0) {
-      this.toastService.show('El pedido está vacío. Selecciona productos del catálogo primero.', 'warning', 3000);
-      return;
-    }
     this.showMobileDraftModal.set(true);
   }
 
