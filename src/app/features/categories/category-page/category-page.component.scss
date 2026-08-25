@@ -1,12 +1,13 @@
 :host {
   display: block;
   width: 100%;
-  max-width: 82rem;
+  max-width: 100%;
 }
 
 .categories-page {
   display: grid;
   width: 100%;
+  max-width: 100%;
   gap: 1.25rem;
 }
 
@@ -224,12 +225,6 @@
   }
 
   .category-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1120px) {
-  .category-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
 }
