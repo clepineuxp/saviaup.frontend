@@ -942,38 +942,66 @@
 
                 <div class="splits-list">
                   @for (split of co.splits; track $index) {
-                    <div class="split-row">
-                      <select
-                        class="sav-select split-method-select"
-                        [ngModel]="split.method"
-                        (ngModelChange)="split.method = $event"
-                      >
-                        @for (pm of settingsStore.paymentMethods(); track pm.id) {
-                          @if (pm.isActive) {
-                            <option [value]="pm.name">{{ pm.name }}</option>
+                    <div class="split-item-container">
+                      <div class="split-row">
+                        <select
+                          class="sav-select split-method-select"
+                          [ngModel]="split.method"
+                          (ngModelChange)="split.method = $event"
+                        >
+                          @for (pm of settingsStore.paymentMethods(); track pm.id) {
+                            @if (pm.isActive) {
+                              <option [value]="pm.name">{{ pm.name }}</option>
+                            }
                           }
-                        }
-                      </select>
+                        </select>
 
-                      <div class="split-amount-input-wrap">
-                        <span class="currency-prefix">$</span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="500"
-                          [ngModel]="split.amount"
-                          (ngModelChange)="updateSplitAmount($index, $event)"
-                        />
+                        <div class="split-amount-input-wrap">
+                          <span class="currency-prefix">$</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="500"
+                            [ngModel]="split.amount"
+                            (ngModelChange)="updateSplitAmount($index, $event)"
+                          />
+                        </div>
+
+                        @if (co.splits.length > 1) {
+                          <button
+                            type="button"
+                            class="remove-split-btn"
+                            (click)="removePaymentSplit($index)"
+                          >
+                            ✕
+                          </button>
+                        }
                       </div>
 
-                      @if (co.splits.length > 1) {
-                        <button
-                          type="button"
-                          class="remove-split-btn"
-                          (click)="removePaymentSplit($index)"
-                        >
-                          ✕
-                        </button>
+                      @if (split.method === 'Efectivo') {
+                        <div class="cash-calculator-box inline-split-cash">
+                          <label class="form-label">
+                            <span>💵 Efectivo recibido / Con cuánto paga ($):</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="1000"
+                              placeholder="Ej. 50000"
+                              [ngModel]="split.cashReceived"
+                              (ngModelChange)="updateSplitCashReceived($index, $event)"
+                            />
+                          </label>
+                          @if (split.cashReceived && split.cashReceived >= split.amount) {
+                            <div class="change-due-badge">
+                              <span>💰 Cambio a entregar:</span>
+                              <strong>{{ (split.cashReceived - split.amount) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                            </div>
+                          } @else if (split.cashReceived && split.cashReceived < split.amount) {
+                            <div class="change-due-badge warning">
+                              <span>⚠️ Falta efectivo recibido para cubrir este monto</span>
+                            </div>
+                          }
+                        </div>
                       }
                     </div>
                   }

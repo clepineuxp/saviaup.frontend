@@ -913,6 +913,20 @@ export class TableOperationDialogComponent {
     });
   }
 
+  updateSplitCashReceived(index: number, val: number | string): void {
+    const curr = this.checkoutState();
+    if (!curr) return;
+    const cash = Math.max(0, +val || 0);
+    const copySplits = [...curr.splits];
+    if (copySplits[index]) {
+      copySplits[index] = { ...copySplits[index]!, cashReceived: cash };
+    }
+    this.checkoutState.set({
+      ...curr,
+      splits: copySplits,
+    });
+  }
+
   addPaymentSplit(): void {
     const curr = this.checkoutState();
     if (!curr) return;
