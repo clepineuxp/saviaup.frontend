@@ -18,6 +18,8 @@ La fase implementada cubre:
 - operación y configuración de salas/mesas con permisos granulares, canvas 2D y SignalR por tenant;
 - control de órdenes (`/app/orders`) con búsqueda paginada, filtros por estado y acotación por defecto al día de hoy (`YYYY-MM-DD`);
 - control de turnos de caja (`/app/cash-registers`) con apertura por medio de pago, arqueo, egresos e historial;
+- dashboard de estadísticas (`/app/statistics`) con gráficas interactivas Chart.js para ventas del mes, productos más vendidos, ranking de vendedores y filtro toggle de propinas;
+- módulo de facturación (`/app/billing`) con 2 vistas (lista de documentos y órdenes con documentos), filtros por fecha acotados a hoy por defecto, paginación y modal de reimpresión de comprobantes térmicos;
 - motor de impresión térmica de tirillas de 80mm en `<iframe>` aislado para comandas y comprobantes de pago;
 - sistema de diseño con paleta de marca oficial y alternancia dinámica de **Modo Claro** y **Modo Oscuro** (`ThemeService`).
 

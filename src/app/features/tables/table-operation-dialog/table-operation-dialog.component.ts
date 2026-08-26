@@ -75,9 +75,18 @@ export interface CheckoutModalState {
   singleCashReceived?: number;
 }
 
+import { ThermalTicketModalComponent } from '../../../shared/components/thermal-ticket-modal/thermal-ticket-modal.component';
+
 @Component({
   selector: 'app-table-operation-dialog',
-  imports: [CurrencyPipe, DatePipe, FormsModule, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    CurrencyPipe,
+    DatePipe,
+    FormsModule,
+    ReactiveFormsModule,
+    TranslatePipe,
+    ThermalTicketModalComponent,
+  ],
   templateUrl: './table-operation-dialog.component.html',
   styleUrl: './table-operation-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

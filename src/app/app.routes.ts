@@ -17,7 +17,8 @@ const knownModuleRoutes: Routes = KNOWN_MODULE_NAVIGATION.filter(
     code !== 'orders' &&
     code !== 'settings' &&
     code !== 'statistics' &&
-    code !== 'reports',
+    code !== 'reports' &&
+    code !== 'billing',
 ).map(({ code, path }) => ({
   path,
   title: 'Savia Up',
@@ -149,6 +150,14 @@ export const routes: Routes = [
         path: 'reports',
         pathMatch: 'full',
         redirectTo: 'statistics',
+      },
+      {
+        path: 'billing',
+        title: 'Facturación · Savia Up',
+        loadComponent: () =>
+          import('./features/billing/billing-page/billing-page.component').then(
+            (c) => c.BillingPageComponent,
+          ),
       },
       ...knownModuleRoutes,
       {
