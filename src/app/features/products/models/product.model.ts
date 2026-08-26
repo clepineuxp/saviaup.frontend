@@ -11,7 +11,7 @@ export interface Product {
   readonly type: ProductType;
   readonly name: string;
   readonly description: string | null;
-  readonly imageUrl: string | null;
+  readonly image: string | null;
   readonly category: ProductCategory;
   readonly salePrice: number;
   readonly preparationTimeMinutes: number | null;
@@ -46,7 +46,7 @@ export interface CreateProductRequest {
   readonly categoryId: string;
   readonly salePrice: number;
   readonly description: string | null;
-  readonly imageUrl: string | null;
+  readonly image: string | null;
   readonly preparationTimeMinutes: number | null;
   readonly isInventoryTracked: boolean;
 }

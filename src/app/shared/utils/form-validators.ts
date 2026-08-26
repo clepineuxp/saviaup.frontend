@@ -19,6 +19,25 @@ export const passwordMatchValidator =
     return password === confirmation ? null : { passwordMismatch: true };
   };
 
+export const imageUrlValidator =
+  (): ValidatorFn =>
+  (control: AbstractControl): ValidationErrors | null => {
+    const value = String(control.value ?? '').trim();
+    if (!value) return null;
+    if (value.startsWith('data:image/') || value.startsWith('/api/images/')) {
+      return null;
+    }
+
+    try {
+      const url = new URL(value);
+      return url.protocol === 'http:' || url.protocol === 'https:'
+        ? null
+        : { absoluteHttpUrl: true };
+    } catch {
+      return { absoluteHttpUrl: true };
+    }
+  };
+
 export const absoluteHttpUrlValidator =
   (): ValidatorFn =>
   (control: AbstractControl): ValidationErrors | null => {

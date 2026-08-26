@@ -111,9 +111,9 @@
                 <div class="product-cell">
                   <div class="thumbnail">
                     <span aria-hidden="true">◇</span>
-                    @if (product.imageUrl) {
+                    @if (product.image) {
                       <img
-                        [src]="product.imageUrl"
+                        [src]="product.image"
                         [alt]="product.name"
                         (error)="hideBrokenImage($event)"
                       />

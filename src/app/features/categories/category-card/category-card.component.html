@@ -1,8 +1,8 @@
 <article class="category-card" [class.category-card--inactive]="!category().isActive">
   <div class="category-card__image">
-    @if (category().imageUrl && !imageFailed()) {
+    @if (category().image && !imageFailed()) {
       <img
-        [src]="category().imageUrl"
+        [src]="category().image"
         [alt]="category().name"
         loading="lazy"
         (error)="markImageFailed()"

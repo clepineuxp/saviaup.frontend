@@ -138,8 +138,8 @@
               @for (product of products(); track product.id) {
                 <div class="product-card" (click)="openProductConfig(product)">
                   <div class="product-thumb">
-                    @if (product.imageUrl) {
-                      <img [src]="product.imageUrl" [alt]="product.name" />
+                    @if (product.image) {
+                      <img [src]="product.image" [alt]="product.name" />
                     } @else {
                       <span class="thumb-placeholder">☕</span>
                     }

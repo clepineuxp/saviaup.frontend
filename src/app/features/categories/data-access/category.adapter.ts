@@ -5,7 +5,7 @@ export const mapCategoryDto = (dto: CategoryDto): Category => ({
   id: dto.id,
   name: dto.name,
   description: dto.description,
-  imageUrl: dto.imageUrl,
+  image: dto.image,
   isInventoryTracked: dto.isInventoryTracked,
   isActive: dto.isActive,
   createdAt: dto.createdAt,

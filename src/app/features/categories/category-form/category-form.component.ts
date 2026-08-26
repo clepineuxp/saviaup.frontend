@@ -13,9 +13,10 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UiAlertComponent } from '../../../shared/components/ui-alert/ui-alert.component';
 import { UiButtonComponent } from '../../../shared/components/ui-button/ui-button.component';
+import { ImageSelectorComponent, ImageSelectionResult } from '../../../shared/components/image-selector/image-selector.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import {
-  absoluteHttpUrlValidator,
+  imageUrlValidator,
   nonBlankRequiredValidator,
   requiredBooleanValidator,
 } from '../../../shared/utils/form-validators';
@@ -24,7 +25,7 @@ import { Category, CreateCategoryRequest } from '../models/category.model';
 
 @Component({
   selector: 'app-category-form',
-  imports: [ReactiveFormsModule, UiAlertComponent, UiButtonComponent, TranslatePipe],
+  imports: [ReactiveFormsModule, UiAlertComponent, UiButtonComponent, ImageSelectorComponent, TranslatePipe],
   templateUrl: './category-form.component.html',
   styleUrl: './category-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,22 +42,13 @@ export class CategoryFormComponent {
   readonly form = this.formBuilder.nonNullable.group({
     name: ['', [nonBlankRequiredValidator(), Validators.maxLength(120)]],
     description: ['', [Validators.maxLength(1000)]],
-    imageUrl: ['', [Validators.maxLength(2048), absoluteHttpUrlValidator()]],
+    image: ['', [imageUrlValidator()]],
     isInventoryTracked: [true, [requiredBooleanValidator()]],
   });
-  readonly imageUrlValue = toSignal(this.form.controls.imageUrl.valueChanges, {
-    initialValue: this.form.controls.imageUrl.value,
-  });
-  readonly previewUrl = computed(() => {
-    const value = this.imageUrlValue().trim();
-    if (!value) return null;
-    try {
-      const url = new URL(value);
-      return url.protocol === 'http:' || url.protocol === 'https:' ? value : null;
-    } catch {
-      return null;
-    }
-  });
+
+  onImageSelected(result: ImageSelectionResult | null): void {
+    this.form.controls.image.setValue(result?.base64Content || '');
+  }
 
   constructor() {
     effect(() => {
@@ -64,17 +56,13 @@ export class CategoryFormComponent {
       this.form.reset({
         name: category?.name ?? '',
         description: category?.description ?? '',
-        imageUrl: category?.imageUrl ?? '',
+        image: category?.image ?? '',
         isInventoryTracked: category?.isInventoryTracked ?? true,
       });
       this.previewFailed.set(false);
     });
 
     effect(() => this.applyServerError(this.serverError()));
-
-    this.form.controls.imageUrl.valueChanges
-      .pipe(takeUntilDestroyed())
-      .subscribe(() => this.previewFailed.set(false));
   }
 
   submit(): void {
@@ -87,7 +75,7 @@ export class CategoryFormComponent {
     this.submitted.emit({
       name: value.name.trim().replace(/\s+/g, ' '),
       description: this.cleanOptional(value.description),
-      imageUrl: this.cleanOptional(value.imageUrl),
+      image: this.cleanOptional(value.image),
       isInventoryTracked: value.isInventoryTracked,
     });
   }
@@ -128,8 +116,8 @@ export class CategoryFormComponent {
           ? this.form.controls.name
           : normalized === 'description'
             ? this.form.controls.description
-            : normalized === 'imageurl'
-              ? this.form.controls.imageUrl
+            : normalized === 'image'
+              ? this.form.controls.image
               : normalized === 'isinventorytracked'
                 ? this.form.controls.isInventoryTracked
                 : null;

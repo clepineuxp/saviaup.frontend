@@ -111,25 +111,13 @@
       </label>
 
       <div class="image-row wide">
-        <label>
-          <span>{{ 'products.form.imageUrl' | translate }}</span>
-          <input type="url" formControlName="imageUrl" maxlength="2048" placeholder="https://…" />
-          @if (form.controls.imageUrl.invalid && form.controls.imageUrl.touched) {
-            <small class="error">{{ 'products.validation.imageUrl' | translate }}</small>
-          }
-        </label>
-        <div class="preview" [class.preview--empty]="!previewUrl() || previewFailed()">
-          @if (previewUrl() && !previewFailed()) {
-            <img
-              [src]="previewUrl()!"
-              [alt]="'products.form.imagePreview' | translate"
-              (error)="markPreviewFailed()"
-            />
-          } @else {
-            <span aria-hidden="true">◇</span>
-            <small>{{ 'products.form.noImage' | translate }}</small>
-          }
-        </div>
+        <app-image-selector
+          [module]="'products'"
+          [entityId]="product()?.id"
+          [label]="'products.form.imageUrl' | translate"
+          [currentImage]="form.controls.image.value"
+          (imageSelected)="onImageSelected($event)"
+        ></app-image-selector>
       </div>
 
       <label class="inventory-switch wide" [class.inventory-switch--disabled]="inventoryDisabled()">
