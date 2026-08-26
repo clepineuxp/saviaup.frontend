@@ -1,0 +1,46 @@
+<div class="image-selector-container">
+  @if (label) {
+    <label class="selector-label">{{ label }} <span class="max-size-tag">(Máx 2 MB)</span></label>
+  }
+
+  <div class="drop-zone" [class.has-preview]="previewUrl()">
+    @if (previewUrl()) {
+      <div class="preview-wrapper">
+        <img [src]="previewUrl()" [alt]="fileName() || 'Vista previa'" class="preview-img" />
+        <div class="preview-overlay">
+          <span class="file-name-text">{{ fileName() }}</span>
+          <button type="button" class="btn-remove-image" (click)="clearImage($event)" title="Eliminar imagen">
+            🗑️ Eliminar
+          </button>
+        </div>
+      </div>
+    } @else {
+      <label class="upload-box">
+        <input
+          type="file"
+          accept="image/png, image/jpeg, image/webp"
+          class="file-input-hidden"
+          (change)="onFileSelected($event)"
+        />
+        <div class="upload-placeholder">
+          <span class="upload-icon">📷</span>
+          <span class="upload-title">Haz clic o arrastra una imagen</span>
+          <span class="upload-hint">Formatos soportados: PNG, JPG, WEBP (Hasta 2 MB)</span>
+        </div>
+      </label>
+    }
+
+    @if (isUploading()) {
+      <div class="uploading-overlay">
+        <span class="spinner"></span>
+        <span>Guardando en base de datos...</span>
+      </div>
+    }
+  </div>
+
+  @if (errorMessage()) {
+    <div class="error-alert">
+      ⚠️ {{ errorMessage() }}
+    </div>
+  }
+</div>

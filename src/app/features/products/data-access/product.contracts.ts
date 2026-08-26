@@ -9,7 +9,7 @@ export interface ProductDto {
   readonly type: string;
   readonly name: string;
   readonly description: string | null;
-  readonly imageUrl: string | null;
+  readonly image: string | null;
   readonly category: ProductCategoryDto;
   readonly salePrice: number;
   readonly preparationTimeMinutes: number | null;

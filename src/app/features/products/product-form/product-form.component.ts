@@ -13,9 +13,10 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UiAlertComponent } from '../../../shared/components/ui-alert/ui-alert.component';
 import { UiButtonComponent } from '../../../shared/components/ui-button/ui-button.component';
+import { ImageSelectorComponent, ImageSelectionResult } from '../../../shared/components/image-selector/image-selector.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import {
-  absoluteHttpUrlValidator,
+  imageUrlValidator,
   nonBlankRequiredValidator,
 } from '../../../shared/utils/form-validators';
 import { ProductFeatureError } from '../data-access/product-store.service';
@@ -28,7 +29,7 @@ import {
 
 @Component({
   selector: 'app-product-form',
-  imports: [ReactiveFormsModule, UiAlertComponent, UiButtonComponent, TranslatePipe],
+  imports: [ReactiveFormsModule, UiAlertComponent, UiButtonComponent, ImageSelectorComponent, TranslatePipe],
   templateUrl: './product-form.component.html',
   styleUrl: './product-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,33 +52,21 @@ export class ProductFormComponent {
     ]),
     salePrice: this.formBuilder.nonNullable.control(0, [Validators.required, Validators.min(0.01)]),
     description: this.formBuilder.nonNullable.control('', [Validators.maxLength(1000)]),
-    imageUrl: this.formBuilder.nonNullable.control('', [
-      Validators.maxLength(2048),
-      absoluteHttpUrlValidator(),
-    ]),
+    image: this.formBuilder.nonNullable.control('', [imageUrlValidator()]),
     preparationTimeMinutes: this.formBuilder.control<number | null>(null, [Validators.min(0)]),
     isInventoryTracked: this.formBuilder.nonNullable.control(false),
   });
+
+  onImageSelected(result: ImageSelectionResult | null): void {
+    this.form.controls.image.setValue(result?.base64Content || '');
+  }
   private readonly categoryIdValue = toSignal(this.form.controls.categoryId.valueChanges, {
     initialValue: this.form.controls.categoryId.value,
-  });
-  private readonly imageUrlValue = toSignal(this.form.controls.imageUrl.valueChanges, {
-    initialValue: this.form.controls.imageUrl.value,
   });
   readonly selectedCategory = computed(() =>
     this.categories().find((category) => category.id === this.categoryIdValue()),
   );
   readonly inventoryDisabled = computed(() => !this.selectedCategory()?.isInventoryTracked);
-  readonly previewUrl = computed(() => {
-    const value = this.imageUrlValue().trim();
-    if (!value) return null;
-    try {
-      const url = new URL(value);
-      return url.protocol === 'http:' || url.protocol === 'https:' ? value : null;
-    } catch {
-      return null;
-    }
-  });
 
   constructor() {
     effect(() => {
@@ -88,7 +77,7 @@ export class ProductFormComponent {
         name: product?.name ?? '',
         salePrice: product?.salePrice ?? 0,
         description: product?.description ?? '',
-        imageUrl: product?.imageUrl ?? '',
+        image: product?.image ?? '',
         preparationTimeMinutes: product?.preparationTimeMinutes ?? null,
         isInventoryTracked: product?.isInventoryTracked ?? false,
       });
@@ -106,9 +95,6 @@ export class ProductFormComponent {
     });
 
     effect(() => this.applyServerErrors(this.error()));
-    this.form.controls.imageUrl.valueChanges
-      .pipe(takeUntilDestroyed())
-      .subscribe(() => this.previewFailed.set(false));
   }
 
   submit(): void {
@@ -123,7 +109,7 @@ export class ProductFormComponent {
       name: value.name.trim().replace(/\s+/g, ' '),
       salePrice: value.salePrice,
       description: this.cleanOptional(value.description),
-      imageUrl: this.cleanOptional(value.imageUrl),
+      image: this.cleanOptional(value.image),
       preparationTimeMinutes: value.preparationTimeMinutes,
       isInventoryTracked: this.selectedCategory()?.isInventoryTracked
         ? value.isInventoryTracked
@@ -165,8 +151,8 @@ export class ProductFormComponent {
                 ? controls.salePrice
                 : key === 'description'
                   ? controls.description
-                  : key === 'imageurl'
-                    ? controls.imageUrl
+                  : key === 'image'
+                    ? controls.image
                     : key === 'preparationtimeminutes'
                       ? controls.preparationTimeMinutes
                       : key === 'isinventorytracked'

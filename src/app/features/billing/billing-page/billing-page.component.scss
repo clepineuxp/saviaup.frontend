@@ -2,6 +2,7 @@
   display: block;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
   box-sizing: border-box;
 }
 
@@ -11,9 +12,16 @@
   gap: 1.5rem;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .page-header {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+
   .eyebrow {
     display: inline-block;
     font-size: 0.8rem;
@@ -22,12 +30,14 @@
     text-transform: uppercase;
     color: var(--color-primary, #6366f1);
   }
+
   .title {
     margin: 0.2rem 0;
     font-size: clamp(1.5rem, 4vw, 2.2rem);
     font-weight: 800;
     color: #0f172a;
   }
+
   .subtitle {
     margin: 0;
     font-size: 0.95rem;
@@ -46,6 +56,15 @@
   border: 1px solid var(--color-border, #e2e8f0);
   border-radius: 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+
+  @media (max-width: 860px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .tabs-group {
@@ -54,6 +73,11 @@
   background: #f1f5f9;
   padding: 0.35rem;
   border-radius: 0.75rem;
+  box-sizing: border-box;
+
+  @media (max-width: 860px) {
+    width: 100%;
+  }
 
   .tab-btn {
     padding: 0.6rem 1.2rem;
@@ -65,6 +89,11 @@
     border-radius: 0.5rem;
     cursor: pointer;
     transition: all 0.2s ease;
+
+    @media (max-width: 860px) {
+      flex: 1;
+      text-align: center;
+    }
 
     &:hover {
       color: #0f172a;
@@ -83,16 +112,39 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 1rem;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 860px) {
+    width: 100%;
+  }
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
 
   .field-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    min-width: 0;
+    box-sizing: border-box;
+
+    @media (max-width: 640px) {
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+      gap: 0.3rem;
+    }
 
     label {
       font-size: 0.85rem;
       font-weight: 600;
       color: #475569;
+      white-space: nowrap;
     }
 
     .date-input,
@@ -104,14 +156,23 @@
       background: #ffffff;
       outline: none;
       transition: border-color 0.2s;
+      width: 100%;
+      box-sizing: border-box;
+      min-width: 0;
 
       &:focus {
         border-color: var(--color-primary, #6366f1);
       }
     }
 
-    .search-input {
-      min-width: 16rem;
+    &.search-field {
+      flex: 1 1 14rem;
+      min-width: 0;
+
+      @media (max-width: 640px) {
+        flex: 1 1 auto;
+        width: 100%;
+      }
     }
   }
 }
@@ -122,15 +183,31 @@
   border-radius: 1rem;
   padding: 1.25rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  @media (max-width: 640px) {
+    padding: 0.85rem;
+  }
 }
 
+/* Scrollable table container */
 .table-responsive {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  display: block;
 }
 
 .data-table {
   width: 100%;
+  min-width: 820px; /* Forces scroll container on narrow viewports while preserving readable layout */
   border-collapse: collapse;
   text-align: left;
   font-size: 0.9rem;
@@ -149,6 +226,7 @@
     border-bottom: 1px solid #f1f5f9;
     color: #1e293b;
     vertical-align: middle;
+    white-space: nowrap;
   }
 
   tr:hover td {
@@ -270,6 +348,19 @@
   margin-top: 1.25rem;
   padding-top: 1rem;
   border-top: 1px solid #f1f5f9;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    .pagination-controls {
+      width: 100%;
+      justify-content: center;
+    }
+  }
 
   .pagination-info {
     font-size: 0.85rem;
@@ -338,17 +429,23 @@
   background: rgba(15, 23, 42, 0.5);
   backdrop-filter: blur(4px);
   padding: 1rem;
+  box-sizing: border-box;
 }
 
 .modal-card {
   width: 100%;
-  max-width: 28rem;
+  max-width: min(92vw, 32rem);
   max-height: 90vh;
   overflow-y: auto;
   background: #ffffff;
   border-radius: 1.25rem;
   padding: 1.5rem;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+
+  @media (max-width: 480px) {
+    padding: 1rem;
+  }
 
   .modal-header {
     display: flex;
@@ -502,6 +599,8 @@
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 0.6rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 
     .rcpt-info {
       display: flex;
@@ -518,6 +617,12 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
+
+      @media (max-width: 480px) {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 0.25rem;
+      }
     }
   }
 }

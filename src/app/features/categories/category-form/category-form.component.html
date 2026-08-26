@@ -95,47 +95,13 @@
       </label>
 
       <div class="image-field">
-        <label class="field">
-          <span class="field__label">{{ 'categories.form.imageUrl' | translate }}</span>
-          <input
-            class="field__input"
-            type="url"
-            inputmode="url"
-            formControlName="imageUrl"
-            maxlength="2048"
-            autocomplete="url"
-            placeholder="https://…"
-            [attr.aria-invalid]="form.controls.imageUrl.invalid && form.controls.imageUrl.touched"
-            aria-describedby="category-image-hint category-image-error"
-          />
-          <span id="category-image-hint" class="field__hint">
-            {{ 'categories.form.imageHint' | translate }}
-          </span>
-          @if (form.controls.imageUrl.invalid && form.controls.imageUrl.touched) {
-            <span id="category-image-error" class="field__error">
-              @if (form.controls.imageUrl.hasError('maxlength')) {
-                {{ 'categories.validation.imageMax' | translate }}
-              } @else if (form.controls.imageUrl.hasError('absoluteHttpUrl')) {
-                {{ 'categories.validation.imageUrl' | translate }}
-              } @else {
-                {{ 'categories.validation.server' | translate }}
-              }
-            </span>
-          }
-        </label>
-
-        <div class="image-preview" [class.image-preview--empty]="!previewUrl() || previewFailed()">
-          @if (previewUrl() && !previewFailed()) {
-            <img
-              [src]="previewUrl()"
-              [alt]="'categories.form.imagePreview' | translate"
-              (error)="markPreviewFailed()"
-            />
-          } @else {
-            <span aria-hidden="true">⊞</span>
-            <small>{{ 'categories.form.imagePreviewEmpty' | translate }}</small>
-          }
-        </div>
+        <app-image-selector
+          [module]="'categories'"
+          [entityId]="category()?.id"
+          [label]="'categories.form.imageUrl' | translate"
+          [currentImage]="form.controls.image.value"
+          (imageSelected)="onImageSelected($event)"
+        ></app-image-selector>
       </div>
 
       <label class="inventory-switch">
