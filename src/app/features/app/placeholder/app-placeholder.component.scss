@@ -1,8 +1,17 @@
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 2rem 0;
+}
+
 .success-card,
 .empty-card {
   position: relative;
   width: 100%;
   max-width: 35rem;
+  margin: 0 auto;
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: 1.5rem;

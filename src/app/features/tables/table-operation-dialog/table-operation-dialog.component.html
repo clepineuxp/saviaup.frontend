@@ -942,38 +942,66 @@
 
                 <div class="splits-list">
                   @for (split of co.splits; track $index) {
-                    <div class="split-row">
-                      <select
-                        class="sav-select split-method-select"
-                        [ngModel]="split.method"
-                        (ngModelChange)="split.method = $event"
-                      >
-                        @for (pm of settingsStore.paymentMethods(); track pm.id) {
-                          @if (pm.isActive) {
-                            <option [value]="pm.name">{{ pm.name }}</option>
+                    <div class="split-item-container">
+                      <div class="split-row">
+                        <select
+                          class="sav-select split-method-select"
+                          [ngModel]="split.method"
+                          (ngModelChange)="split.method = $event"
+                        >
+                          @for (pm of settingsStore.paymentMethods(); track pm.id) {
+                            @if (pm.isActive) {
+                              <option [value]="pm.name">{{ pm.name }}</option>
+                            }
                           }
-                        }
-                      </select>
+                        </select>
 
-                      <div class="split-amount-input-wrap">
-                        <span class="currency-prefix">$</span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="500"
-                          [ngModel]="split.amount"
-                          (ngModelChange)="updateSplitAmount($index, $event)"
-                        />
+                        <div class="split-amount-input-wrap">
+                          <span class="currency-prefix">$</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="500"
+                            [ngModel]="split.amount"
+                            (ngModelChange)="updateSplitAmount($index, $event)"
+                          />
+                        </div>
+
+                        @if (co.splits.length > 1) {
+                          <button
+                            type="button"
+                            class="remove-split-btn"
+                            (click)="removePaymentSplit($index)"
+                          >
+                            ✕
+                          </button>
+                        }
                       </div>
 
-                      @if (co.splits.length > 1) {
-                        <button
-                          type="button"
-                          class="remove-split-btn"
-                          (click)="removePaymentSplit($index)"
-                        >
-                          ✕
-                        </button>
+                      @if (split.method === 'Efectivo') {
+                        <div class="cash-calculator-box inline-split-cash">
+                          <label class="form-label">
+                            <span>💵 Efectivo recibido / Con cuánto paga ($):</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="1000"
+                              placeholder="Ej. 50000"
+                              [ngModel]="split.cashReceived"
+                              (ngModelChange)="updateSplitCashReceived($index, $event)"
+                            />
+                          </label>
+                          @if (split.cashReceived && split.cashReceived >= split.amount) {
+                            <div class="change-due-badge">
+                              <span>💰 Cambio a entregar:</span>
+                              <strong>{{ (split.cashReceived - split.amount) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                            </div>
+                          } @else if (split.cashReceived && split.cashReceived < split.amount) {
+                            <div class="change-due-badge warning">
+                              <span>⚠️ Falta efectivo recibido para cubrir este monto</span>
+                            </div>
+                          }
+                        </div>
                       }
                     </div>
                   }
@@ -999,156 +1027,12 @@
 
     <!-- SUB-MODAL 7: MODAL DE IMPRESIÓN DE TIRILLA TÉRMICA (PRINTABLE TICKET) -->
     @if (activePrintReceiptState(); as receipt) {
-      @let org = settingsStore.organization();
-      @let biz = settingsStore.business();
-      @let parsedItems = receipt.items || [];
-      @let parsedSplits = receipt.paymentDetails || [];
-
-      <div class="sub-modal-backdrop print-modal-backdrop">
-        <div class="sub-modal print-modal">
-          <header class="sub-modal-header no-print">
-            <h3>🖨️ Comprobante de Tirilla (#{{ receipt.receiptNumber }})</h3>
-            <button type="button" class="close-btn-icon" (click)="closePrintReceiptModal()">✕</button>
-          </header>
-
-          <div class="sub-modal-body print-modal-body">
-            <div class="thermal-ticket-container printable-area">
-              <!-- 1- LOGO -->
-              @if (logoUrl(); as logoSrc) {
-                <div class="ticket-logo-wrap">
-                  <img [src]="logoSrc" alt="Logo" class="ticket-logo-img" />
-                </div>
-              }
-
-              <!-- 2, 3, 4, 5, 6 - HEADER DE ORGANIZACIÓN -->
-              <div class="ticket-header-block">
-                <h2 class="commerce-name">{{ org?.name || 'SAVIA GASTROBAR' }}</h2>
-                @if (org?.document) {
-                  <div class="ticket-header-line">NIT / DOC: {{ org?.document }}</div>
-                }
-                @if (org?.email) {
-                  <div class="ticket-header-line">Email: {{ org?.email }}</div>
-                }
-                @if (org?.phone) {
-                  <div class="ticket-header-line">Tel: {{ org?.phone }}</div>
-                }
-                @if (org?.address) {
-                  <div class="ticket-header-line">
-                    {{ org?.address }}{{ org?.city ? ', ' + org?.city : '' }}
-                  </div>
-                }
-              </div>
-
-              <!-- 7- LÍNEA DIVISORIA -->
-              <div class="ticket-divider-dash">------------------------------------------</div>
-
-              <!-- META TRANSACCIÓN -->
-              <div class="ticket-meta-block">
-                <div class="ticket-meta-line">
-                  <span>TICKET N°: <strong>#{{ receipt.receiptNumber }}</strong></span>
-                  <span>COMANDA: <strong>#{{ activeOrder()?.orderNumber || '-' }}</strong></span>
-                </div>
-                <div class="ticket-meta-line">
-                  <span>MESA: <strong>{{ table().name }}</strong></span>
-                  <span>FECHA: {{ receipt.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
-                </div>
-                <div class="ticket-meta-line">
-                  <span>ATENDIDO POR: {{ receipt.issuedByUserName }}</span>
-                </div>
-              </div>
-
-              <div class="ticket-divider-dash">------------------------------------------</div>
-
-              <!-- 8- RESUMEN DE LA COMPRA (ÍTEMS) -->
-              <div class="ticket-items-block">
-                <div class="ticket-items-header">
-                  <span>CANT x PRODUCTO</span>
-                  <span class="text-end">SUBTOTAL</span>
-                </div>
-
-                @for (item of parsedItems; track $index) {
-                  <div class="ticket-item-row">
-                    <div class="t-item-name">{{ item.quantity }}x {{ item.productName }}</div>
-                    <div class="t-item-val">{{ item.subtotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</div>
-                  </div>
-                }
-              </div>
-
-              <div class="ticket-divider-dash">------------------------------------------</div>
-
-              <!-- 9, 10, 11, 12 - TOTALES -->
-              <div class="ticket-totals-block">
-                <!-- 11- TOTAL SIN PROPINA -->
-                <div class="ticket-total-line">
-                  <span>Subtotal (Sin {{ biz?.tipMessage || 'Propina' }}):</span>
-                  <span>{{ receipt.subtotalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
-                </div>
-
-                <!-- 9- PROPINA VOLUNTARIA O SUGERIDA -->
-                @if (receipt.receiptType === 'PRE_BILLING' && (biz?.showVoluntaryTip || receipt.tipAmount > 0)) {
-                  @if (receipt.tipAmount > 0) {
-                    <div class="ticket-total-line">
-                      <span>{{ biz?.tipMessage || 'Propina Sugerida' }} ({{ biz?.suggestedTipPercentage || 10 }}%):</span>
-                      <span>{{ receipt.tipAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
-                    </div>
-                  }
-                } @else if (receipt.tipAmount > 0) {
-                  <div class="ticket-total-line">
-                    <span>Propina Voluntaria:</span>
-                    <span>{{ receipt.tipAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
-                  </div>
-                }
-
-                <!-- 10- IMPUESTOS -->
-                @if (receipt.taxAmount > 0) {
-                  <div class="ticket-total-line">
-                    <span>Impuestos Incluidos:</span>
-                    <span>{{ receipt.taxAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
-                  </div>
-                }
-
-                <div class="ticket-divider-dash">------------------------------------------</div>
-
-                <!-- 12- TOTAL A PAGAR CON PROPINA (EN NEGRITA Y TAMAÑO DESTACADO) -->
-                <div class="ticket-total-line total-grand">
-                  <span>{{ receipt.receiptType === 'PRE_BILLING' && receipt.tipAmount > 0 ? ('Total con ' + (biz?.tipMessage || 'Propina Sugerida') + ':') : 'TOTAL A PAGAR:' }}</span>
-                  <strong>{{ receipt.totalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
-                </div>
-              </div>
-
-              <!-- DESGLOSE DE MEDIOS DE PAGO (Si es comprobante de pago) -->
-              @if (receipt.receiptType === 'PAYMENT' && parsedSplits.length > 0) {
-                <div class="ticket-divider-dash">------------------------------------------</div>
-                <div class="ticket-payment-methods-block">
-                  <strong class="section-sm-title">MEDIOS DE PAGO RECIBIDOS:</strong>
-                  @for (split of parsedSplits; track $index) {
-                    <div class="payment-split-line">
-                      <span>• {{ split.method }}:</span>
-                      <strong>{{ split.amount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
-                    </div>
-                  }
-                </div>
-              }
-
-              <div class="ticket-divider-dash">------------------------------------------</div>
-
-              <!-- 13- PIE DE COMPROBANTE -->
-              <footer class="ticket-footer-block">
-                <h3 class="ticket-footer-title">*** {{ receipt.receiptType === 'PAYMENT' ? 'COMPROBANTE DE PAGO' : receipt.title }} ***</h3>
-                <p class="ticket-footer-msg">¡Gracias por su visita!</p>
-                <small class="ticket-software-credit">SaviaUp SaaS · Sistema POS</small>
-              </footer>
-            </div>
-          </div>
-
-          <footer class="sub-modal-footer no-print">
-            <button type="button" class="btn-cancel" (click)="closePrintReceiptModal()">Cerrar</button>
-            <button type="button" class="btn-confirm primary print-btn" (click)="triggerPrint()">
-              🖨️ Imprimir Tirilla
-            </button>
-          </footer>
-        </div>
-      </div>
+      <app-thermal-ticket-modal
+        [receipt]="receipt"
+        [tableName]="table().name"
+        [orderNumber]="activeOrder()?.orderNumber || '-'"
+        (closed)="closePrintReceiptModal()"
+      />
     }
   </section>
 </div>

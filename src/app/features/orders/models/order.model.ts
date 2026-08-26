@@ -144,5 +144,6 @@ export interface OrderReceipt {
   readonly items: readonly OrderReceiptItem[];
   readonly issuedByUserId: string;
   readonly issuedByUserName: string;
+  readonly paidByUserName?: string | null;
   readonly createdAt: string;
 }

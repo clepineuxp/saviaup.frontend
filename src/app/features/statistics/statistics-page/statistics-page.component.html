@@ -1,0 +1,232 @@
+<section class="statistics-page">
+  <header class="page-heading">
+    <div class="page-heading__title">
+      <span>{{ 'statistics.eyebrow' | translate }}</span>
+      <i aria-hidden="true">—</i>
+      <h1>{{ 'statistics.title' | translate }}</h1>
+    </div>
+
+    <!-- Global Filter Controls -->
+    <div class="filters-bar">
+      <div class="btn-group period-toggle">
+        <button
+          type="button"
+          [class.active]="period() === 'current_month'"
+          (click)="setPeriod('current_month')"
+        >
+          {{ 'statistics.period.currentMonth' | translate }}
+        </button>
+        <button
+          type="button"
+          [class.active]="period() === 'last_30_days'"
+          (click)="setPeriod('last_30_days')"
+        >
+          {{ 'statistics.period.last30Days' | translate }}
+        </button>
+      </div>
+
+      <button
+        type="button"
+        class="tips-toggle-btn"
+        [class.tips-toggle-btn--active]="includeTips()"
+        (click)="toggleTips()"
+      >
+        {{ (includeTips() ? 'statistics.tips.include' : 'statistics.tips.exclude') | translate }}
+      </button>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando estadísticas del negocio…</p>
+    </div>
+  } @else if (dashboardData(); as dash) {
+    <!-- KPI Summary Grid -->
+    <section class="kpi-grid">
+      <article class="kpi-card kpi-card--primary">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-content">
+          <span class="kpi-label">{{ 'statistics.kpi.totalSales' | translate }}</span>
+          <strong class="kpi-value">{{ dash.summary.totalSales | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+          <span class="kpi-subtext">
+            @if (includeTips()) {
+              (Incluye {{ dash.summary.totalTips | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} propinas)
+            } @else {
+              (Sin incluir propinas)
+            }
+          </span>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon">🧾</div>
+        <div class="kpi-content">
+          <span class="kpi-label">{{ 'statistics.kpi.ordersCount' | translate }}</span>
+          <strong class="kpi-value">{{ dash.summary.totalOrdersCount }}</strong>
+          <span class="kpi-subtext">Comandas pagadas</span>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-content">
+          <span class="kpi-label">{{ 'statistics.kpi.avgTicket' | translate }}</span>
+          <strong class="kpi-value">{{ dash.summary.averageTicket | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+          <span class="kpi-subtext">Promedio por orden</span>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon">🤝</div>
+        <div class="kpi-content">
+          <span class="kpi-label">{{ 'statistics.kpi.totalTips' | translate }}</span>
+          <strong class="kpi-value">{{ dash.summary.totalTips | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+          <span class="kpi-subtext">Propina voluntaria</span>
+        </div>
+      </article>
+
+      @if (dash.summary.topSeller; as top) {
+        <article class="kpi-card kpi-card--highlight">
+          <div class="kpi-icon">🏆</div>
+          <div class="kpi-content">
+            <span class="kpi-label">{{ 'statistics.kpi.topSeller' | translate }}</span>
+            <strong class="kpi-value">{{ top.name }}</strong>
+            <span class="kpi-subtext">
+              {{ top.totalSales | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} ({{ top.ordersCount }} órdenes)
+            </span>
+          </div>
+        </article>
+      }
+    </section>
+
+    <!-- Main Dashboard Grid -->
+    <div class="dashboard-grid">
+      <!-- 4. Daily Sales Trend Line Chart (Chart.js) -->
+      <section class="dashboard-card chart-card full-width">
+        <header class="card-header">
+          <div>
+            <h2>{{ 'statistics.charts.salesTrend' | translate }}</h2>
+            <p>{{ 'statistics.charts.salesTrendSubtitle' | translate }} (Haz clic en un punto de la gráfica para ver detalles)</p>
+          </div>
+
+          @if (selectedPointDetail(); as detail) {
+            <div class="selected-point-badge">
+              <strong>{{ detail.title }}:</strong> {{ detail.sales | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} ({{ detail.subtitle }})
+            </div>
+          }
+        </header>
+
+        <div class="chart-canvas-container">
+          <canvas #salesCanvas></canvas>
+        </div>
+      </section>
+
+      <!-- 5. Top Selling Products Donut Chart (Chart.js) -->
+      <section class="dashboard-card chart-card">
+        <header class="card-header">
+          <div>
+            <h2>{{ 'statistics.charts.productsTitle' | translate }}</h2>
+          </div>
+          <div class="btn-group metric-mode-toggle">
+            <button
+              type="button"
+              [class.active]="productMetricMode() === 'quantity'"
+              (click)="setProductMetricMode('quantity')"
+            >
+              {{ 'statistics.charts.productsQty' | translate }}
+            </button>
+            <button
+              type="button"
+              [class.active]="productMetricMode() === 'value'"
+              (click)="setProductMetricMode('value')"
+            >
+              {{ 'statistics.charts.productsVal' | translate }}
+            </button>
+          </div>
+        </header>
+
+        <div class="chart-canvas-container chart-canvas-container--donut">
+          <canvas #productsCanvas></canvas>
+        </div>
+      </section>
+
+      <!-- 3. 6-Month Comparison Bar Chart -->
+      <section class="dashboard-card chart-card">
+        <header class="card-header">
+          <div>
+            <h2>{{ 'statistics.charts.monthlyComparison' | translate }}</h2>
+            <p>{{ 'statistics.charts.monthlyComparisonSubtitle' | translate }}</p>
+          </div>
+        </header>
+
+        <div class="bar-chart-container">
+          @for (m of monthlyComparisonBars(); track m.year + '-' + m.month) {
+            <div class="bar-column">
+              <div class="bar-track">
+                <div
+                  class="bar-fill"
+                  [style.height.%]="m.heightPercent"
+                  [title]="m.monthLabel + ' ' + m.year + ': ' + (m.sales | currency: 'COP' : 'symbol-narrow' : '1.0-0')"
+                >
+                  <span class="bar-tooltip">{{ m.sales | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+                </div>
+              </div>
+              <span class="bar-label">{{ m.monthLabel }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Sales by User Leaderboard Section -->
+      <section class="dashboard-card leaderboard-card full-width">
+        <header class="card-header">
+          <div>
+            <h2>{{ 'statistics.userSales.title' | translate }}</h2>
+            <p>{{ 'statistics.userSales.subtitle' | translate }}</p>
+          </div>
+        </header>
+
+        <div class="leaderboard-grid">
+          @for (user of dash.salesByUser; track user.userId; let rank = $index) {
+            <div class="user-rank-card" [class.top-seller-card]="user.isTopSeller">
+              <div class="rank-badge">
+                @if (rank === 0) {
+                  🥇
+                } @else if (rank === 1) {
+                  🥈
+                } @else if (rank === 2) {
+                  🥉
+                } @else {
+                  #{{ rank + 1 }}
+                }
+              </div>
+
+              <div class="user-info">
+                <div class="user-header">
+                  <strong class="user-name">{{ user.name }}</strong>
+                  @if (user.isTopSeller) {
+                    <span class="top-badge">{{ 'statistics.userSales.topBadge' | translate }}</span>
+                  }
+                </div>
+                <div class="user-stats">
+                  <span class="sales-amount">{{ user.totalSales | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+                  <span class="orders-count">{{ user.ordersCount }} comandas</span>
+                </div>
+
+                <div class="progress-bar-container">
+                  <div
+                    class="progress-fill"
+                    [style.width.%]="salesByUserMax() > 0 ? (user.totalSales / salesByUserMax()) * 100 : 0"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          } @empty {
+            <p class="empty-state">No hay datos de ventas registrados por usuarios en el período seleccionado.</p>
+          }
+        </div>
+      </section>
+    </div>
+  }
+</section>

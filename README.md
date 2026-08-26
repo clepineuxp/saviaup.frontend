@@ -66,7 +66,11 @@ El build de producción reemplaza automáticamente el environment por `environme
 | `/app/inventory/movements`         | `inventory.movements.read`   | Movimientos inmutables              |
 | `/app/inventory/complements/units` | `inventory.complements.read` | Unidades de medida                  |
 | `/app/categories`                  | Autenticado + tenant         | Administración de categorías        |
+| `/app/orders`                      | `orders.read`                | Control y búsqueda de comandas      |
+| `/app/cash-registers`              | `cash-registers.read`        | Control de turnos de caja           |
 | `/app/sell/tables`                 | `tables.read`                | Operación de mesas en tiempo real   |
+| `/app/statistics`                  | `reports.read` / `orders.read` | Dashboard de estadísticas y ventas |
+| `/app/billing`                     | `billing.read`               | Gestión y reimpresión de comprobantes |
 | `/app/configuration/tables/manage` | `tables.manage`              | Distribución visual de salas/mesas  |
 | `/app/{módulo}`                    | Autenticado + tenant         | Módulo habilitado conocido          |
 | `/app/modules/:code`               | Autenticado + tenant         | Fallback seguro para código nuevo   |

@@ -1398,41 +1398,186 @@
   width: 110px;
 }
 
-.split-change-tag {
-  font-size: 0.78rem;
-  font-weight: 800;
-  padding: 0.2rem 0.5rem;
-  border-radius: 0.4rem;
+/* Mixed Payment Method Splits Builder Styles */
+.mixed-payment-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.75rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
+
+  .builder-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #0f172a;
+
+    .add-split-btn {
+      background: #f0fdf4;
+      border: 1.5px dashed #16a34a;
+      color: #15803d;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 0.4rem 0.85rem;
+      border-radius: 0.55rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #dcfce7;
+        border-color: #15803d;
+      }
+    }
+  }
+
+  .splits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .split-row {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+
+    .split-method-select {
+      flex: 1;
+      padding: 0.55rem 0.75rem;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 0.6rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: #ffffff;
+      color: #0f172a;
+      outline: none;
+
+      &:focus {
+        border-color: #16a34a;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+      }
+    }
+
+    .split-amount-input-wrap {
+      display: flex;
+      align-items: center;
+      position: relative;
+      width: 140px;
+
+      .currency-prefix {
+        position: absolute;
+        left: 0.75rem;
+        font-weight: 800;
+        color: #64748b;
+        font-size: 0.85rem;
+        pointer-events: none;
+      }
+
+      input {
+        width: 100%;
+        padding: 0.55rem 0.75rem 0.55rem 1.6rem;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 0.6rem;
+        font-size: 0.88rem;
+        font-weight: 800;
+        color: #0f172a;
+        text-align: right;
+        outline: none;
+
+        &:focus {
+          border-color: #16a34a;
+          box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+        }
+      }
+    }
+
+    .remove-split-btn {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 0.5rem;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+
+      &:hover {
+        background: #fee2e2;
+        border-color: #f87171;
+      }
+    }
+  }
 }
 
-.split-change-tag.success {
-  background: #e6fffa;
-  color: #234e52;
-}
-
-.split-change-tag.warning {
-  background: #fff5f5;
-  color: #9b2c2c;
-}
-
-.btn-remove-split {
-  border: 0;
-  background: transparent;
-  color: #ef4444;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.btn-add-split {
-  align-self: start;
-  border: 1px dashed var(--color-savia-600);
+.cash-calculator-box {
+  margin-top: 0.75rem;
+  padding: 0.85rem 1rem;
   background: #f0fdf4;
-  color: var(--color-savia-800);
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 0.4rem 0.75rem;
-  border-radius: 0.65rem;
-  cursor: pointer;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+
+  &.inline-split-cash {
+    margin-top: 0.4rem;
+    margin-bottom: 0.4rem;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+  }
+
+  .form-label {
+    span {
+      font-size: 0.82rem;
+      font-weight: 750;
+      color: #166534;
+    }
+
+    input {
+      border: 1.5px solid #86efac;
+      border-radius: 0.6rem;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #0f172a;
+      outline: none;
+
+      &:focus {
+        border-color: #16a34a;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+      }
+    }
+  }
+
+  .change-due-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.85rem;
+    background: #dcfce7;
+    border: 1px solid #4ade80;
+    border-radius: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #14532d;
+
+    &.warning {
+      background: #fef2f2;
+      border-color: #fca5a5;
+      color: #991b1b;
+      font-size: 0.8rem;
+    }
+  }
 }
 
 .sub-modal-footer {

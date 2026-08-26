@@ -75,9 +75,18 @@ export interface CheckoutModalState {
   singleCashReceived?: number;
 }
 
+import { ThermalTicketModalComponent } from '../../../shared/components/thermal-ticket-modal/thermal-ticket-modal.component';
+
 @Component({
   selector: 'app-table-operation-dialog',
-  imports: [CurrencyPipe, DatePipe, FormsModule, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    CurrencyPipe,
+    DatePipe,
+    FormsModule,
+    ReactiveFormsModule,
+    TranslatePipe,
+    ThermalTicketModalComponent,
+  ],
   templateUrl: './table-operation-dialog.component.html',
   styleUrl: './table-operation-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -897,6 +906,20 @@ export class TableOperationDialogComponent {
     const copySplits = [...curr.splits];
     if (copySplits[index]) {
       copySplits[index] = { ...copySplits[index], amount: amt };
+    }
+    this.checkoutState.set({
+      ...curr,
+      splits: copySplits,
+    });
+  }
+
+  updateSplitCashReceived(index: number, val: number | string): void {
+    const curr = this.checkoutState();
+    if (!curr) return;
+    const cash = Math.max(0, +val || 0);
+    const copySplits = [...curr.splits];
+    if (copySplits[index]) {
+      copySplits[index] = { ...copySplits[index]!, cashReceived: cash };
     }
     this.checkoutState.set({
       ...curr,

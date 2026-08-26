@@ -1,0 +1,302 @@
+<div class="billing-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-titles">
+      <span class="eyebrow">{{ 'billing.eyebrow' | translate }}</span>
+      <h1 class="title">{{ 'billing.title' | translate }}</h1>
+      <p class="subtitle">{{ 'billing.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  <!-- Controls Bar -->
+  <div class="controls-card">
+    <div class="tabs-group">
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab() === 'receipts'"
+        (click)="setTab('receipts')"
+      >
+        <span>{{ 'billing.tabs.receipts' | translate }}</span>
+      </button>
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab() === 'orders'"
+        (click)="setTab('orders')"
+      >
+        <span>{{ 'billing.tabs.orders' | translate }}</span>
+      </button>
+    </div>
+
+    <div class="filters-group">
+      <div class="field-item">
+        <label>{{ 'billing.filters.from' | translate }}:</label>
+        <input
+          type="date"
+          class="date-input"
+          [ngModel]="fromDate()"
+          (ngModelChange)="fromDate.set($event); onFilterChange()"
+        />
+      </div>
+      <div class="field-item">
+        <label>{{ 'billing.filters.to' | translate }}:</label>
+        <input
+          type="date"
+          class="date-input"
+          [ngModel]="toDate()"
+          (ngModelChange)="toDate.set($event); onFilterChange()"
+        />
+      </div>
+      <div class="field-item search-field">
+        <label>{{ 'billing.filters.search' | translate }}:</label>
+        <input
+          type="text"
+          class="search-input"
+          [placeholder]="'billing.filters.searchPlaceholder' | translate"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event); onFilterChange()"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid / Table -->
+  <div class="content-card">
+    @if (loading()) {
+      <div class="loading-state">
+        <span class="spinner"></span>
+        <p>Cargando información de facturación...</p>
+      </div>
+    } @else if (activeTab() === 'receipts') {
+      <!-- VISTA 1: LISTA DE DOCUMENTOS -->
+      @if (receiptsData() && receiptsData()!.items.length > 0) {
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>{{ 'billing.headers.ticket' | translate }}</th>
+                <th>{{ 'billing.headers.order' | translate }}</th>
+                <th>{{ 'billing.headers.table' | translate }}</th>
+                <th>{{ 'billing.headers.issuedBy' | translate }}</th>
+                <th>{{ 'billing.headers.paidBy' | translate }}</th>
+                <th>{{ 'billing.headers.paymentMethod' | translate }}</th>
+                <th>{{ 'billing.headers.total' | translate }}</th>
+                <th>{{ 'billing.headers.dateTime' | translate }}</th>
+                <th class="text-right">{{ 'billing.headers.action' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of receiptsData()!.items; track item.receiptId) {
+                <tr>
+                  <td>
+                    <span class="badge badge-ticket">#{{ item.receiptNumber }}</span>
+                  </td>
+                  <td>
+                    <span class="order-link">Comanda #{{ item.orderNumber }}</span>
+                  </td>
+                  <td>
+                    <span class="table-badge">{{ item.tableName }}</span>
+                  </td>
+                  <td>
+                    <span class="user-info">👤 {{ item.issuedByUserName }}</span>
+                  </td>
+                  <td>
+                    <span class="user-info">💳 {{ item.paidByUserName || 'N/A' }}</span>
+                  </td>
+                  <td>
+                    <span class="payment-badge">{{ item.paymentMethod || 'Efectivo' }}</span>
+                  </td>
+                  <td>
+                    <strong class="total-amount">{{ item.totalAmount | currency:'USD':'symbol':'1.2-2' }}</strong>
+                  </td>
+                  <td>
+                    <span class="date-text">{{ item.createdAt | date:'short' }}</span>
+                  </td>
+                  <td class="text-right">
+                    <button type="button" class="btn-action print-btn" (click)="openReceiptModal(item.receiptId)">
+                      {{ 'billing.reprint' | translate }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-bar">
+          <span class="pagination-info">
+            Mostrando {{ receiptsData()!.items.length }} de {{ receiptsData()!.totalCount }} comprobantes
+          </span>
+          <div class="pagination-controls">
+            <button
+              type="button"
+              class="pag-btn"
+              [disabled]="page() <= 1"
+              (click)="onPageChange(page() - 1)"
+            >
+              ← Anterior
+            </button>
+            <span class="page-number">Página {{ page() }} de {{ receiptsData()!.totalPages || 1 }}</span>
+            <button
+              type="button"
+              class="pag-btn"
+              [disabled]="page() >= (receiptsData()!.totalPages || 1)"
+              (click)="onPageChange(page() + 1)"
+            >
+              Siguiente →
+            </button>
+          </div>
+        </div>
+      } @else {
+        <div class="empty-state">
+          <span class="empty-icon">🧾</span>
+          <h3>No se encontraron documentos</h3>
+          <p>No existen comprobantes generados para el rango de fechas y filtros seleccionados.</p>
+        </div>
+      }
+    } @else {
+      <!-- VISTA 2: LISTA DE ORDENES CON DOCUMENTOS -->
+      @if (ordersData() && ordersData()!.items.length > 0) {
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>{{ 'billing.headers.order' | translate }}</th>
+                <th>{{ 'billing.headers.table' | translate }}</th>
+                <th>{{ 'billing.headers.status' | translate }}</th>
+                <th>{{ 'billing.headers.issuedBy' | translate }}</th>
+                <th>{{ 'billing.headers.paidBy' | translate }}</th>
+                <th>{{ 'billing.headers.documents' | translate }}</th>
+                <th>{{ 'billing.headers.total' | translate }}</th>
+                <th>{{ 'billing.headers.dateTime' | translate }}</th>
+                <th class="text-right">{{ 'billing.headers.action' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of ordersData()!.items; track order.orderId) {
+                <tr>
+                  <td>
+                    <strong class="order-number">Comanda #{{ order.orderNumber }}</strong>
+                  </td>
+                  <td>
+                    <span class="table-badge">{{ order.tableName }}</span>
+                  </td>
+                  <td>
+                    <span class="status-badge" [class.paid]="order.status === 'PAID'">{{ order.status }}</span>
+                  </td>
+                  <td>
+                    <span class="user-info">👤 {{ order.createdByUserName }}</span>
+                  </td>
+                  <td>
+                    <span class="user-info">💳 {{ order.paidByUserName || 'N/A' }}</span>
+                  </td>
+                  <td>
+                    <span class="badge badge-count">{{ order.receiptsCount }} comprobante(s)</span>
+                  </td>
+                  <td>
+                    <strong class="total-amount">{{ order.totalAmount | currency:'USD':'symbol':'1.2-2' }}</strong>
+                  </td>
+                  <td>
+                    <span class="date-text">{{ order.createdAt | date:'short' }}</span>
+                  </td>
+                  <td class="text-right">
+                    <button type="button" class="btn-action view-btn" (click)="openOrderReceiptsModal(order)">
+                      {{ 'billing.viewDocuments' | translate }} ({{ order.receiptsCount }})
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-bar">
+          <span class="pagination-info">
+            Mostrando {{ ordersData()!.items.length }} de {{ ordersData()!.totalCount }} órdenes
+          </span>
+          <div class="pagination-controls">
+            <button
+              type="button"
+              class="pag-btn"
+              [disabled]="page() <= 1"
+              (click)="onPageChange(page() - 1)"
+            >
+              ← Anterior
+            </button>
+            <span class="page-number">Página {{ page() }} de {{ ordersData()!.totalPages || 1 }}</span>
+            <button
+              type="button"
+              class="pag-btn"
+              [disabled]="page() >= (ordersData()!.totalPages || 1)"
+              (click)="onPageChange(page() + 1)"
+            >
+              Siguiente →
+            </button>
+          </div>
+        </div>
+      } @else {
+        <div class="empty-state">
+          <span class="empty-icon">📋</span>
+          <h3>No se encontraron órdenes</h3>
+          <p>No hay comandas con comprobantes registrados para el rango de fechas seleccionado.</p>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- MODAL: REIMPRIMIR TICKET DE COMPROBANTE -->
+  @if (selectedReceipt()) {
+    <app-thermal-ticket-modal
+      [receipt]="selectedReceipt()!"
+      (closed)="closeModal()"
+    />
+  }
+
+  <!-- MODAL: DOCUMENTOS DE LA ORDEN (VISTA 2) -->
+  @if (selectedOrder()) {
+    <div class="modal-backdrop" (click)="closeModal()">
+      <div class="modal-card order-documents-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Documentos de Comanda #{{ selectedOrder()!.orderNumber }}</h2>
+          <button type="button" class="close-btn" (click)="closeModal()">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="order-summary-box">
+            <p><strong>Mesa:</strong> {{ selectedOrder()!.tableName }}</p>
+            <p><strong>Creada por:</strong> {{ selectedOrder()!.createdByUserName }}</p>
+            <p><strong>Pagada por:</strong> {{ selectedOrder()!.paidByUserName || 'N/A' }}</p>
+            <p><strong>Total Comanda:</strong> {{ selectedOrder()!.totalAmount | currency:'USD':'symbol':'1.2-2' }}</p>
+          </div>
+
+          <h3>Comprobantes Generados ({{ selectedOrder()!.receipts.length }}):</h3>
+
+          <div class="receipts-list">
+            @for (rcpt of selectedOrder()!.receipts; track rcpt.id) {
+              <div class="receipt-item-card">
+                <div class="rcpt-info">
+                  <strong>Ticket #{{ rcpt.receiptNumber }} - {{ rcpt.title }}</strong>
+                  <span class="rcpt-date">{{ rcpt.createdAt | date:'short' }}</span>
+                  <span class="rcpt-issuer">Cobrado por: {{ rcpt.issuedByUserName }}</span>
+                </div>
+                <div class="rcpt-totals">
+                  <strong class="rcpt-amount">{{ rcpt.totalAmount | currency:'USD':'symbol':'1.2-2' }}</strong>
+                  <button type="button" class="btn-action print-btn" (click)="openReceiptModal(rcpt.id)">
+                    🖨️ Reimprimir
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

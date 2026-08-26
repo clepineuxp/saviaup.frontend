@@ -1,0 +1,154 @@
+@let org = settingsStore.organization();
+@let biz = settingsStore.business();
+@let rcpt = receipt();
+@let parsedItems = rcpt.items || [];
+@let parsedSplits = rcpt.paymentDetails || [];
+
+<div class="sub-modal-backdrop print-modal-backdrop" (click)="closed.emit()">
+  <div class="sub-modal print-modal" (click)="$event.stopPropagation()">
+    <header class="sub-modal-header no-print">
+      <h3>🖨️ Comprobante de Tirilla (#{{ rcpt.receiptNumber }})</h3>
+      <button type="button" class="close-btn-icon" (click)="closed.emit()">✕</button>
+    </header>
+
+    <div class="sub-modal-body print-modal-body">
+      <div class="thermal-ticket-container printable-area">
+        <!-- 1- LOGO DE LA ORGANIZACIÓN -->
+        @if (logoUrl(); as logoSrc) {
+          <div class="ticket-logo-wrap">
+            <img [src]="logoSrc" alt="Logo" class="ticket-logo-img" />
+          </div>
+        }
+
+        <!-- 2, 3, 4, 5, 6 - HEADER DE ORGANIZACIÓN -->
+        <div class="ticket-header-block">
+          <h2 class="commerce-name">{{ org?.name || 'SAVIA GASTROBAR' }}</h2>
+          @if (org?.document) {
+            <div class="ticket-header-line">NIT / DOC: {{ org?.document }}</div>
+          }
+          @if (org?.email) {
+            <div class="ticket-header-line">Email: {{ org?.email }}</div>
+          }
+          @if (org?.phone) {
+            <div class="ticket-header-line">Tel: {{ org?.phone }}</div>
+          }
+          @if (org?.address) {
+            <div class="ticket-header-line">
+              {{ org?.address }}{{ org?.city ? ', ' + org?.city : '' }}
+            </div>
+          }
+        </div>
+
+        <!-- 7- LÍNEA DIVISORIA -->
+        <div class="ticket-divider-dash">------------------------------------------</div>
+
+        <!-- META TRANSACCIÓN -->
+        <div class="ticket-meta-block">
+          <div class="ticket-meta-line">
+            <span>TICKET N°: <strong>#{{ rcpt.receiptNumber }}</strong></span>
+            <span>COMANDA: <strong>#{{ EffectiveOrderNumber }}</strong></span>
+          </div>
+          <div class="ticket-meta-line">
+            <span>MESA: <strong>{{ EffectiveTableName }}</strong></span>
+            <span>FECHA: {{ rcpt.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="ticket-meta-line">
+            <span>ATENDIDO POR: {{ rcpt.issuedByUserName }}</span>
+            @if (rcpt.paidByUserName) {
+              <span>COBRADO POR: {{ rcpt.paidByUserName }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="ticket-divider-dash">------------------------------------------</div>
+
+        <!-- 8- RESUMEN DE LA COMPRA (ÍTEMS) -->
+        <div class="ticket-items-block">
+          <div class="ticket-items-header">
+            <span>CANT x PRODUCTO</span>
+            <span class="text-end">SUBTOTAL</span>
+          </div>
+
+          @for (item of parsedItems; track $index) {
+            <div class="ticket-item-row">
+              <div class="t-item-name">{{ item.quantity }}x {{ item.productName }}</div>
+              <div class="t-item-val">{{ item.subtotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</div>
+            </div>
+          }
+        </div>
+
+        <div class="ticket-divider-dash">------------------------------------------</div>
+
+        <!-- 9, 10, 11, 12 - TOTALES -->
+        <div class="ticket-totals-block">
+          <!-- 11- TOTAL SIN PROPINA -->
+          <div class="ticket-total-line">
+            <span>Subtotal (Sin {{ biz?.tipMessage || 'Servicio Voluntario' }}):</span>
+            <span>{{ rcpt.subtotalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+          </div>
+
+          <!-- 9- PROPINA VOLUNTARIA O SUGERIDA -->
+          @if (rcpt.receiptType === 'PRE_BILLING' && (biz?.showVoluntaryTip || rcpt.tipAmount > 0)) {
+            @if (rcpt.tipAmount > 0) {
+              <div class="ticket-total-line">
+                <span>{{ biz?.tipMessage || 'Servicio Voluntario' }} ({{ biz?.suggestedTipPercentage || 10 }}%):</span>
+                <span>{{ rcpt.tipAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+              </div>
+            }
+          } @else if (rcpt.tipAmount > 0) {
+            <div class="ticket-total-line">
+              <span>{{ biz?.tipMessage || 'Servicio Voluntario' }}:</span>
+              <span>{{ rcpt.tipAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+            </div>
+          }
+
+          <!-- 10- IMPUESTOS -->
+          @if (rcpt.taxAmount > 0) {
+            <div class="ticket-total-line">
+              <span>Impuestos Incluidos:</span>
+              <span>{{ rcpt.taxAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+            </div>
+          }
+
+          <div class="ticket-divider-dash">------------------------------------------</div>
+
+          <!-- 12- TOTAL A PAGAR CON PROPINA -->
+          <div class="ticket-total-line total-grand">
+            <span>{{ rcpt.receiptType === 'PRE_BILLING' && rcpt.tipAmount > 0 ? ('Total con ' + (biz?.tipMessage || 'Servicio Voluntario') + ':') : 'TOTAL A PAGAR:' }}</span>
+            <strong>{{ rcpt.totalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+          </div>
+        </div>
+
+        <!-- DESGLOSE DE MEDIOS DE PAGO (Si es comprobante de pago) -->
+        @if (rcpt.receiptType === 'PAYMENT' && parsedSplits.length > 0) {
+          <div class="ticket-divider-dash">------------------------------------------</div>
+          <div class="ticket-payment-methods-block">
+            <strong class="section-sm-title">MEDIOS DE PAGO RECIBIDOS:</strong>
+            @for (split of parsedSplits; track $index) {
+              <div class="payment-split-line">
+                <span>• {{ split.method }}:</span>
+                <strong>{{ split.amount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+              </div>
+            }
+          </div>
+        }
+
+        <div class="ticket-divider-dash">------------------------------------------</div>
+
+        <!-- 13- PIE DE COMPROBANTE -->
+        <footer class="ticket-footer-block">
+          <h3 class="ticket-footer-title">*** {{ rcpt.receiptType === 'PAYMENT' ? 'COMPROBANTE DE PAGO' : rcpt.title }} ***</h3>
+          <p class="ticket-footer-msg">¡Gracias por su visita!</p>
+          <small class="ticket-software-credit">SaviaUp SaaS · Sistema POS</small>
+        </footer>
+      </div>
+    </div>
+
+    <footer class="sub-modal-footer no-print">
+      <button type="button" class="btn-cancel" (click)="closed.emit()">Cerrar</button>
+      <button type="button" class="btn-confirm primary print-btn" (click)="triggerPrint()">
+        🖨️ Imprimir Tirilla
+      </button>
+    </footer>
+  </div>
+</div>
