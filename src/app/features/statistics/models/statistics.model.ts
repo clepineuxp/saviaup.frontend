@@ -12,6 +12,7 @@ export interface SummaryStatistics {
   readonly totalOrdersCount: number;
   readonly averageTicket: number;
   readonly totalTips: number;
+  readonly totalExpenses: number;
   readonly topSeller: TopSeller | null;
 }
 
@@ -42,6 +43,7 @@ export interface MonthlyComparisonPoint {
   readonly month: number;
   readonly monthLabel: string;
   readonly sales: number;
+  readonly expenses: number;
 }
 
 export interface UserSalesSummary {

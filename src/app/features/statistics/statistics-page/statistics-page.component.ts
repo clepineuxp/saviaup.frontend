@@ -33,6 +33,8 @@ import {
   Filler,
   DoughnutController,
   ArcElement,
+  BarController,
+  BarElement,
 } from 'chart.js';
 
 Chart.register(
@@ -46,7 +48,9 @@ Chart.register(
   Legend,
   Filler,
   DoughnutController,
-  ArcElement
+  ArcElement,
+  BarController,
+  BarElement
 );
 
 const COLOR_PALETTE = [
@@ -72,9 +76,11 @@ export class StatisticsPageComponent implements OnInit {
 
   @ViewChild('salesCanvas') salesCanvas?: ElementRef<HTMLCanvasElement>;
   @ViewChild('productsCanvas') productsCanvas?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('monthlyCanvas') monthlyCanvas?: ElementRef<HTMLCanvasElement>;
 
   private salesChartInstance?: Chart;
   private productsChartInstance?: Chart;
+  private monthlyChartInstance?: Chart;
 
   readonly isLoading = signal<boolean>(true);
   readonly period = signal<StatisticsPeriod>('current_month');
@@ -91,18 +97,6 @@ export class StatisticsPageComponent implements OnInit {
     return Math.max(...data.salesByUser.map((u) => u.totalSales), 1);
   });
 
-  // Monthly Comparison Max
-  readonly monthlyComparisonBars = computed(() => {
-    const data = this.dashboardData();
-    if (!data || data.monthlyComparison.length === 0) return [];
-    const max = Math.max(...data.monthlyComparison.map((m) => m.sales), 1);
-
-    return data.monthlyComparison.map((m) => ({
-      ...m,
-      heightPercent: max > 0 ? Math.max(Math.round((m.sales / max) * 100), 4) : 4,
-    }));
-  });
-
   constructor() {
     effect(() => {
       const data = this.dashboardData();
@@ -111,6 +105,7 @@ export class StatisticsPageComponent implements OnInit {
         setTimeout(() => {
           this.renderSalesChart(data);
           this.renderProductsChart(data, mode);
+          this.renderMonthlyChart(data);
         }, 50);
       }
     });
@@ -341,6 +336,107 @@ export class StatisticsPageComponent implements OnInit {
                   }).format(val);
                   return `${context.label}: ${formatted} (${pct}%)`;
                 }
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  private renderMonthlyChart(data: StatisticsDashboardData): void {
+    if (!this.monthlyCanvas?.nativeElement) return;
+
+    if (this.monthlyChartInstance) {
+      this.monthlyChartInstance.destroy();
+    }
+
+    const ctx = this.monthlyCanvas.nativeElement.getContext('2d');
+    if (!ctx) return;
+
+    const labels = data.monthlyComparison.map((m) => m.monthLabel);
+    const salesValues = data.monthlyComparison.map((m) => m.sales);
+    const expensesValues = data.monthlyComparison.map((m) => m.expenses || 0);
+
+    this.monthlyChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Ventas ($)',
+            data: salesValues,
+            backgroundColor: '#3b82f6',
+            borderRadius: 6,
+            barPercentage: 0.7,
+            categoryPercentage: 0.6,
+          },
+          {
+            label: 'Gastos ($)',
+            data: expensesValues,
+            backgroundColor: '#ef4444',
+            borderRadius: 6,
+            barPercentage: 0.7,
+            categoryPercentage: 0.6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              font: { size: 12, weight: 'bold' },
+              color: '#475569',
+              usePointStyle: true,
+              boxWidth: 8,
+            },
+          },
+          tooltip: {
+            enabled: true,
+            mode: 'index',
+            intersect: false,
+            backgroundColor: '#0f172a',
+            titleFont: { size: 14, weight: 'bold' },
+            bodyFont: { size: 13 },
+            padding: 12,
+            callbacks: {
+              label: (context) => {
+                const val = context.parsed.y || 0;
+                const formatted = new Intl.NumberFormat('es-CO', {
+                  style: 'currency',
+                  currency: 'COP',
+                  maximumFractionDigits: 0,
+                }).format(val);
+                return `${context.dataset.label}: ${formatted}`;
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: { weight: 'bold', size: 11 },
+              color: '#64748b',
+            },
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: '#e2e8f0' },
+            ticks: {
+              font: { size: 11 },
+              color: '#64748b',
+              callback: (val) => {
+                if (typeof val === 'number') {
+                  if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
+                  if (val >= 1_000) return `$${(val / 1_000).toFixed(0)}k`;
+                  return `$${val}`;
+                }
+                return val;
               },
             },
           },

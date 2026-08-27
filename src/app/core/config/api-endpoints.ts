@@ -91,6 +91,17 @@ export const API_ENDPOINTS = {
     shiftSummary: (shiftId: string) => `/api/cash-registers/shifts/${shiftId}/summary`,
     shiftsPage: '/api/cash-registers/shifts',
   },
+  suppliers: {
+    root: '/api/suppliers',
+    lookup: '/api/suppliers/lookup',
+    detail: (supplierId: string) => `/api/suppliers/${supplierId}`,
+    status: (supplierId: string) => `/api/suppliers/${supplierId}/status`,
+  },
+  expenses: {
+    root: '/api/expenses',
+    detail: (expenseId: string) => `/api/expenses/${expenseId}`,
+    annul: (expenseId: string) => `/api/expenses/${expenseId}/annul`,
+  },
   i18n: {
     language: (language: string) => `/api/i18n/${language}`,
   },

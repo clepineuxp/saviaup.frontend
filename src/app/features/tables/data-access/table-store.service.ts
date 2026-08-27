@@ -67,6 +67,7 @@ export class TableStore {
   private readonly errorState = signal<TableFeatureError | null>(null);
   private readonly selectedAreaIdState = signal<string | null>(null);
   private readonly viewModeState = signal<TableViewMode>('room');
+  private readonly backendMetricsState = signal<Partial<TableMetrics>>({});
   private scopedTenantId: string | null = null;
   private scopeVersion = 0;
   private permissionsRequest?: Observable<readonly string[]>;
@@ -91,13 +92,18 @@ export class TableStore {
   });
   readonly metrics = computed<TableMetrics>(() => {
     const tables = this.operationAreasState().flatMap((area) => area.tables);
-    if (tables.length === 0) return EMPTY_METRICS;
+    const backend = this.backendMetricsState();
+    if (tables.length === 0) return { ...EMPTY_METRICS, ...backend };
     return {
       available: tables.filter((table) => table.status === 'AVAILABLE').length,
       occupied: tables.filter((table) => table.status === 'OCCUPIED').length,
       activeSalesTotal: tables
         .filter((table) => table.status === 'OCCUPIED')
         .reduce((total, table) => total + table.activeOrderTotal, 0),
+      todaySalesTotal: backend.todaySalesTotal ?? 0,
+      todayExpensesTotal: backend.todayExpensesTotal ?? 0,
+      openShiftSalesTotal: backend.openShiftSalesTotal ?? 0,
+      openShiftExpensesTotal: backend.openShiftExpensesTotal ?? 0,
     };
   });
 
@@ -154,6 +160,12 @@ export class TableStore {
         if (!this.isCurrent(tenantId, version)) return;
         this.operationAreasState.set(snapshot.areas);
         this.cashRegisterState.set(snapshot.cashRegister);
+        this.backendMetricsState.set({
+          todaySalesTotal: snapshot.metrics.todaySalesTotal ?? 0,
+          todayExpensesTotal: snapshot.metrics.todayExpensesTotal ?? 0,
+          openShiftSalesTotal: snapshot.metrics.openShiftSalesTotal ?? 0,
+          openShiftExpensesTotal: snapshot.metrics.openShiftExpensesTotal ?? 0,
+        });
         this.ensureSelectedArea(snapshot.areas);
         this.statusState.set('success');
         void this.realtime.connect().catch(() => undefined);

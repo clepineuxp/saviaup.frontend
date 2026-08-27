@@ -1,0 +1,136 @@
+<div class="modal-backdrop">
+  <button
+    class="modal-backdrop__close"
+    type="button"
+    tabindex="-1"
+    aria-label="Cerrar modal"
+    (click)="close()"
+  ></button>
+
+  <section class="expense-modal" role="dialog" aria-modal="true">
+    <header class="expense-modal__header">
+      <div>
+        <p class="eyebrow">{{ 'expenses.eyebrow' | translate }}</p>
+        <h2>{{ (expense() ? 'expenses.modal.editTitle' : 'expenses.modal.createTitle') | translate }}</h2>
+      </div>
+      <button
+        class="modal-close"
+        type="button"
+        [disabled]="submitting()"
+        aria-label="Cerrar"
+        (click)="close()"
+      >
+        ×
+      </button>
+    </header>
+
+    @if (errorMessage(); as error) {
+      <app-ui-alert [message]="error" />
+    }
+
+    <form class="expense-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label class="field">
+        <span class="field__label">{{ 'expenses.modal.nameLabel' | translate }}</span>
+        <input
+          class="field__input"
+          type="text"
+          formControlName="name"
+          maxlength="160"
+          placeholder="Ej: Pago de servicios públicos / Mantenimiento"
+          [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched"
+        />
+        @if (form.controls.name.invalid && form.controls.name.touched) {
+          <span class="field__error">{{ 'common.required' | translate }}</span>
+        }
+      </label>
+
+      <div class="grid-2">
+        <label class="field">
+          <span class="field__label">{{ 'expenses.modal.amountLabel' | translate }}</span>
+          <input
+            class="field__input"
+            type="number"
+            formControlName="amount"
+            step="0.01"
+            min="0.01"
+            placeholder="0.00"
+            [attr.aria-invalid]="form.controls.amount.invalid && form.controls.amount.touched"
+          />
+          @if (form.controls.amount.invalid && form.controls.amount.touched) {
+            <span class="field__error">Ingrese un valor válido mayor a 0.</span>
+          }
+        </label>
+
+        <label class="field">
+          <span class="field__label">{{ 'expenses.modal.dateLabel' | translate }}</span>
+          <input
+            class="field__input"
+            type="date"
+            formControlName="expenseDate"
+          />
+        </label>
+      </div>
+
+      <div class="grid-2">
+        <label class="field">
+          <span class="field__label">{{ 'expenses.modal.paymentMethodLabel' | translate }}</span>
+          <select class="field__input" formControlName="paymentMethod">
+            <option value="Efectivo">Efectivo</option>
+            <option value="Transferencia">Transferencia</option>
+            <option value="Tarjeta Débito">Tarjeta Débito</option>
+            <option value="Tarjeta Crédito">Tarjeta Crédito</option>
+            @for (method of customPaymentMethods(); track method.id) {
+              @if (method.name !== 'Efectivo' && method.name !== 'Transferencia' && method.name !== 'Tarjeta Débito' && method.name !== 'Tarjeta Crédito') {
+                <option [value]="method.name">{{ method.name }}</option>
+              }
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field__label">{{ 'expenses.modal.supplierLabel' | translate }}</span>
+          <select class="field__input" formControlName="supplierId">
+            <option value="">-- Sin proveedor --</option>
+            @for (supplier of supplierStore.lookupItems(); track supplier.id) {
+              <option [value]="supplier.id">{{ supplier.name }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="field__label">{{ 'expenses.modal.descriptionLabel' | translate }}</span>
+        <textarea
+          class="field__input field__textarea"
+          formControlName="description"
+          maxlength="1000"
+          rows="3"
+          placeholder="Detalles adicionales sobre este gasto..."
+        ></textarea>
+      </label>
+
+      <label class="cashout-switch">
+        <input type="checkbox" formControlName="isCashOut" />
+        <span class="cashout-switch__control"></span>
+        <span class="cashout-switch__text">
+          <strong>{{ 'expenses.modal.isCashOutLabel' | translate }}</strong>
+          <small>{{ 'expenses.modal.isCashOutHint' | translate }}</small>
+        </span>
+      </label>
+
+      <footer class="expense-form__actions">
+        <app-ui-button
+          type="button"
+          variant="secondary"
+          [disabled]="submitting()"
+          (click)="close()"
+        >
+          {{ 'common.cancel' | translate }}
+        </app-ui-button>
+        <app-ui-button type="submit" [loading]="submitting()">
+          {{ (expense() ? 'expenses.modal.save' : 'expenses.modal.create') | translate }}
+        </app-ui-button>
+      </footer>
+    </form>
+  </section>
+</div>

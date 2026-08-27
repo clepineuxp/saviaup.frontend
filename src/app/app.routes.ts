@@ -18,7 +18,9 @@ const knownModuleRoutes: Routes = KNOWN_MODULE_NAVIGATION.filter(
     code !== 'settings' &&
     code !== 'statistics' &&
     code !== 'reports' &&
-    code !== 'billing',
+    code !== 'billing' &&
+    code !== 'expenses' &&
+    code !== 'suppliers',
 ).map(({ code, path }) => ({
   path,
   title: 'Savia Up',
@@ -157,6 +159,22 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/billing/billing-page/billing-page.component').then(
             (c) => c.BillingPageComponent,
+          ),
+      },
+      {
+        path: 'expenses',
+        title: 'Gastos · Savia Up',
+        loadChildren: () =>
+          import('./features/expenses/expenses.routes').then(
+            (routesFile) => routesFile.EXPENSES_ROUTES,
+          ),
+      },
+      {
+        path: 'suppliers',
+        title: 'Proveedores · Savia Up',
+        loadChildren: () =>
+          import('./features/suppliers/suppliers.routes').then(
+            (routesFile) => routesFile.SUPPLIERS_ROUTES,
           ),
       },
       ...knownModuleRoutes,
