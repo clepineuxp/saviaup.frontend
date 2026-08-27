@@ -1,0 +1,62 @@
+<div class="modal-backdrop">
+  <button
+    class="modal-backdrop__close"
+    type="button"
+    tabindex="-1"
+    aria-label="Cerrar modal"
+    (click)="close()"
+  ></button>
+
+  <section class="annul-modal" role="dialog" aria-modal="true">
+    <header class="annul-modal__header">
+      <div>
+        <p class="eyebrow">{{ 'expenses.eyebrow' | translate }}</p>
+        <h2>{{ 'expenses.annul.title' | translate }} #EXP-{{ expense().consecutiveNumber.toString().padStart(4, '0') }}</h2>
+      </div>
+      <button
+        class="modal-close"
+        type="button"
+        [disabled]="submitting()"
+        aria-label="Cerrar"
+        (click)="close()"
+      >
+        ×
+      </button>
+    </header>
+
+    @if (errorMessage(); as error) {
+      <app-ui-alert [message]="error" />
+    }
+
+    <p class="warning-text">
+      ¿Estás seguro de que deseas anular el gasto <strong>"{{ expense().name }}"</strong> por valor de <strong>${{ expense().amount | number:'1.2-2' }}</strong>? Esta acción no se puede deshacer.
+    </p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label class="field">
+        <span class="field__label">{{ 'expenses.annul.reasonLabel' | translate }}</span>
+        <textarea
+          class="field__input field__textarea"
+          formControlName="reason"
+          maxlength="500"
+          rows="3"
+          [placeholder]="'expenses.annul.reasonPlaceholder' | translate"
+        ></textarea>
+      </label>
+
+      <footer class="annul-modal__actions">
+        <app-ui-button
+          type="button"
+          variant="secondary"
+          [disabled]="submitting()"
+          (click)="close()"
+        >
+          {{ 'common.cancel' | translate }}
+        </app-ui-button>
+        <app-ui-button type="submit" variant="primary" [loading]="submitting()">
+          {{ 'expenses.annul.confirm' | translate }}
+        </app-ui-button>
+      </footer>
+    </form>
+  </section>
+</div>

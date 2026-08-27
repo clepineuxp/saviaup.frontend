@@ -1,0 +1,274 @@
+<div class="expenses-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-titles">
+      <span class="eyebrow">{{ 'expenses.eyebrow' | translate }}</span>
+      <h1 class="title">{{ 'expenses.title' | translate }}</h1>
+      <p class="subtitle">{{ 'expenses.subtitle' | translate }}</p>
+    </div>
+    @if (store.canCreate()) {
+      <app-ui-button type="button" (click)="openCreateDialog()">
+        {{ 'expenses.action.create' | translate }}
+      </app-ui-button>
+    }
+  </div>
+
+  @if (store.errorMessage(); as error) {
+    <app-ui-alert [message]="error" />
+  }
+
+  <!-- KPI Cards -->
+  <div class="kpis-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon icon-expenses">💸</div>
+      <div class="kpi-info">
+        <span class="kpi-label">{{ 'expenses.kpi.totalAmount' | translate }}</span>
+        <strong class="kpi-value">${{ store.totalAmount() | number:'1.2-2' }}</strong>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon icon-cashout">🏦</div>
+      <div class="kpi-info">
+        <span class="kpi-label">{{ 'expenses.kpi.totalCashOut' | translate }}</span>
+        <strong class="kpi-value">${{ store.totalCashOutAmount() | number:'1.2-2' }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls / Toolbar -->
+  <div class="controls-card">
+    <div class="date-filters">
+      <div class="field-item">
+        <label>{{ 'expenses.filters.from' | translate }}:</label>
+        <input
+          type="date"
+          class="date-input"
+          [ngModel]="fromDateInput()"
+          (ngModelChange)="fromDateInput.set($event); applyFilters()"
+        />
+      </div>
+      <div class="field-item">
+        <label>{{ 'expenses.filters.to' | translate }}:</label>
+        <input
+          type="date"
+          class="date-input"
+          [ngModel]="toDateInput()"
+          (ngModelChange)="toDateInput.set($event); applyFilters()"
+        />
+      </div>
+      <button type="button" class="btn-today" (click)="resetDateFilters()">
+        {{ 'expenses.filters.today' | translate }}
+      </button>
+    </div>
+
+    <div class="search-box">
+      <span class="search-icon" aria-hidden="true">🔍</span>
+      <input
+        type="text"
+        class="search-input"
+        [placeholder]="'expenses.filters.searchPlaceholder' | translate"
+        [ngModel]="searchInput()"
+        (ngModelChange)="searchInput.set($event); applyFilters()"
+      />
+    </div>
+
+    <div class="select-filters">
+      <select
+        class="filter-select"
+        [ngModel]="supplierFilter()"
+        (ngModelChange)="supplierFilter.set($event); applyFilters()"
+      >
+        <option value="">{{ 'expenses.filters.allSuppliers' | translate }}</option>
+        @for (supplier of supplierStore.lookupItems(); track supplier.id) {
+          <option [value]="supplier.id">{{ supplier.name }}</option>
+        }
+      </select>
+
+      <select
+        class="filter-select"
+        [ngModel]="paymentMethodFilter()"
+        (ngModelChange)="paymentMethodFilter.set($event); applyFilters()"
+      >
+        <option value="ALL">{{ 'expenses.filters.allMethods' | translate }}</option>
+        <option value="Efectivo">Efectivo</option>
+        <option value="Transferencia">Transferencia</option>
+        <option value="Tarjeta Débito">Tarjeta Débito</option>
+        <option value="Tarjeta Crédito">Tarjeta Crédito</option>
+      </select>
+
+      <select
+        class="filter-select"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event); applyFilters()"
+      >
+        <option value="ALL">{{ 'expenses.filters.allStatuses' | translate }}</option>
+        <option value="ACTIVE">{{ 'expenses.status.active' | translate }}</option>
+        <option value="ANNULLED">{{ 'expenses.status.annulled' | translate }}</option>
+      </select>
+
+      <select
+        class="filter-select"
+        [ngModel]="cashOutFilter()"
+        (ngModelChange)="cashOutFilter.set($event); applyFilters()"
+      >
+        <option value="ALL">{{ 'expenses.filters.allCashOut' | translate }}</option>
+        <option value="CASHOUT">{{ 'expenses.filters.cashOutOnly' | translate }}</option>
+        <option value="NON_CASHOUT">{{ 'expenses.filters.nonCashOutOnly' | translate }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Content Card with Table -->
+  <div class="content-card">
+    @if (store.loading()) {
+      <div class="state-container">
+        <span class="spinner"></span>
+        <p>{{ 'expenses.loading' | translate }}</p>
+      </div>
+    } @else if (store.expenses().length === 0) {
+      <div class="state-container empty">
+        <span class="empty-icon">💸</span>
+        <h3>{{ 'expenses.emptyState' | translate }}</h3>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>{{ 'expenses.column.consecutive' | translate }}</th>
+              <th>{{ 'expenses.column.date' | translate }}</th>
+              <th>{{ 'expenses.column.name' | translate }}</th>
+              <th>{{ 'expenses.column.supplier' | translate }}</th>
+              <th>{{ 'expenses.column.paymentMethod' | translate }}</th>
+              <th>{{ 'expenses.column.origin' | translate }}</th>
+              <th>{{ 'expenses.column.amount' | translate }}</th>
+              <th>{{ 'expenses.column.status' | translate }}</th>
+              <th class="text-right">{{ 'expenses.column.actions' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (expense of store.expenses(); track expense.id) {
+              <tr [class.annulled-row]="expense.status === 'ANNULLED'">
+                <td>
+                  <span class="badge-consecutive">
+                    #EXP-{{ expense.consecutiveNumber.toString().padStart(4, '0') }}
+                  </span>
+                </td>
+                <td>
+                  <span class="date-text">{{ expense.expenseDate | date:'mediumDate' }}</span>
+                </td>
+                <td>
+                  <div class="expense-info">
+                    <strong class="expense-name">{{ expense.name }}</strong>
+                    @if (expense.description) {
+                      <span class="expense-desc">{{ expense.description }}</span>
+                    }
+                    @if (expense.status === 'ANNULLED' && expense.annulledReason) {
+                      <span class="annul-reason">Motivo: {{ expense.annulledReason }}</span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <span class="supplier-text">{{ expense.supplier?.name || 'N/A' }}</span>
+                </td>
+                <td>
+                  <span class="payment-badge">{{ expense.paymentMethod }}</span>
+                </td>
+                <td>
+                  <span
+                    class="origin-badge"
+                    [class.cashout]="expense.isCashOut"
+                    [class.external]="!expense.isCashOut"
+                  >
+                    {{ (expense.isCashOut ? 'expenses.origin.cashOut' : 'expenses.origin.external') | translate }}
+                  </span>
+                </td>
+                <td>
+                  <strong class="amount-text">${{ expense.amount | number:'1.2-2' }}</strong>
+                </td>
+                <td>
+                  <span
+                    class="status-badge"
+                    [class.active]="expense.status === 'ACTIVE'"
+                    [class.annulled]="expense.status === 'ANNULLED'"
+                  >
+                    {{ (expense.status === 'ANNULLED' ? 'expenses.status.annulled' : 'expenses.status.active') | translate }}
+                  </span>
+                </td>
+                <td class="text-right">
+                  <div class="actions-group">
+                    @if (expense.status !== 'ANNULLED' && store.canEdit()) {
+                      <button
+                        type="button"
+                        class="btn-action edit-btn"
+                        (click)="openEditDialog(expense)"
+                      >
+                        ✏️
+                      </button>
+                    }
+                    @if (expense.status !== 'ANNULLED' && store.canAnnul()) {
+                      <button
+                        type="button"
+                        class="btn-action annul-btn"
+                        (click)="openAnnulDialog(expense)"
+                      >
+                        🚫
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-bar">
+        <span class="pagination-info">
+          Mostrando {{ store.expenses().length }} de {{ store.totalCount() }} gastos
+        </span>
+        <div class="pagination-controls">
+          <button
+            type="button"
+            class="pag-btn"
+            [disabled]="store.page() <= 1"
+            (click)="changePage(store.page() - 1)"
+          >
+            ← Anterior
+          </button>
+          <span class="page-number">Página {{ store.page() }} de {{ store.totalPages() || 1 }}</span>
+          <button
+            type="button"
+            class="pag-btn"
+            [disabled]="store.page() >= store.totalPages()"
+            (click)="changePage(store.page() + 1)"
+          >
+            Siguiente →
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Dialog Components -->
+@if (showFormDialog()) {
+  <app-expense-form-dialog
+    [expense]="selectedExpense()"
+    [submitting]="store.mutating()"
+    [errorMessage]="store.errorMessage()"
+    (submitted)="handleFormSubmit($event)"
+    (cancelled)="closeFormDialog()"
+  />
+}
+
+@if (showAnnulDialog() && selectedExpense(); as expense) {
+  <app-expense-annul-dialog
+    [expense]="expense"
+    [submitting]="store.mutating()"
+    [errorMessage]="store.errorMessage()"
+    (annulled)="handleAnnulSubmit($event)"
+    (cancelled)="closeAnnulDialog()"
+  />
+}

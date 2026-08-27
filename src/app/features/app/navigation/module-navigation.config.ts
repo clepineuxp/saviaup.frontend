@@ -14,6 +14,8 @@ export type ModuleIcon =
   | 'kitchen'
   | 'reports'
   | 'billing'
+  | 'expenses'
+  | 'suppliers'
   | 'settings'
   | 'module';
 
@@ -51,6 +53,8 @@ export const KNOWN_MODULE_NAVIGATION: readonly ModuleNavigationDefinition[] = [
   { code: 'reports', path: 'statistics', icon: 'reports' },
   { code: 'billing', path: 'billing', icon: 'billing' },
   { code: 'cash_registers', path: 'cash-registers', icon: 'billing' },
+  { code: 'expenses', path: 'expenses', icon: 'expenses' },
+  { code: 'suppliers', path: 'suppliers', icon: 'suppliers' },
   { code: 'settings', path: 'settings', icon: 'settings' },
 ] as const;
 
@@ -75,6 +79,8 @@ export const MODULE_ICON_GLYPHS: Readonly<Record<ModuleIcon, string>> = {
   kitchen: '♨',
   reports: '↗',
   billing: '$',
+  expenses: '💳',
+  suppliers: '🏢',
   settings: '⚙',
   module: '◫',
 };
