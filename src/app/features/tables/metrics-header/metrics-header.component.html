@@ -1,14 +1,44 @@
 <section class="metrics" aria-label="Resumen de mesas">
-  <article class="metric metric--available">
+  <article class="metric metric--tables">
     <span>{{ 'tables.metrics.available' | translate }}</span>
-    <strong>{{ metrics().available }}</strong>
+    <strong>{{ metrics().available }} <small>de {{ totalTables() }}</small></strong>
   </article>
-  <article class="metric metric--occupied">
-    <span>{{ 'tables.metrics.occupied' | translate }}</span>
-    <strong>{{ metrics().occupied }}</strong>
-  </article>
+
   <article class="metric metric--sales">
-    <span>{{ 'tables.metrics.sales' | translate }}</span>
+    <span>{{ 'tables.metrics.tableSales' | translate }}</span>
     <strong>{{ metrics().activeSalesTotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
   </article>
+
+  <div class="metric metric--toggle-group">
+    <div class="mode-toggle" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        class="mode-btn"
+        [class.mode-btn--active]="mode() === 'day'"
+        [attr.aria-selected]="mode() === 'day'"
+        (click)="toggleMode('day')"
+      >{{ 'tables.metrics.modeDay' | translate }}</button>
+      <button
+        type="button"
+        role="tab"
+        class="mode-btn"
+        [class.mode-btn--active]="mode() === 'shift'"
+        [attr.aria-selected]="mode() === 'shift'"
+        (click)="toggleMode('shift')"
+      >{{ 'tables.metrics.modeShift' | translate }}</button>
+    </div>
+  </div>
+
+  <article class="metric metric--dynamic-sales">
+    <span>{{ (mode() === 'day' ? 'tables.metrics.salesDay' : 'tables.metrics.salesShift') | translate }}</span>
+    <strong>{{ salesValue() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+  </article>
+
+  @if (canViewExpenses()) {
+    <article class="metric metric--dynamic-expenses">
+      <span>{{ (mode() === 'day' ? 'tables.metrics.expensesDay' : 'tables.metrics.expensesShift') | translate }}</span>
+      <strong>{{ expensesValue() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+    </article>
+  }
 </section>

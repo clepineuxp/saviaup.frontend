@@ -39,6 +39,10 @@ export interface TableMetrics {
   readonly available: number;
   readonly occupied: number;
   readonly activeSalesTotal: number;
+  readonly todaySalesTotal?: number;
+  readonly todayExpensesTotal?: number;
+  readonly openShiftSalesTotal?: number;
+  readonly openShiftExpensesTotal?: number;
 }
 
 export interface CashRegisterGate {

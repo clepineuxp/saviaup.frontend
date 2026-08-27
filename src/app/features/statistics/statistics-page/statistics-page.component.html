@@ -59,6 +59,15 @@
         </div>
       </article>
 
+      <article class="kpi-card kpi-card--expense">
+        <div class="kpi-icon">💸</div>
+        <div class="kpi-content">
+          <span class="kpi-label">Gastos Totales</span>
+          <strong class="kpi-value">{{ dash.summary.totalExpenses | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+          <span class="kpi-subtext">Gastos del período</span>
+        </div>
+      </article>
+
       <article class="kpi-card">
         <div class="kpi-icon">🧾</div>
         <div class="kpi-content">
@@ -151,30 +160,17 @@
         </div>
       </section>
 
-      <!-- 3. 6-Month Comparison Bar Chart -->
+      <!-- 3. 6-Month Comparison Bar Chart (Chart.js) -->
       <section class="dashboard-card chart-card">
         <header class="card-header">
           <div>
             <h2>{{ 'statistics.charts.monthlyComparison' | translate }}</h2>
-            <p>{{ 'statistics.charts.monthlyComparisonSubtitle' | translate }}</p>
+            <p>Comparativa mensual de Ventas (Azul) vs Gastos (Rojo)</p>
           </div>
         </header>
 
-        <div class="bar-chart-container">
-          @for (m of monthlyComparisonBars(); track m.year + '-' + m.month) {
-            <div class="bar-column">
-              <div class="bar-track">
-                <div
-                  class="bar-fill"
-                  [style.height.%]="m.heightPercent"
-                  [title]="m.monthLabel + ' ' + m.year + ': ' + (m.sales | currency: 'COP' : 'symbol-narrow' : '1.0-0')"
-                >
-                  <span class="bar-tooltip">{{ m.sales | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
-                </div>
-              </div>
-              <span class="bar-label">{{ m.monthLabel }}</span>
-            </div>
-          }
+        <div class="chart-canvas-container">
+          <canvas #monthlyCanvas></canvas>
         </div>
       </section>
 
