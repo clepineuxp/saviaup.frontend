@@ -1,0 +1,80 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 88rem;
+  align-self: start;
+  justify-self: center;
+}
+.inventory-shell {
+  display: grid;
+  grid-auto-rows: max-content;
+  align-content: start;
+  gap: 1.35rem;
+}
+.inventory-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.inventory-header > div {
+  max-width: 48rem;
+}
+.inventory-tabs {
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.2rem 0 0.65rem;
+  scrollbar-width: thin;
+}
+.inventory-tabs a {
+  display: inline-flex;
+  min-height: 2.8rem;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.78rem;
+  padding: 0.58rem 0.82rem;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  font-weight: 720;
+  text-decoration: none;
+}
+.inventory-tabs a:hover,
+.inventory-tabs .inventory-tab--active {
+  background: var(--color-savia-50);
+  color: var(--color-savia-700);
+}
+.inventory-tabs--loading {
+  border-bottom: 0;
+}
+.inventory-tabs--loading i {
+  width: 7rem;
+  height: 2.6rem;
+  flex: 0 0 auto;
+  border-radius: 0.75rem;
+  background: #e8ece7;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.permission-state {
+  display: grid;
+  max-width: 32rem;
+  justify-items: start;
+  gap: 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  padding: 1.2rem;
+  background: var(--color-surface);
+}
+.permission-state p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.45;
+  }
+}

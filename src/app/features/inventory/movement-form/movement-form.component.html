@@ -1,0 +1,99 @@
+<div class="backdrop">
+  <button
+    class="backdrop__close"
+    type="button"
+    tabindex="-1"
+    [attr.aria-label]="'common.cancel' | translate"
+    (click)="close()"
+  ></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="movement-form-title">
+    <header>
+      <div>
+        <p class="eyebrow">{{ 'inventory.movements.form.eyebrow' | translate }}</p>
+        <h2 id="movement-form-title">{{ 'inventory.movements.form.title' | translate }}</h2>
+      </div>
+      <button
+        class="close"
+        type="button"
+        [disabled]="submitting()"
+        [attr.aria-label]="'common.cancel' | translate"
+        (click)="close()"
+      >
+        ×
+      </button>
+    </header>
+    @if (error(); as operationError) {
+      <app-ui-alert
+        [message]="
+          (operationError.code === 'INVENTORY_INSUFFICIENT_STOCK'
+            ? 'inventory.movements.error.insufficient'
+            : operationError.message
+          ) | translate
+        "
+      />
+    }
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label class="wide"
+        ><span>{{ 'inventory.movements.form.ingredient' | translate }}</span
+        ><select formControlName="ingredientId">
+          <option value="">{{ 'inventory.movements.form.selectIngredient' | translate }}</option>
+          @for (ingredient of ingredients(); track ingredient.id) {
+            <option [value]="ingredient.id">
+              {{ ingredient.name }} · {{ ingredient.currentStock }} {{ ingredient.unit.code }}
+            </option>
+          }
+        </select>
+        @if (form.controls.ingredientId.invalid && form.controls.ingredientId.touched) {
+          <small>{{ 'common.required' | translate }}</small>
+        }
+      </label>
+      <label
+        ><span>{{ 'inventory.movements.form.direction' | translate }}</span
+        ><select formControlName="direction">
+          <option value="increase">
+            {{ 'inventory.movement.direction.increase' | translate }}
+          </option>
+          <option value="decrease">
+            {{ 'inventory.movement.direction.decrease' | translate }}
+          </option>
+        </select></label
+      >
+      <label
+        ><span>{{ 'inventory.movements.form.reason' | translate }}</span
+        ><select formControlName="reason">
+          <option value="">{{ 'inventory.movements.form.selectReason' | translate }}</option>
+          @for (reason of reasons(); track reason) {
+            <option [value]="reason">
+              {{ 'inventory.movement.reason.' + reason | translate }}
+            </option>
+          }
+        </select>
+        @if (form.controls.reason.invalid && form.controls.reason.touched) {
+          <small>{{ 'common.required' | translate }}</small>
+        }
+      </label>
+      <label
+        ><span>{{ 'inventory.movements.form.quantity' | translate }}</span
+        ><input type="number" formControlName="quantity" min="0.001" step="0.001" />
+        @if (form.controls.quantity.invalid && form.controls.quantity.touched) {
+          <small>{{ 'inventory.validation.positive' | translate }}</small>
+        }
+      </label>
+      <label class="wide"
+        ><span>{{ 'inventory.movements.form.note' | translate }}</span
+        ><textarea formControlName="note" maxlength="500" rows="3"></textarea>
+      </label>
+      <footer class="wide">
+        <app-ui-button
+          type="button"
+          variant="secondary"
+          [disabled]="submitting()"
+          (click)="close()"
+          >{{ 'common.cancel' | translate }}</app-ui-button
+        ><app-ui-button type="submit" [loading]="submitting()">{{
+          'inventory.movements.form.submit' | translate
+        }}</app-ui-button>
+      </footer>
+    </form>
+  </section>
+</div>

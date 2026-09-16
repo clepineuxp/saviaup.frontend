@@ -1,0 +1,110 @@
+:host {
+  position: fixed;
+  z-index: 45;
+  inset: 0;
+}
+
+.confirmation-backdrop {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(20 54 34 / 50%);
+  backdrop-filter: blur(5px);
+}
+
+.confirmation-backdrop__close {
+  position: fixed;
+  inset: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.confirmation-dialog {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(100%, 28rem);
+  gap: 0.7rem;
+  border-radius: 1.25rem;
+  padding: clamp(1.4rem, 5vw, 2rem);
+  background: var(--color-surface);
+  box-shadow: 0 32px 90px rgb(10 34 20 / 30%);
+}
+
+.confirmation-dialog__icon {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  place-items: center;
+  border-radius: 0.9rem;
+  background: #fff0ee;
+  color: #a44037;
+  font-weight: 850;
+}
+
+.confirmation-dialog h2 {
+  margin: 0.25rem 0 0;
+  font-size: 1.3rem;
+}
+
+.confirmation-dialog p,
+.confirmation-dialog small {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.55;
+}
+
+.confirmation-dialog p {
+  font-size: 0.88rem;
+}
+
+.confirmation-dialog small {
+  font-size: 0.75rem;
+}
+
+.confirmation-dialog footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 0.65rem;
+}
+
+.delete-confirmation {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 0.86rem;
+  padding: 0.72rem 1.15rem;
+  background: #a44037;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 720;
+  cursor: pointer;
+}
+
+.delete-confirmation:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.button-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgb(255 255 255 / 35%);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

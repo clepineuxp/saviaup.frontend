@@ -1,0 +1,50 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.room-shell {
+  min-width: 0;
+  overflow: hidden;
+  background: white;
+}
+
+.room-viewport {
+  width: 100%;
+  height: clamp(28rem, calc(100vh - 17.5rem), 52rem);
+  overflow: auto;
+  cursor: grab;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+}
+
+.room-viewport:active {
+  cursor: grabbing;
+}
+
+.room-canvas {
+  position: relative;
+  min-width: 100%;
+  min-height: 100%;
+  background-color: #fbfdfb;
+  background-image: radial-gradient(circle, rgb(73 111 89 / 16%) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.positioned-table {
+  position: absolute;
+}
+
+.room-empty {
+  display: grid;
+  min-height: 28rem;
+  place-items: center;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+}
+
+@media (max-width: 767px) {
+  .room-viewport {
+    height: clamp(26rem, calc(100dvh - 22rem), 40rem);
+  }
+}

@@ -1,0 +1,30 @@
+<section class="room-shell">
+  @if (area().tables.length === 0) {
+    <div class="room-empty">{{ 'tables.emptyArea' | translate }}</div>
+  } @else {
+    <div
+      #viewport
+      class="room-viewport"
+      (pointerdown)="beginPan($event)"
+      (pointermove)="pan($event)"
+      (pointerup)="endPan()"
+      (pointercancel)="endPan()"
+    >
+      <div
+        class="room-canvas"
+        [style.width.px]="bounds().width"
+        [style.height.px]="bounds().height"
+      >
+        @for (table of area().tables; track table.id) {
+          <app-table-card
+            class="positioned-table"
+            [style.left.px]="left(table)"
+            [style.top.px]="top(table)"
+            [table]="table"
+            (selected)="tableSelected.emit($event)"
+          />
+        }
+      </div>
+    </div>
+  }
+</section>

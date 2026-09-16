@@ -1,0 +1,398 @@
+<div class="backdrop">
+  <button
+    class="backdrop__close"
+    type="button"
+    tabindex="-1"
+    [attr.aria-label]="'products.form.close' | translate"
+    (click)="close()"
+  ></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="product-form-title">
+    <header>
+      <div>
+        <p class="eyebrow">{{ 'products.eyebrow' | translate }}</p>
+        <h2 id="product-form-title">
+          {{ (product() ? 'products.form.editTitle' : 'products.form.createTitle') | translate }}
+        </h2>
+      </div>
+      <button
+        class="close"
+        type="button"
+        [disabled]="submitting()"
+        [attr.aria-label]="'products.form.close' | translate"
+        (click)="close()"
+      >
+        ×
+      </button>
+    </header>
+
+    @if (error(); as operationError) {
+      @if (operationError.code !== 'VALIDATION_ERROR') {
+        <app-ui-alert [message]="operationError.message" />
+      }
+    }
+
+    <!-- Tabs Selector -->
+    <nav class="form-tabs" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        class="form-tab"
+        [class.form-tab--active]="activeTab() === 'general'"
+        [attr.aria-selected]="activeTab() === 'general'"
+        (click)="setTab('general')"
+      >
+        <span class="form-tab__icon">📋</span>
+        <span>{{ 'products.tabs.general' | translate }}</span>
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="form-tab"
+        [class.form-tab--active]="activeTab() === 'recipe'"
+        [attr.aria-selected]="activeTab() === 'recipe'"
+        (click)="setTab('recipe')"
+      >
+        <span class="form-tab__icon">🧪</span>
+        <span>{{ 'products.tabs.recipe' | translate }}</span>
+        @if (recipeRows().length > 0) {
+          <span class="form-tab__badge">{{ recipeRows().length }}</span>
+        }
+      </button>
+    </nav>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <!-- TAB 1: INFORMACIÓN GENERAL -->
+      @if (activeTab() === 'general') {
+        <label>
+          <span>{{ 'products.form.type' | translate }}</span>
+          <select formControlName="type">
+            <option value="NORMAL">{{ 'products.type.normal' | translate }}</option>
+            <option value="COMBO">{{ 'products.type.combo' | translate }}</option>
+          </select>
+        </label>
+
+        <label>
+          <span>{{ 'products.form.category' | translate }}</span>
+          <select
+            formControlName="categoryId"
+            [attr.aria-invalid]="form.controls.categoryId.invalid && form.controls.categoryId.touched"
+          >
+            <option value="">{{ 'products.form.selectCategory' | translate }}</option>
+            @for (category of categories(); track category.id) {
+              <option [value]="category.id">
+                {{ category.name }}
+                ·
+                {{
+                  (category.isInventoryTracked
+                    ? 'products.category.inventory'
+                    : 'products.category.nonInventory'
+                  ) | translate
+                }}
+              </option>
+            }
+          </select>
+          @if (form.controls.categoryId.invalid && form.controls.categoryId.touched) {
+            <small class="error">{{ 'common.required' | translate }}</small>
+          }
+        </label>
+
+        <label class="wide">
+          <span>{{ 'products.form.name' | translate }}</span>
+          <input
+            type="text"
+            formControlName="name"
+            maxlength="120"
+            autocomplete="off"
+            [placeholder]="'products.form.namePlaceholder' | translate"
+            [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched"
+          />
+          @if (form.controls.name.invalid && form.controls.name.touched) {
+            <small class="error">{{ 'products.validation.name' | translate }}</small>
+          }
+        </label>
+
+        <label>
+          <span>{{ 'products.form.salePrice' | translate }}</span>
+          <input
+            type="number"
+            formControlName="salePrice"
+            min="0.01"
+            step="0.01"
+            [attr.aria-invalid]="form.controls.salePrice.invalid && form.controls.salePrice.touched"
+          />
+          @if (form.controls.salePrice.invalid && form.controls.salePrice.touched) {
+            <small class="error">{{ 'products.validation.positivePrice' | translate }}</small>
+          }
+        </label>
+
+        <label>
+          <span>{{ 'products.form.preparationTime' | translate }}</span>
+          <input
+            type="number"
+            formControlName="preparationTimeMinutes"
+            min="0"
+            step="1"
+            [placeholder]="'products.form.preparationPlaceholder' | translate"
+          />
+        </label>
+
+        <label class="wide">
+          <span>{{ 'products.form.description' | translate }}</span>
+          <textarea formControlName="description" maxlength="1000" rows="3"></textarea>
+        </label>
+
+        <div class="image-row wide">
+          <app-image-selector
+            [module]="'products'"
+            [entityId]="product()?.id"
+            [label]="'products.form.imageUrl' | translate"
+            [currentImage]="form.controls.image.value"
+            (imageSelected)="onImageSelected($event)"
+          ></app-image-selector>
+        </div>
+
+        <label class="inventory-switch wide" [class.inventory-switch--disabled]="inventoryDisabled()">
+          <input type="checkbox" formControlName="isInventoryTracked" />
+          <span>
+            <strong>{{ 'products.form.inventoryTracked' | translate }}</strong>
+            <small>
+              {{
+                (inventoryDisabled()
+                  ? 'products.form.inventoryDisabledHint'
+                  : 'products.form.inventoryHint'
+                ) | translate
+              }}
+            </small>
+          </span>
+        </label>
+      }
+
+      <!-- TAB 2: RECETA DEL PRODUCTO -->
+      @if (activeTab() === 'recipe') {
+        <div class="recipe-container wide">
+          <div class="recipe-intro">
+            <div class="recipe-intro__text">
+              <h3>{{ 'products.recipe.title' | translate }}</h3>
+              <p>{{ 'products.recipe.description' | translate }}</p>
+            </div>
+            <div class="recipe-intro__actions">
+              <button
+                type="button"
+                class="recipe-btn recipe-btn--primary"
+                (click)="addInventoryIngredient()"
+              >
+                {{ 'products.recipe.addIngredient' | translate }}
+              </button>
+              <button
+                type="button"
+                class="recipe-btn recipe-btn--secondary"
+                (click)="addCustomIngredient()"
+              >
+                {{ 'products.recipe.addCustom' | translate }}
+              </button>
+            </div>
+          </div>
+
+          @if (recipeRows().length === 0) {
+            <div class="recipe-empty">
+              <div class="recipe-empty__icon">🧪</div>
+              <h4>{{ 'products.recipe.empty' | translate }}</h4>
+              <p>{{ 'products.recipe.emptyCta' | translate }}</p>
+              <div class="recipe-empty__actions">
+                <button
+                  type="button"
+                  class="recipe-btn recipe-btn--primary"
+                  (click)="addInventoryIngredient()"
+                >
+                  {{ 'products.recipe.addIngredient' | translate }}
+                </button>
+                <button
+                  type="button"
+                  class="recipe-btn recipe-btn--secondary"
+                  (click)="addCustomIngredient()"
+                >
+                  {{ 'products.recipe.addCustom' | translate }}
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="recipe-list">
+              @for (row of recipeRows(); track row.id; let idx = $index) {
+                <div class="recipe-card" [class.recipe-card--custom]="row.isCustom">
+                  <div class="recipe-card__top">
+                    <div class="recipe-card__badge-wrapper">
+                      <span class="recipe-card__num">#{{ idx + 1 }}</span>
+                      <button
+                        type="button"
+                        class="recipe-badge-btn"
+                        [class.recipe-badge-btn--inventory]="!row.isCustom"
+                        [class.recipe-badge-btn--custom]="row.isCustom"
+                        [title]="(row.isCustom ? 'products.recipe.typeToggleToInventory' : 'products.recipe.typeToggleToFree') | translate"
+                        (click)="toggleRowCustom(idx)"
+                      >
+                        {{ (row.isCustom ? 'products.recipe.freeBadge' : 'products.recipe.inventoryBadge') | translate }}
+                        <span class="recipe-badge-btn__icon">⇄</span>
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="recipe-card__delete"
+                      [attr.aria-label]="'common.delete' | translate"
+                      (click)="removeRecipeRow(idx)"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div class="recipe-card__body">
+                    <!-- Ingrediente Selector o Input Libre -->
+                    <div class="recipe-field recipe-field--ingredient">
+                      <div class="recipe-label">
+                        <span>{{ 'inventory.ingredients.title' | translate }}</span>
+                        @if (!row.isCustom) {
+                          <div class="recipe-search-select">
+                            <button
+                              type="button"
+                              class="recipe-select-trigger"
+                              [class.recipe-select-trigger--open]="openSelectorIndex() === idx"
+                              (click)="openIngredientSelector(idx)"
+                            >
+                              @if (getSelectedIngredient(row.ingredientId); as selectedIng) {
+                                <div class="recipe-select-trigger__info">
+                                  <span class="recipe-select-trigger__name">{{ selectedIng.name }}</span>
+                                  @if (selectedIng.categoryName) {
+                                    <span class="recipe-category-pill">{{ selectedIng.categoryName }}</span>
+                                  }
+                                </div>
+                                <span class="recipe-select-trigger__unit">
+                                  {{ selectedIng.measurementUnit.code || selectedIng.measurementUnit.name }}
+                                </span>
+                              } @else {
+                                <span class="recipe-select-trigger__placeholder">{{ 'products.recipe.selectIngredient' | translate }}</span>
+                              }
+                              <span class="recipe-select-trigger__arrow">▾</span>
+                            </button>
+
+                            @if (openSelectorIndex() === idx) {
+                              <div class="recipe-dropdown-backdrop" (click)="closeIngredientSelector()"></div>
+                              <div class="recipe-dropdown">
+                                <div class="recipe-dropdown__header">
+                                  <span class="recipe-dropdown__search-icon">🔍</span>
+                                  <input
+                                    type="text"
+                                    class="recipe-dropdown__search-input"
+                                    [value]="ingredientSearch()"
+                                    (input)="onSearchInput($any($event.target).value)"
+                                    [placeholder]="'Buscar por ingrediente o categoría…'"
+                                    autofocus
+                                  />
+                                  @if (ingredientSearch()) {
+                                    <button
+                                      type="button"
+                                      class="recipe-dropdown__search-clear"
+                                      (click)="onSearchInput('')"
+                                    >
+                                      ✕
+                                    </button>
+                                  }
+                                </div>
+
+                                <div class="recipe-dropdown__list">
+                                  @for (ing of filteredIngredients(); track ing.id) {
+                                    <button
+                                      type="button"
+                                      class="recipe-dropdown__item"
+                                      [class.recipe-dropdown__item--selected]="ing.id === row.ingredientId"
+                                      (click)="selectIngredient(idx, ing.id)"
+                                    >
+                                      <div class="recipe-dropdown__item-info">
+                                        <span class="recipe-dropdown__item-name">{{ ing.name }}</span>
+                                        @if (ing.categoryName) {
+                                          <span class="recipe-category-pill">{{ ing.categoryName }}</span>
+                                        }
+                                      </div>
+                                      <span class="recipe-dropdown__item-unit">
+                                        {{ ing.measurementUnit.code || ing.measurementUnit.name }}
+                                      </span>
+                                    </button>
+                                  } @empty {
+                                    <div class="recipe-dropdown__empty">
+                                      <p>No se encontraron ingredientes</p>
+                                    </div>
+                                  }
+                                </div>
+                              </div>
+                            }
+                          </div>
+                        } @else {
+                          <input
+                            type="text"
+                            [ngModel]="row.customIngredientName"
+                            [ngModelOptions]="{ standalone: true }"
+                            (ngModelChange)="updateRow(idx, { customIngredientName: $event })"
+                            [placeholder]="'products.recipe.customNamePlaceholder' | translate"
+                            maxlength="160"
+                          />
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Cantidad -->
+                    <div class="recipe-field recipe-field--quantity">
+                      <label class="recipe-label">
+                        <span>{{ 'products.recipe.quantity' | translate }}</span>
+                        <div class="recipe-quantity-input-wrapper">
+                          <input
+                            type="number"
+                            min="0.0001"
+                            step="any"
+                            [ngModel]="row.quantity"
+                            [ngModelOptions]="{ standalone: true }"
+                            (ngModelChange)="updateRow(idx, { quantity: $event })"
+                          />
+                          @if (!row.isCustom && getIngredientUnit(row.ingredientId); as unit) {
+                            <span class="recipe-unit-tag">{{ unit }}</span>
+                          }
+                        </div>
+                      </label>
+                    </div>
+
+                    <!-- Anotaciones / Notas -->
+                    <div class="recipe-field recipe-field--notes">
+                      <label class="recipe-label">
+                        <span>{{ 'products.recipe.notes' | translate }}</span>
+                        <input
+                          type="text"
+                          [ngModel]="row.notes"
+                          [ngModelOptions]="{ standalone: true }"
+                          (ngModelChange)="updateRow(idx, { notes: $event })"
+                          [placeholder]="'products.recipe.notesPlaceholder' | translate"
+                          maxlength="500"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <footer class="wide">
+        <app-ui-button
+          type="button"
+          variant="secondary"
+          [disabled]="submitting()"
+          (click)="close()"
+        >
+          {{ 'common.cancel' | translate }}
+        </app-ui-button>
+        <app-ui-button type="submit" [loading]="submitting()">
+          {{ (product() ? 'products.action.save' : 'products.action.create') | translate }}
+        </app-ui-button>
+      </footer>
+    </form>
+  </section>
+</div>

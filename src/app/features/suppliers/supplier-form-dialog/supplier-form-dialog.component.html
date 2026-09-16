@@ -1,0 +1,121 @@
+<div class="modal-backdrop">
+  <button
+    class="modal-backdrop__close"
+    type="button"
+    tabindex="-1"
+    aria-label="Cerrar modal"
+    (click)="close()"
+  ></button>
+
+  <section class="supplier-modal" role="dialog" aria-modal="true">
+    <header class="supplier-modal__header">
+      <div>
+        <p class="eyebrow">{{ 'suppliers.eyebrow' | translate }}</p>
+        <h2>{{ (supplier() ? 'suppliers.modal.editTitle' : 'suppliers.modal.createTitle') | translate }}</h2>
+      </div>
+      <button
+        class="modal-close"
+        type="button"
+        [disabled]="submitting()"
+        aria-label="Cerrar"
+        (click)="close()"
+      >
+        ×
+      </button>
+    </header>
+
+    @if (errorMessage(); as error) {
+      <app-ui-alert [message]="error" />
+    }
+
+    <form class="supplier-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label class="field">
+        <span class="field__label">{{ 'suppliers.modal.nameLabel' | translate }}</span>
+        <input
+          class="field__input"
+          type="text"
+          formControlName="name"
+          maxlength="160"
+          [placeholder]="'suppliers.modal.namePlaceholder' | translate"
+          [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched"
+        />
+        @if (form.controls.name.invalid && form.controls.name.touched) {
+          <span class="field__error">{{ 'common.required' | translate }}</span>
+        }
+      </label>
+
+      <div class="grid-2">
+        <label class="field">
+          <span class="field__label">{{ 'suppliers.modal.commercialNameLabel' | translate }}</span>
+          <input
+            class="field__input"
+            type="text"
+            formControlName="commercialName"
+            maxlength="160"
+            placeholder="Ej: Distribuidora Central"
+          />
+        </label>
+
+        <label class="field">
+          <span class="field__label">{{ 'suppliers.modal.documentLabel' | translate }}</span>
+          <input
+            class="field__input"
+            type="text"
+            formControlName="document"
+            maxlength="80"
+            placeholder="NIT / RFC / ID fiscal"
+          />
+        </label>
+      </div>
+
+      <div class="grid-2">
+        <label class="field">
+          <span class="field__label">{{ 'suppliers.modal.emailLabel' | translate }}</span>
+          <input
+            class="field__input"
+            type="email"
+            formControlName="email"
+            maxlength="320"
+            placeholder="proveedor@empresa.com"
+          />
+        </label>
+
+        <label class="field">
+          <span class="field__label">{{ 'suppliers.modal.phoneLabel' | translate }}</span>
+          <input
+            class="field__input"
+            type="tel"
+            formControlName="phone"
+            maxlength="50"
+            placeholder="+57 300 000 0000"
+          />
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="field__label">{{ 'suppliers.modal.addressLabel' | translate }}</span>
+        <input
+          class="field__input"
+          type="text"
+          formControlName="address"
+          maxlength="500"
+          placeholder="Dirección física / sede principal"
+        />
+      </label>
+
+      <footer class="supplier-form__actions">
+        <app-ui-button
+          type="button"
+          variant="secondary"
+          [disabled]="submitting()"
+          (click)="close()"
+        >
+          {{ 'common.cancel' | translate }}
+        </app-ui-button>
+        <app-ui-button type="submit" [loading]="submitting()">
+          {{ (supplier() ? 'suppliers.modal.save' : 'suppliers.modal.create') | translate }}
+        </app-ui-button>
+      </footer>
+    </form>
+  </section>
+</div>

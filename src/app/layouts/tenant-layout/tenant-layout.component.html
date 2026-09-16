@@ -1,0 +1,19 @@
+<main class="workspace-shell">
+  <header class="workspace-header">
+    <app-brand-logo />
+    <div class="workspace-header__actions">
+      <app-language-selector />
+      <button class="logout-button" type="button" (click)="logout()">
+        <span class="logout-button__long">{{ 'common.logout' | translate }}</span>
+        <span class="logout-button__short" aria-hidden="true">↗</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="workspace-shell__content">
+    <router-outlet />
+  </div>
+
+  <span class="workspace-shell__leaf workspace-shell__leaf--one" aria-hidden="true"></span>
+  <span class="workspace-shell__leaf workspace-shell__leaf--two" aria-hidden="true"></span>
+</main>

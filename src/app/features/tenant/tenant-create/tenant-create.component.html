@@ -1,0 +1,39 @@
+<section class="create-card">
+  <div class="create-card__icon" aria-hidden="true"><span>+</span></div>
+  <header>
+    <p class="eyebrow">{{ 'tenant.create.eyebrow' | translate }}</p>
+    <h1 class="page-title">{{ 'tenant.create.title' | translate }}</h1>
+    <p class="page-subtitle">{{ 'tenant.create.subtitle' | translate }}</p>
+  </header>
+
+  <form class="form-grid" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (tenantStore.error(); as error) {
+      <app-ui-alert [message]="error" />
+    }
+    <div class="field">
+      <label class="field__label" for="tenant-name">{{ 'tenant.create.name' | translate }}</label>
+      <input
+        class="field__input"
+        id="tenant-name"
+        formControlName="name"
+        autocomplete="organization"
+        [placeholder]="'tenant.create.placeholder' | translate"
+        [attr.aria-invalid]="name.invalid && name.touched"
+      />
+      @if (name.invalid && name.touched) {
+        <p class="field__error">{{ 'common.required' | translate }}</p>
+      }
+    </div>
+    <app-ui-button
+      type="submit"
+      [wide]="true"
+      [loading]="tenantStore.loading()"
+      [disabled]="name.invalid"
+    >
+      {{ 'tenant.create.submit' | translate }}
+    </app-ui-button>
+    <a class="text-link create-card__back" routerLink="/select-tenant"
+      >← {{ 'tenant.create.back' | translate }}</a
+    >
+  </form>
+</section>

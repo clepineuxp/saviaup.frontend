@@ -1,0 +1,30 @@
+<div class="layout-viewport">
+  <div class="layout-canvas" [style.width.px]="canvasWidth()" [style.height.px]="canvasHeight()">
+    @for (table of tables(); track table.id) {
+      <div
+        class="layout-table"
+        role="button"
+        tabindex="0"
+        [style.left.px]="position(table).x + 32"
+        [style.top.px]="position(table).y + 32"
+        [style.width.px]="dimensions(table).width"
+        [style.height.px]="dimensions(table).height"
+        [class.layout-table--busy]="busy()"
+        [attr.aria-disabled]="busy()"
+        [attr.aria-label]="table.name"
+        (pointerdown)="beginDrag($event, table)"
+        (pointermove)="drag($event)"
+        (pointerup)="endDrag($event)"
+        (pointercancel)="cancelDrag($event)"
+        (keydown)="nudge($event, table)"
+        (keydown.enter)="editRequested.emit(table)"
+        (dblclick)="editRequested.emit(table)"
+      >
+        <span class="layout-table__grip" aria-hidden="true">⠿</span>
+        <app-table-card [table]="table" [interactive]="false" />
+      </div>
+    } @empty {
+      <div class="layout-empty">{{ 'tables.manage.layout.empty' | translate }}</div>
+    }
+  </div>
+</div>

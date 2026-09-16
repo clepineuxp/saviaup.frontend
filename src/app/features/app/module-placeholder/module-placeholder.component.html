@@ -1,0 +1,14 @@
+@if (entry(); as currentEntry) {
+  <section class="module-card">
+    <div class="module-card__icon" aria-hidden="true">{{ icon() }}</div>
+    <p class="eyebrow">{{ 'app.module.eyebrow' | translate }}</p>
+    <h1 class="page-title">{{ currentEntry.name }}</h1>
+    <p class="page-subtitle">{{ 'app.module.description' | translate }}</p>
+  </section>
+} @else {
+  <section class="module-card" role="status">
+    <div class="module-card__icon" aria-hidden="true">◫</div>
+    <h1 class="page-title">{{ 'app.module.unavailableTitle' | translate }}</h1>
+    <p class="page-subtitle">{{ 'app.module.unavailableDescription' | translate }}</p>
+  </section>
+}

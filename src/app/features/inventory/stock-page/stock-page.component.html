@@ -1,0 +1,95 @@
+<section class="inventory-page-section">
+  <header class="section-heading">
+    <div>
+      <h2>{{ 'inventory.stock.title' | translate }}</h2>
+      <p>{{ 'inventory.stock.description' | translate }}</p>
+    </div>
+  </header>
+
+  <form class="filters" [formGroup]="filters" (ngSubmit)="applyFilters()">
+    <label>
+      <span>{{ 'inventory.filter.search' | translate }}</span>
+      <input
+        type="search"
+        formControlName="search"
+        [placeholder]="'inventory.stock.searchPlaceholder' | translate"
+      />
+    </label>
+    <label>
+      <span>{{ 'inventory.stock.minimumFilter' | translate }}</span>
+      <select formControlName="belowMinimum">
+        <option value="">{{ 'inventory.filter.all' | translate }}</option>
+        <option value="true">{{ 'inventory.stock.onlyLow' | translate }}</option>
+        <option value="false">{{ 'inventory.stock.onlyHealthy' | translate }}</option>
+      </select>
+    </label>
+    <app-ui-button type="submit" variant="secondary">
+      {{ 'inventory.filter.apply' | translate }}
+    </app-ui-button>
+  </form>
+
+  @if (store.stockStatus() === 'loading' || store.stockStatus() === 'idle') {
+    <div class="list-state" aria-busy="true" aria-live="polite">
+      <span class="loader" aria-hidden="true"></span>
+      <p>{{ 'inventory.stock.loading' | translate }}</p>
+    </div>
+  } @else if (store.stockStatus() === 'error') {
+    <div class="list-state">
+      @if (store.stockError(); as error) {
+        <app-ui-alert [message]="error.message" />
+      }
+      <app-ui-button type="button" (click)="retry()">
+        {{ 'app.context.retry' | translate }}
+      </app-ui-button>
+    </div>
+  } @else if (store.stockPage().items.length === 0) {
+    <div class="list-state list-state--empty">
+      <span aria-hidden="true">▤</span>
+      <h3>{{ 'inventory.stock.emptyTitle' | translate }}</h3>
+      <p>{{ 'inventory.stock.emptyDescription' | translate }}</p>
+    </div>
+  } @else {
+    <div class="inventory-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ 'inventory.column.name' | translate }}</th>
+            <th>{{ 'inventory.column.category' | translate }}</th>
+            <th>{{ 'inventory.stock.current' | translate }}</th>
+            <th>{{ 'inventory.stock.minimum' | translate }}</th>
+            <th>{{ 'inventory.column.status' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of store.stockPage().items; track item.itemType + ':' + item.id) {
+            <tr [class.stock-row--low]="item.isBelowMinimum">
+              <td>
+                <strong>{{ item.name }}</strong
+                ><small>{{ item.itemType }}</small>
+              </td>
+              <td>{{ item.category.name }}</td>
+              <td class="stock-value">
+                {{ item.currentStock | number: '1.0-3' }} {{ item.unit.code }}
+              </td>
+              <td>{{ item.minimumStock | number: '1.0-3' }} {{ item.unit.code }}</td>
+              <td>
+                <span class="status" [class.status--low]="item.isBelowMinimum">
+                  {{
+                    (item.isBelowMinimum ? 'inventory.stock.low' : 'inventory.stock.healthy')
+                      | translate
+                  }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-inventory-pagination
+      [page]="store.stockPage().page"
+      [totalPages]="store.stockPage().totalPages"
+      [totalCount]="store.stockPage().totalCount"
+      (pageChanged)="changePage($event)"
+    />
+  }
+</section>

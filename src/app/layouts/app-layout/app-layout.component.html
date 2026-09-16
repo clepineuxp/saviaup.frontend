@@ -1,0 +1,74 @@
+<div class="app-shell">
+  <header class="app-header">
+    <app-brand-logo />
+    @if (authenticatedContext.ready() && authenticatedContext.userInfo(); as userInfo) {
+      <div class="user-summary">
+        <span class="user-summary__avatar" aria-hidden="true">{{ userInitials() }}</span>
+        <span class="user-summary__copy">
+          <strong>{{ authenticatedContext.displayName() }}</strong>
+          <small>{{ userInfo.organization.name }} · {{ userInfo.role.name }}</small>
+        </span>
+      </div>
+    }
+    <div class="app-header__actions">
+      <app-language-selector (languageChanged)="reloadContext()" />
+      <button
+        class="header-action"
+        type="button"
+        (click)="changeTenant()"
+        [attr.aria-label]="'app.placeholder.changeTenant' | translate"
+      >
+        <span class="header-action__long">{{ 'app.placeholder.changeTenant' | translate }}</span>
+        <span class="header-action__short" aria-hidden="true">↔</span>
+      </button>
+      <button
+        class="header-action"
+        type="button"
+        (click)="logout()"
+        [attr.aria-label]="'common.logout' | translate"
+      >
+        <span class="header-action__long">{{ 'common.logout' | translate }}</span>
+        <span class="header-action__short" aria-hidden="true">↗</span>
+      </button>
+    </div>
+  </header>
+
+  @if (authenticatedContext.loading() || authenticatedContext.status() === 'idle') {
+    <main class="context-state" aria-live="polite" aria-busy="true">
+      <span class="context-loader" aria-hidden="true"></span>
+      <div class="context-state__copy">
+        <strong>{{ 'app.context.loadingTitle' | translate }}</strong>
+        <span>{{ 'app.context.loadingDescription' | translate }}</span>
+      </div>
+      <div class="context-skeleton" aria-hidden="true"><i></i><i></i><i></i></div>
+    </main>
+  } @else if (authenticatedContext.status() === 'error') {
+    <main class="context-state" aria-live="assertive">
+      <div class="context-state__copy">
+        <strong>{{ 'app.context.errorTitle' | translate }}</strong>
+        <span>{{ 'app.context.errorDescription' | translate }}</span>
+      </div>
+      @if (authenticatedContext.error(); as error) {
+        <app-ui-alert [message]="error" />
+      }
+      <app-ui-button type="button" (click)="retry()">
+        {{ 'app.context.retry' | translate }}
+      </app-ui-button>
+    </main>
+  } @else {
+    <div
+      class="app-workspace"
+      [class.app-workspace--empty]="navigation().length === 0"
+      [class.app-workspace--sidebar-hidden]="shellState.sidebarHidden()"
+    >
+      @if (navigation().length > 0) {
+        <aside class="app-sidebar">
+          <app-navigation-rail [sections]="navigation()" />
+        </aside>
+      }
+      <main class="app-content"><router-outlet /></main>
+    </div>
+  }
+  <app-toast-container />
+  <app-pwa-update-banner />
+</div>

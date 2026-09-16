@@ -1,0 +1,156 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EMPTY, catchError } from 'rxjs';
+import { Router } from '@angular/router';
+import { ToastService } from '../../../shared/services/toast.service';
+import { LocalizationService } from '../../../shared/i18n/localization.service';
+import { AuthenticatedContextStore } from '../../../core/context/authenticated-context.store';
+import { AppShellState } from '../../../layouts/app-layout/app-shell-state.service';
+import { CurrencyPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { CanvasRoomViewComponent } from '../canvas-room-view/canvas-room-view.component';
+import { TableStore } from '../data-access/table-store.service';
+import { MetricsHeaderComponent } from '../metrics-header/metrics-header.component';
+import { RestaurantTable, TableViewMode } from '../models/table.model';
+import { TableCardComponent } from '../table-card/table-card.component';
+import { TableOperationDialogComponent } from '../table-operation-dialog/table-operation-dialog.component';
+
+@Component({
+  selector: 'app-table-operation-page',
+  imports: [
+    CanvasRoomViewComponent,
+    MetricsHeaderComponent,
+    TableCardComponent,
+    TableOperationDialogComponent,
+    TranslatePipe,
+    CurrencyPipe,
+    FormsModule,
+  ],
+  templateUrl: './table-operation-page.component.html',
+  styleUrl: './table-operation-page.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class TableOperationPageComponent implements OnInit, OnDestroy {
+  readonly store = inject(TableStore);
+  readonly shellState = inject(AppShellState);
+  readonly authContextStore = inject(AuthenticatedContextStore);
+  readonly selectedTable = signal<RestaurantTable | null>(null);
+  readonly tableSearchQuery = signal<string>('');
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
+  private readonly localization = inject(LocalizationService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  ngOnInit(): void {
+    this.store
+      .initializeOperation()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((snapshot) => {
+        if (snapshot.cashRegister.isInteractionBlocked) {
+          const hasCashAccess = this.authContextStore.hasCashRegistersModule();
+          if (hasCashAccess) {
+            const message =
+              this.localization.translate('tables.cashGate.toast') ||
+              'Debe abrir una caja para ingresar a vender';
+            this.toastService.show(message, 'warning', 4000);
+            void this.router.navigate(['/app/cash-registers']);
+          } else {
+            const message =
+              this.localization.translate('tables.cashGate.waitToast') ||
+              'Debe esperar a que se abra una caja para ingresar a vender';
+            this.toastService.show(message, 'warning', 5000);
+          }
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.shellState.showSidebar();
+  }
+
+  selectArea(event: Event): void {
+    this.store.selectArea((event.target as HTMLSelectElement).value);
+  }
+
+  setViewMode(mode: TableViewMode): void {
+    this.store.setViewMode(mode);
+  }
+
+  chooseTable(table: RestaurantTable): void {
+    this.selectedTable.set(table);
+  }
+
+  openOrder(table: RestaurantTable): void {
+    this.store
+      .setOperation(table.id, { status: 'OCCUPIED', activeOrderTotal: 0 })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => EMPTY),
+      )
+      .subscribe((updated) => this.selectedTable.set(updated));
+  }
+
+  closeOrder(table: RestaurantTable): void {
+    this.store
+      .setOperation(table.id, { status: 'AVAILABLE' })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => EMPTY),
+      )
+      .subscribe(() => this.selectedTable.set(null));
+  }
+
+  updateTotal(table: RestaurantTable, total: number): void {
+    if (!table.activeOrderId) return;
+    this.store
+      .updateOrder(table.id, { activeOrderId: table.activeOrderId, total })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => EMPTY),
+      )
+      .subscribe((updated) => this.selectedTable.set(updated));
+  }
+
+  sortedTables(tables: readonly RestaurantTable[]): RestaurantTable[] {
+    const query = this.tableSearchQuery().trim().toLowerCase();
+    let result = [...tables];
+
+    if (query) {
+      result = result.filter(
+        (t) =>
+          t.name.toLowerCase().includes(query) ||
+          (t.activeOrderTotal && t.activeOrderTotal.toString().includes(query)) ||
+          t.capacity.toString().includes(query),
+      );
+    }
+
+    return result.sort((a, b) => {
+      const isOccupiedA =
+        a.status === 'OCCUPIED' ||
+        (a.status as string) === 'ACCOUNT_REQUESTED' ||
+        (a.activeOrderTotal && a.activeOrderTotal > 0);
+      const isOccupiedB =
+        b.status === 'OCCUPIED' ||
+        (b.status as string) === 'ACCOUNT_REQUESTED' ||
+        (b.activeOrderTotal && b.activeOrderTotal > 0);
+
+      if (isOccupiedA && !isOccupiedB) return -1;
+      if (!isOccupiedA && isOccupiedB) return 1;
+
+      return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+    });
+  }
+
+  reloadOperationState(): void {
+    this.store.initializeOperation().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+  }
+}

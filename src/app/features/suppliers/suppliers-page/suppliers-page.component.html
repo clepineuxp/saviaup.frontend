@@ -1,0 +1,193 @@
+<div class="suppliers-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-titles">
+      <span class="eyebrow">{{ 'suppliers.eyebrow' | translate }}</span>
+      <h1 class="title">{{ 'suppliers.title' | translate }}</h1>
+      <p class="subtitle">{{ 'suppliers.subtitle' | translate }}</p>
+    </div>
+    @if (store.canManage()) {
+      <app-ui-button type="button" (click)="openCreateDialog()">
+        {{ 'suppliers.action.create' | translate }}
+      </app-ui-button>
+    }
+  </div>
+
+  @if (store.errorMessage(); as error) {
+    <app-ui-alert [message]="error" />
+  }
+
+  <!-- Controls / Toolbar -->
+  <div class="controls-card">
+    <div class="search-box">
+      <span class="search-icon" aria-hidden="true">🔍</span>
+      <input
+        type="text"
+        class="search-input"
+        [placeholder]="'suppliers.searchPlaceholder' | translate"
+        [ngModel]="searchInput()"
+        (ngModelChange)="searchInput.set($event); applyFilters()"
+      />
+    </div>
+
+    <div class="filter-chips">
+      <button
+        type="button"
+        class="chip-btn"
+        [class.active]="filterStatus() === 'ALL'"
+        (click)="setFilterStatus('ALL')"
+      >
+        {{ 'suppliers.filter.all' | translate }}
+      </button>
+      <button
+        type="button"
+        class="chip-btn"
+        [class.active]="filterStatus() === 'ACTIVE'"
+        (click)="setFilterStatus('ACTIVE')"
+      >
+        {{ 'suppliers.filter.active' | translate }}
+      </button>
+      <button
+        type="button"
+        class="chip-btn"
+        [class.active]="filterStatus() === 'INACTIVE'"
+        (click)="setFilterStatus('INACTIVE')"
+      >
+        {{ 'suppliers.filter.inactive' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Content Card with Scrollable Table -->
+  <div class="content-card">
+    @if (store.loading()) {
+      <div class="state-container">
+        <span class="spinner"></span>
+        <p>{{ 'suppliers.loading' | translate }}</p>
+      </div>
+    } @else if (store.suppliers().length === 0) {
+      <div class="state-container empty">
+        <span class="empty-icon">🏢</span>
+        <h3>{{ 'suppliers.emptyState' | translate }}</h3>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>{{ 'suppliers.column.name' | translate }}</th>
+              <th>{{ 'suppliers.column.document' | translate }}</th>
+              <th>{{ 'suppliers.column.contact' | translate }}</th>
+              <th>{{ 'suppliers.column.address' | translate }}</th>
+              <th>{{ 'suppliers.column.status' | translate }}</th>
+              @if (store.canManage()) {
+                <th class="text-right">{{ 'suppliers.column.actions' | translate }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (supplier of store.suppliers(); track supplier.id) {
+              <tr>
+                <td>
+                  <div class="supplier-info">
+                    <strong class="supplier-name">{{ supplier.name }}</strong>
+                    @if (supplier.commercialName) {
+                      <span class="commercial-name">{{ supplier.commercialName }}</span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <span class="doc-badge">{{ supplier.document || 'N/A' }}</span>
+                </td>
+                <td>
+                  <div class="contact-info">
+                    @if (supplier.email) {
+                      <span>✉️ {{ supplier.email }}</span>
+                    }
+                    @if (supplier.phone) {
+                      <span>📞 {{ supplier.phone }}</span>
+                    }
+                    @if (!supplier.email && !supplier.phone) {
+                      <span class="muted">{{ 'suppliers.noContact' | translate }}</span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <span class="address-text">{{ supplier.address || 'N/A' }}</span>
+                </td>
+                <td>
+                  <span
+                    class="status-badge"
+                    [class.active]="supplier.isActive"
+                    [class.inactive]="!supplier.isActive"
+                  >
+                    {{ (supplier.isActive ? 'suppliers.status.active' : 'suppliers.status.inactive') | translate }}
+                  </span>
+                </td>
+                @if (store.canManage()) {
+                  <td class="text-right">
+                    <div class="actions-group">
+                      <button
+                        type="button"
+                        class="btn-action edit-btn"
+                        (click)="openEditDialog(supplier)"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-action status-btn"
+                        [class.deactivate]="supplier.isActive"
+                        [class.activate]="!supplier.isActive"
+                        (click)="toggleStatus(supplier)"
+                      >
+                        {{ supplier.isActive ? '🚫' : '✅' }}
+                      </button>
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-bar">
+        <span class="pagination-info">
+          Mostrando {{ store.suppliers().length }} de {{ store.totalCount() }} proveedores
+        </span>
+        <div class="pagination-controls">
+          <button
+            type="button"
+            class="pag-btn"
+            [disabled]="store.page() <= 1"
+            (click)="changePage(store.page() - 1)"
+          >
+            ← Anterior
+          </button>
+          <span class="page-number">Página {{ store.page() }} de {{ store.totalPages() || 1 }}</span>
+          <button
+            type="button"
+            class="pag-btn"
+            [disabled]="store.page() >= store.totalPages()"
+            (click)="changePage(store.page() + 1)"
+          >
+            Siguiente →
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Modal Form Component -->
+@if (showDialog()) {
+  <app-supplier-form-dialog
+    [supplier]="selectedSupplier()"
+    [submitting]="store.mutating()"
+    [errorMessage]="store.errorMessage()"
+    (submitted)="handleFormSubmit($event)"
+    (cancelled)="closeDialog()"
+  />
+}
