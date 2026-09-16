@@ -326,11 +326,28 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'products.form.inventoryTracked': 'Controlar en inventario',
     'products.form.inventoryHint':
       'La categoría permite inventario. Decide si este producto participará en el control.',
-    'products.form.inventoryDisabledHint':
-      'La categoría seleccionada no es inventariable; esta opción se mantiene desactivada.',
     'products.validation.name': 'Ingresa un nombre válido de máximo 120 caracteres.',
     'products.validation.positivePrice': 'El precio de venta debe ser mayor que cero.',
     'products.validation.imageUrl': 'Ingresa una URL absoluta HTTP o HTTPS.',
+    'products.tabs.general': 'Información general',
+    'products.tabs.recipe': 'Receta',
+    'products.recipe.title': 'Receta del producto',
+    'products.recipe.description':
+      'Define los ingredientes que componen este producto. Los ingredientes del inventario se descontarán automáticamente al cobrar la orden.',
+    'products.recipe.addIngredient': '+ Agregar ingrediente',
+    'products.recipe.addCustom': '+ Ingrediente libre',
+    'products.recipe.selectIngredient': 'Selecciona ingrediente…',
+    'products.recipe.customNamePlaceholder': 'Nombre del ingrediente (no inventariable)…',
+    'products.recipe.quantity': 'Cantidad',
+    'products.recipe.notes': 'Anotación',
+    'products.recipe.notesPlaceholder': 'Notas (ej. sin sal, cortado…)',
+    'products.recipe.inventoryBadge': 'Inventario',
+    'products.recipe.freeBadge': 'Libre',
+    'products.recipe.typeToggleToFree': 'Cambiar a ingrediente libre',
+    'products.recipe.typeToggleToInventory': 'Vincular a ingrediente de inventario',
+    'products.recipe.empty': 'Este producto no tiene ingredientes en su receta aún.',
+    'products.recipe.emptyCta':
+      'Agrega ingredientes para controlar automáticamente las existencias al vender.',
     'inventory.eyebrow': 'Control operativo',
     'inventory.title': 'Inventario',
     'inventory.subtitle':
@@ -1179,11 +1196,28 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'products.form.inventoryTracked': 'Track in inventory',
     'products.form.inventoryHint':
       'This category supports inventory. Choose whether this product participates in tracking.',
-    'products.form.inventoryDisabledHint':
-      'The selected category is not inventory tracked, so this option stays disabled.',
     'products.validation.name': 'Enter a valid name with up to 120 characters.',
     'products.validation.positivePrice': 'The sale price must be greater than zero.',
     'products.validation.imageUrl': 'Enter an absolute HTTP or HTTPS URL.',
+    'products.tabs.general': 'General info',
+    'products.tabs.recipe': 'Recipe',
+    'products.recipe.title': 'Product recipe',
+    'products.recipe.description':
+      'Define the ingredients that make up this product. Inventory ingredients will be automatically deducted upon payment.',
+    'products.recipe.addIngredient': '+ Add ingredient',
+    'products.recipe.addCustom': '+ Free ingredient',
+    'products.recipe.selectIngredient': 'Select ingredient…',
+    'products.recipe.customNamePlaceholder': 'Ingredient name (non-inventory)…',
+    'products.recipe.quantity': 'Quantity',
+    'products.recipe.notes': 'Notes',
+    'products.recipe.notesPlaceholder': 'Notes (e.g. no salt, diced…)',
+    'products.recipe.inventoryBadge': 'Inventory',
+    'products.recipe.freeBadge': 'Free',
+    'products.recipe.typeToggleToFree': 'Change to free ingredient',
+    'products.recipe.typeToggleToInventory': 'Link to inventory ingredient',
+    'products.recipe.empty': 'This product has no recipe ingredients yet.',
+    'products.recipe.emptyCta':
+      'Add ingredients to automatically track stock upon sales.',
     'inventory.eyebrow': 'Operations control',
     'inventory.title': 'Inventory',
     'inventory.subtitle':

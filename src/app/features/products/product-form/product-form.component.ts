@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
   HostListener,
   inject,
@@ -10,7 +11,8 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { UiAlertComponent } from '../../../shared/components/ui-alert/ui-alert.component';
 import { UiButtonComponent } from '../../../shared/components/ui-button/ui-button.component';
 import { ImageSelectorComponent, ImageSelectionResult } from '../../../shared/components/image-selector/image-selector.component';
@@ -24,25 +26,68 @@ import {
   CreateProductRequest,
   Product,
   ProductCategory,
+  ProductIngredientLookup,
+  ProductRecipeItemRequest,
   ProductType,
 } from '../models/product.model';
 
+export interface RecipeRowItem {
+  readonly id: string;
+  isCustom: boolean;
+  ingredientId: string;
+  customIngredientName: string;
+  quantity: number;
+  notes: string;
+}
+
 @Component({
   selector: 'app-product-form',
-  imports: [ReactiveFormsModule, UiAlertComponent, UiButtonComponent, ImageSelectorComponent, TranslatePipe],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    UiAlertComponent,
+    UiButtonComponent,
+    ImageSelectorComponent,
+    TranslatePipe,
+  ],
   templateUrl: './product-form.component.html',
   styleUrl: './product-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductFormComponent {
   private readonly formBuilder = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
   readonly product = input<Product | null>(null);
   readonly categories = input.required<readonly ProductCategory[]>();
+  readonly ingredients = input<readonly ProductIngredientLookup[]>([]);
   readonly submitting = input(false);
   readonly error = input<ProductFeatureError | null>(null);
   readonly submitted = output<CreateProductRequest>();
   readonly cancelled = output<void>();
+  readonly searchIngredients = output<string>();
+
+  readonly activeTab = signal<'general' | 'recipe'>('general');
   readonly previewFailed = signal(false);
+  readonly recipeRows = signal<RecipeRowItem[]>([]);
+
+  readonly openSelectorIndex = signal<number | null>(null);
+  readonly ingredientSearch = signal<string>('');
+  readonly searchDebounced = signal<string>('');
+  private readonly searchSubject = new Subject<string>();
+  private readonly knownIngredients = new Map<string, ProductIngredientLookup>();
+
+  readonly filteredIngredients = computed(() => {
+    const list = this.ingredients();
+    const term = this.searchDebounced().trim().toLowerCase();
+    if (!term) return list.slice(0, 10);
+    const matches = list.filter(
+      (ing) =>
+        ing.name.toLowerCase().includes(term) ||
+        (ing.categoryName && ing.categoryName.toLowerCase().includes(term)),
+    );
+    return (matches.length > 0 ? matches : list).slice(0, 10);
+  });
+
   readonly form = this.formBuilder.group({
     type: this.formBuilder.nonNullable.control<ProductType>('NORMAL', [Validators.required]),
     categoryId: this.formBuilder.nonNullable.control('', [Validators.required]),
@@ -50,25 +95,47 @@ export class ProductFormComponent {
       nonBlankRequiredValidator(),
       Validators.maxLength(120),
     ]),
-    salePrice: this.formBuilder.nonNullable.control(0, [Validators.required, Validators.min(0.01)]),
+    salePrice: this.formBuilder.nonNullable.control(0, [
+      Validators.required,
+      Validators.min(0.01),
+      Validators.max(99999999.99),
+    ]),
     description: this.formBuilder.nonNullable.control('', [Validators.maxLength(1000)]),
     image: this.formBuilder.nonNullable.control('', [imageUrlValidator()]),
-    preparationTimeMinutes: this.formBuilder.control<number | null>(null, [Validators.min(0)]),
+    preparationTimeMinutes: this.formBuilder.control<number | null>(null, [
+      Validators.min(0),
+      Validators.max(1440),
+    ]),
     isInventoryTracked: this.formBuilder.nonNullable.control(false),
   });
 
   onImageSelected(result: ImageSelectionResult | null): void {
     this.form.controls.image.setValue(result?.base64Content || '');
   }
+
   private readonly categoryIdValue = toSignal(this.form.controls.categoryId.valueChanges, {
     initialValue: this.form.controls.categoryId.value,
   });
+
   readonly selectedCategory = computed(() =>
     this.categories().find((category) => category.id === this.categoryIdValue()),
   );
   readonly inventoryDisabled = computed(() => !this.selectedCategory()?.isInventoryTracked);
 
   constructor() {
+    this.searchSubject
+      .pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe((term) => {
+        this.searchDebounced.set(term);
+        this.searchIngredients.emit(term);
+      });
+
+    effect(() => {
+      for (const ing of this.ingredients()) {
+        this.knownIngredients.set(ing.id, ing);
+      }
+    });
+
     effect(() => {
       const product = this.product();
       this.form.reset({
@@ -81,7 +148,42 @@ export class ProductFormComponent {
         preparationTimeMinutes: product?.preparationTimeMinutes ?? null,
         isInventoryTracked: product?.isInventoryTracked ?? false,
       });
+
+      if (product?.recipe && product.recipe.length > 0) {
+        for (const item of product.recipe) {
+          if (item.ingredientId && !this.knownIngredients.has(item.ingredientId)) {
+            this.knownIngredients.set(item.ingredientId, {
+              id: item.ingredientId,
+              name: item.ingredientName || item.customIngredientName || '',
+              categoryName: undefined,
+              measurementUnit: {
+                id: '',
+                code: item.measurementUnitCode || '',
+                name: item.measurementUnitName || '',
+              },
+              currentStock: 0,
+              isActive: true,
+            });
+          }
+        }
+
+        this.recipeRows.set(
+          product.recipe.map((r) => ({
+            id: r.id || crypto.randomUUID(),
+            isCustom: !r.ingredientId,
+            ingredientId: r.ingredientId ?? '',
+            customIngredientName: r.customIngredientName ?? r.ingredientName ?? '',
+            quantity: r.quantity > 0 ? r.quantity : 1,
+            notes: r.notes ?? '',
+          })),
+        );
+      } else {
+        this.recipeRows.set([]);
+      }
+
+      this.activeTab.set('general');
       this.previewFailed.set(false);
+      this.closeIngredientSelector();
     });
 
     effect(() => {
@@ -97,12 +199,126 @@ export class ProductFormComponent {
     effect(() => this.applyServerErrors(this.error()));
   }
 
+  setTab(tab: 'general' | 'recipe'): void {
+    this.activeTab.set(tab);
+  }
+
+  addInventoryIngredient(ingredientId?: string): void {
+    const list = this.ingredients();
+    const defaultIngId = ingredientId || (list.length > 0 ? list[0].id : '');
+    this.recipeRows.update((rows) => [
+      ...rows,
+      {
+        id: crypto.randomUUID(),
+        isCustom: false,
+        ingredientId: defaultIngId,
+        customIngredientName: '',
+        quantity: 1,
+        notes: '',
+      },
+    ]);
+  }
+
+  addCustomIngredient(): void {
+    this.recipeRows.update((rows) => [
+      ...rows,
+      {
+        id: crypto.randomUUID(),
+        isCustom: true,
+        ingredientId: '',
+        customIngredientName: '',
+        quantity: 1,
+        notes: '',
+      },
+    ]);
+  }
+
+  removeRecipeRow(index: number): void {
+    this.recipeRows.update((rows) => rows.filter((_, i) => i !== index));
+  }
+
+  toggleRowCustom(index: number): void {
+    const list = this.ingredients();
+    this.recipeRows.update((rows) =>
+      rows.map((row, i) => {
+        if (i !== index) return row;
+        const newIsCustom = !row.isCustom;
+        return {
+          ...row,
+          isCustom: newIsCustom,
+          ingredientId: newIsCustom ? '' : list.length > 0 ? list[0].id : '',
+          customIngredientName: newIsCustom ? row.customIngredientName || '' : '',
+        };
+      }),
+    );
+  }
+
+  updateRow(index: number, patch: Partial<RecipeRowItem>): void {
+    this.recipeRows.update((rows) =>
+      rows.map((row, i) => (i === index ? { ...row, ...patch } : row)),
+    );
+  }
+
+  openIngredientSelector(index: number): void {
+    this.openSelectorIndex.set(index);
+    this.ingredientSearch.set('');
+    this.searchDebounced.set('');
+  }
+
+  closeIngredientSelector(): void {
+    this.openSelectorIndex.set(null);
+    this.ingredientSearch.set('');
+    this.searchDebounced.set('');
+  }
+
+  onSearchInput(term: string): void {
+    this.ingredientSearch.set(term);
+    this.searchSubject.next(term);
+  }
+
+  selectIngredient(index: number, ingredientId: string): void {
+    this.updateRow(index, { ingredientId });
+    this.closeIngredientSelector();
+  }
+
+  getSelectedIngredient(ingredientId: string): ProductIngredientLookup | undefined {
+    if (!ingredientId) return undefined;
+    return (
+      this.ingredients().find((i) => i.id === ingredientId) ??
+      this.knownIngredients.get(ingredientId)
+    );
+  }
+
+  getIngredientUnit(ingredientId: string): string {
+    if (!ingredientId) return '';
+    const ing = this.getSelectedIngredient(ingredientId);
+    return ing?.measurementUnit?.code || ing?.measurementUnit?.name || '';
+  }
+
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.activeTab.set('general');
       return;
     }
+
     const value = this.form.getRawValue();
+
+    const recipe: ProductRecipeItemRequest[] = this.recipeRows()
+      .filter((r) => {
+        const hasName = r.isCustom
+          ? r.customIngredientName.trim().length > 0
+          : r.ingredientId.trim().length > 0;
+        return hasName && r.quantity > 0;
+      })
+      .map((r, index) => ({
+        ingredientId: r.isCustom ? null : r.ingredientId.trim() || null,
+        customIngredientName: r.isCustom ? r.customIngredientName.trim() : null,
+        quantity: Math.max(0.0001, Number(r.quantity) || 1),
+        notes: r.notes.trim() || null,
+        order: index + 1,
+      }));
+
     this.submitted.emit({
       type: value.type,
       categoryId: value.categoryId,
@@ -114,6 +330,7 @@ export class ProductFormComponent {
       isInventoryTracked: this.selectedCategory()?.isInventoryTracked
         ? value.isInventoryTracked
         : false,
+      recipe,
     });
   }
 

@@ -6,6 +6,40 @@ export interface ProductCategory {
   readonly isInventoryTracked: boolean;
 }
 
+export interface ProductRecipeItem {
+  readonly id: string;
+  readonly ingredientId: string | null;
+  readonly ingredientName: string | null;
+  readonly measurementUnitName: string | null;
+  readonly measurementUnitCode: string | null;
+  readonly customIngredientName: string | null;
+  readonly quantity: number;
+  readonly notes: string | null;
+  readonly order: number;
+  readonly isLinked: boolean;
+}
+
+export interface ProductRecipeItemRequest {
+  readonly ingredientId: string | null;
+  readonly customIngredientName: string | null;
+  readonly quantity: number;
+  readonly notes: string | null;
+  readonly order?: number;
+}
+
+export interface ProductIngredientLookup {
+  readonly id: string;
+  readonly name: string;
+  readonly categoryName?: string;
+  readonly measurementUnit: {
+    readonly id: string;
+    readonly code: string;
+    readonly name: string;
+  };
+  readonly currentStock: number;
+  readonly isActive: boolean;
+}
+
 export interface Product {
   readonly id: string;
   readonly type: ProductType;
@@ -21,6 +55,7 @@ export interface Product {
   readonly lastModifiedByUserName?: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly recipe: readonly ProductRecipeItem[];
 }
 
 export interface ProductPage {
@@ -49,6 +84,7 @@ export interface CreateProductRequest {
   readonly image: string | null;
   readonly preparationTimeMinutes: number | null;
   readonly isInventoryTracked: boolean;
+  readonly recipe?: readonly ProductRecipeItemRequest[];
 }
 
 export type UpdateProductRequest = CreateProductRequest;

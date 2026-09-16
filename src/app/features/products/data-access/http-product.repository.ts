@@ -6,13 +6,24 @@ import {
   CreateProductRequest,
   Product,
   ProductCategory,
+  ProductIngredientLookup,
   ProductPage,
   ProductQuery,
   SetProductStatusRequest,
   UpdateProductRequest,
 } from '../models/product.model';
-import { mapProduct, mapProductCategory, mapProductPage } from './product.adapter';
-import { ProductCategoryLookupDto, ProductDto, ProductPageDto } from './product.contracts';
+import {
+  mapProduct,
+  mapProductCategory,
+  mapProductIngredient,
+  mapProductPage,
+} from './product.adapter';
+import {
+  IngredientPageResponseDto,
+  ProductCategoryLookupDto,
+  ProductDto,
+  ProductPageDto,
+} from './product.contracts';
 import { ProductRepository } from './product.repository';
 
 const compactParams = <T extends object>(
@@ -40,6 +51,23 @@ export class HttpProductRepository implements ProductRepository {
         params: { includeInactive: false },
       })
       .pipe(map((categories) => categories.map(mapProductCategory)));
+  }
+
+  listIngredients(
+    search?: string,
+    page = 1,
+    pageSize = 10,
+  ): Observable<readonly ProductIngredientLookup[]> {
+    return this.api
+      .get<IngredientPageResponseDto>(API_ENDPOINTS.inventory.ingredients.root, {
+        params: compactParams({
+          page,
+          pageSize,
+          search: search?.trim() || null,
+          includeInactive: false,
+        }),
+      })
+      .pipe(map((res) => (res.items ?? []).map(mapProductIngredient)));
   }
 
   create(request: CreateProductRequest): Observable<Product> {

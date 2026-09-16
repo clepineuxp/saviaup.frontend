@@ -12,7 +12,7 @@ const product: ProductDto = {
   type: 'NORMAL',
   name: 'Hamburguesa',
   description: null,
-  imageUrl: null,
+  image: null,
   category: { id: 'category-1', name: 'Comidas', isInventoryTracked: true },
   salePrice: 25000,
   preparationTimeMinutes: 15,
@@ -79,7 +79,7 @@ describe('HttpProductRepository', () => {
       categoryId: product.category.id,
       salePrice: 32000,
       description: null,
-      imageUrl: null,
+      image: null,
       preparationTimeMinutes: 20,
       isInventoryTracked: true,
     };
@@ -90,6 +90,7 @@ describe('HttpProductRepository', () => {
     deleteRequest.mockReturnValue(of(undefined));
 
     await firstValueFrom(repository.listCategories());
+    await firstValueFrom(repository.listIngredients());
     await firstValueFrom(repository.create(request));
     await firstValueFrom(repository.update(product.id, request));
     await firstValueFrom(repository.setStatus(product.id, { isActive: false }));
@@ -97,6 +98,9 @@ describe('HttpProductRepository', () => {
 
     expect(get).toHaveBeenCalledWith(API_ENDPOINTS.categories.root, {
       params: { includeInactive: false },
+    });
+    expect(get).toHaveBeenCalledWith(API_ENDPOINTS.inventory.ingredients.root, {
+      params: { page: 1, pageSize: 10, includeInactive: false },
     });
     expect(post).toHaveBeenCalledWith(API_ENDPOINTS.products.root, request);
     expect(put).toHaveBeenCalledWith(API_ENDPOINTS.products.detail(product.id), request);

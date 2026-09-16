@@ -11,7 +11,7 @@ const category: Category = {
   id: 'category-1',
   name: 'Bebidas frías',
   description: 'Preparadas en barra',
-  imageUrl: null,
+  image: null,
   isInventoryTracked: true,
   isActive: true,
   createdAt: '2026-08-20T18:00:00Z',

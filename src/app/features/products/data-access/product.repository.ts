@@ -4,6 +4,7 @@ import {
   CreateProductRequest,
   Product,
   ProductCategory,
+  ProductIngredientLookup,
   ProductPage,
   ProductQuery,
   SetProductStatusRequest,
@@ -13,6 +14,11 @@ import {
 export interface ProductRepository {
   list(query: ProductQuery): Observable<ProductPage>;
   listCategories(): Observable<readonly ProductCategory[]>;
+  listIngredients(
+    search?: string,
+    page?: number,
+    pageSize?: number,
+  ): Observable<readonly ProductIngredientLookup[]>;
   create(request: CreateProductRequest): Observable<Product>;
   update(productId: string, request: UpdateProductRequest): Observable<Product>;
   setStatus(productId: string, request: SetProductStatusRequest): Observable<Product>;

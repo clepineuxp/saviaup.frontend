@@ -15,7 +15,7 @@ const category: Category = {
   id: 'category-1',
   name: 'Bebidas frías',
   description: 'Preparadas en barra',
-  imageUrl: null,
+  image: null,
   isInventoryTracked: true,
   isActive: true,
   createdAt: '2026-08-20T18:00:00Z',
@@ -111,7 +111,7 @@ describe('CategoryStore', () => {
       store.create({
         name: created.name,
         description: null,
-        imageUrl: null,
+        image: null,
         isInventoryTracked: true,
       }),
     );
@@ -119,7 +119,7 @@ describe('CategoryStore', () => {
       store.update(created.id, {
         name: 'Postres fríos',
         description: null,
-        imageUrl: null,
+        image: null,
         isInventoryTracked: true,
       }),
     );
@@ -171,7 +171,7 @@ describe('CategoryStore', () => {
         store.create({
           name: 'Bebidas frías',
           description: null,
-          imageUrl: null,
+          image: null,
           isInventoryTracked: true,
         }),
       ),
@@ -183,7 +183,7 @@ describe('CategoryStore', () => {
         store.create({
           name: '',
           description: null,
-          imageUrl: null,
+          image: null,
           isInventoryTracked: true,
         }),
       ),
@@ -211,7 +211,7 @@ describe('CategoryStore', () => {
         store.update(category.id, {
           name: category.name,
           description: null,
-          imageUrl: null,
+          image: null,
           isInventoryTracked: true,
         }),
       ),

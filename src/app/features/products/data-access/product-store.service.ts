@@ -21,6 +21,7 @@ import {
   EMPTY_PRODUCT_PAGE,
   Product,
   ProductCategory,
+  ProductIngredientLookup,
   ProductPage,
   ProductQuery,
   SetProductStatusRequest,
@@ -56,6 +57,7 @@ export class ProductStore {
   private readonly permissionsStatusState = signal<RequestStatus>('idle');
   private readonly pageState = signal<ProductPage>(EMPTY_PRODUCT_PAGE());
   private readonly categoriesState = signal<readonly ProductCategory[]>([]);
+  private readonly ingredientsState = signal<readonly ProductIngredientLookup[]>([]);
   private readonly statusState = signal<RequestStatus>('idle');
   private readonly lookupStatusState = signal<RequestStatus>('idle');
   private readonly mutationStatusState = signal<RequestStatus>('idle');
@@ -70,6 +72,7 @@ export class ProductStore {
 
   readonly page = this.pageState.asReadonly();
   readonly categories = this.categoriesState.asReadonly();
+  readonly ingredients = this.ingredientsState.asReadonly();
   readonly status = this.statusState.asReadonly();
   readonly lookupStatus = this.lookupStatusState.asReadonly();
   readonly mutationStatus = this.mutationStatusState.asReadonly();
@@ -192,6 +195,23 @@ export class ProductStore {
     );
   }
 
+  loadIngredients(
+    search?: string,
+    page = 1,
+    pageSize = 10,
+  ): Observable<readonly ProductIngredientLookup[]> {
+    const tenantId = this.requireTenant();
+    if (!tenantId) return EMPTY;
+    const scopeVersion = this.scopeVersion;
+    return this.repository.listIngredients(search, page, pageSize).pipe(
+      tap((ingredients) => {
+        if (!this.isCurrent(tenantId, scopeVersion)) return;
+        this.ingredientsState.set(ingredients);
+      }),
+      catchError(() => of([])),
+    );
+  }
+
   create(request: CreateProductRequest): Observable<Product> {
     return this.mutate(this.repository.create(request));
   }
@@ -298,6 +318,7 @@ export class ProductStore {
     this.permissionsStatusState.set('idle');
     this.pageState.set(EMPTY_PRODUCT_PAGE());
     this.categoriesState.set([]);
+    this.ingredientsState.set([]);
     this.statusState.set('idle');
     this.lookupStatusState.set('idle');
     this.mutationStatusState.set('idle');

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LocalizationService } from '../../../shared/i18n/localization.service';
+import { ImageService } from '../../../shared/services/image.service';
 import { CategoryOperationError } from '../data-access/category-store.service';
 import { CategoryFormComponent } from './category-form.component';
 
@@ -18,6 +19,10 @@ describe('CategoryFormComponent', () => {
             language: () => 'es',
             translate: (key: string) => key,
           },
+        },
+        {
+          provide: ImageService,
+          useValue: { upload: vi.fn(), delete: vi.fn() },
         },
       ],
     }).compileComponents();
@@ -40,11 +45,11 @@ describe('CategoryFormComponent', () => {
     expect(component.form.controls.description.hasError('maxlength')).toBe(true);
 
     component.form.controls.description.setValue('Preparadas en barra');
-    component.form.controls.imageUrl.setValue('/relative/image.webp');
-    expect(component.form.controls.imageUrl.hasError('absoluteHttpUrl')).toBe(true);
-    component.form.controls.imageUrl.setValue('ftp://example.com/image.webp');
-    expect(component.form.controls.imageUrl.hasError('absoluteHttpUrl')).toBe(true);
-    component.form.controls.imageUrl.setValue('https://example.com/image.webp');
+    component.form.controls.image.setValue('/relative/image.webp');
+    expect(component.form.controls.image.hasError('imageUrl')).toBe(true);
+    component.form.controls.image.setValue('ftp://example.com/image.webp');
+    expect(component.form.controls.image.hasError('imageUrl')).toBe(true);
+    component.form.controls.image.setValue('https://example.com/image.webp');
     component.form.controls.isInventoryTracked.setValue(false);
     expect(component.form.valid).toBe(true);
   });
@@ -55,7 +60,7 @@ describe('CategoryFormComponent', () => {
     component.form.setValue({
       name: '  Bebidas   frías  ',
       description: '   ',
-      imageUrl: '  https://example.com/drinks.webp  ',
+      image: '  https://example.com/drinks.webp  ',
       isInventoryTracked: false,
     });
 
@@ -64,7 +69,7 @@ describe('CategoryFormComponent', () => {
     expect(submitted).toEqual({
       name: 'Bebidas frías',
       description: null,
-      imageUrl: 'https://example.com/drinks.webp',
+      image: 'https://example.com/drinks.webp',
       isInventoryTracked: false,
     });
   });
@@ -85,11 +90,11 @@ describe('CategoryFormComponent', () => {
       status: 400,
       code: 'VALIDATION_ERROR',
       message: 'Validation',
-      fieldErrors: { ImageUrl: ['Invalid URL'] },
+      fieldErrors: { Image: ['Invalid URL'] },
     };
     fixture.componentRef.setInput('serverError', validation);
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(component.form.controls.imageUrl.hasError('server')).toBe(true);
+    expect(component.form.controls.image.hasError('server')).toBe(true);
   });
 });

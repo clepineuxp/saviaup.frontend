@@ -212,10 +212,12 @@
   <app-product-form
     [product]="editingProduct()"
     [categories]="store.categories()"
+    [ingredients]="store.ingredients()"
     [submitting]="store.mutating()"
     [error]="store.operationError()"
     (submitted)="save($event)"
     (cancelled)="closeForm()"
+    (searchIngredients)="searchIngredients($event)"
   />
 }
 

@@ -4,6 +4,40 @@ export interface ProductCategoryDto {
   readonly isInventoryTracked: boolean;
 }
 
+export interface ProductRecipeItemDto {
+  readonly id: string;
+  readonly ingredientId: string | null;
+  readonly ingredientName: string | null;
+  readonly measurementUnitName: string | null;
+  readonly measurementUnitCode: string | null;
+  readonly customIngredientName: string | null;
+  readonly quantity: number;
+  readonly notes: string | null;
+  readonly order: number;
+  readonly isLinked: boolean;
+}
+
+export interface ProductIngredientDto {
+  readonly id: string;
+  readonly name: string;
+  readonly category?: {
+    readonly id: string;
+    readonly name: string;
+  };
+  readonly unit?: {
+    readonly id: string;
+    readonly code: string;
+    readonly name: string;
+  };
+  readonly measurementUnit?: {
+    readonly id: string;
+    readonly code: string;
+    readonly name: string;
+  };
+  readonly currentStock?: number;
+  readonly isActive?: boolean;
+}
+
 export interface ProductDto {
   readonly id: string;
   readonly type: string;
@@ -17,6 +51,7 @@ export interface ProductDto {
   readonly isActive: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly recipe?: readonly ProductRecipeItemDto[];
 }
 
 export interface ProductPageDto {
@@ -31,4 +66,12 @@ export interface ProductCategoryLookupDto {
   readonly id: string;
   readonly name: string;
   readonly isInventoryTracked: boolean;
+}
+
+export interface IngredientPageResponseDto {
+  readonly items: readonly ProductIngredientDto[];
+  readonly page: number;
+  readonly pageSize: number;
+  readonly totalCount: number;
+  readonly totalPages: number;
 }
