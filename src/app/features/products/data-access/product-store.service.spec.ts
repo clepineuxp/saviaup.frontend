@@ -17,7 +17,7 @@ const product: Product = {
   type: 'NORMAL',
   name: 'Hamburguesa',
   description: null,
-  imageUrl: null,
+  image: null,
   category,
   salePrice: 25000,
   preparationTimeMinutes: 15,
@@ -25,6 +25,7 @@ const product: Product = {
   isActive: true,
   createdAt: '2026-08-20T12:00:00Z',
   updatedAt: '2026-08-20T12:00:00Z',
+  recipe: [],
 };
 const page = (currentPage = 1): ProductPage => ({
   items: [product],
@@ -46,6 +47,7 @@ describe('ProductStore', () => {
   const repository = {
     list: vi.fn(),
     listCategories: vi.fn(),
+    listIngredients: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     setStatus: vi.fn(),
@@ -61,6 +63,7 @@ describe('ProductStore', () => {
     loadCurrentUser.mockReturnValue(of(user));
     repository.list.mockReturnValue(of(page()));
     repository.listCategories.mockReturnValue(of([category]));
+    repository.listIngredients.mockReturnValue(of([]));
     repository.create.mockReturnValue(of(product));
     repository.delete.mockReturnValue(of(undefined));
 
@@ -103,7 +106,7 @@ describe('ProductStore', () => {
         categoryId: category.id,
         salePrice: product.salePrice,
         description: null,
-        imageUrl: null,
+        image: null,
         preparationTimeMinutes: null,
         isInventoryTracked: true,
       }),

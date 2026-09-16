@@ -32,9 +32,9 @@ export const imageUrlValidator =
       const url = new URL(value);
       return url.protocol === 'http:' || url.protocol === 'https:'
         ? null
-        : { absoluteHttpUrl: true };
+        : { absoluteHttpUrl: true, imageUrl: true };
     } catch {
-      return { absoluteHttpUrl: true };
+      return { absoluteHttpUrl: true, imageUrl: true };
     }
   };
 

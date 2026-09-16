@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LocalizationService } from '../../../shared/i18n/localization.service';
+import { ImageService } from '../../../shared/services/image.service';
 import { ProductCategory } from '../models/product.model';
 import { ProductFormComponent } from './product-form.component';
 
@@ -26,6 +27,10 @@ describe('ProductFormComponent', () => {
         {
           provide: LocalizationService,
           useValue: { language: () => 'es', translate: (key: string) => key },
+        },
+        {
+          provide: ImageService,
+          useValue: { upload: vi.fn(), delete: vi.fn() },
         },
       ],
     }).compileComponents();
@@ -61,15 +66,19 @@ describe('ProductFormComponent', () => {
     expect(component.form.controls.isInventoryTracked.value).toBe(false);
   });
 
-  it('normalizes form values and never submits inventory for a non-inventory category', () => {
+  it('normalizes form values and includes recipe items', () => {
     const submitted: unknown[] = [];
     component.submitted.subscribe((request) => submitted.push(request));
     component.form.controls.categoryId.setValue(serviceCategory.id);
     component.form.controls.name.setValue('  Menú   infantil ');
     component.form.controls.salePrice.setValue(25000);
     component.form.controls.description.setValue('  Con bebida  ');
-    component.form.controls.imageUrl.setValue('');
+    component.form.controls.image.setValue('');
     component.form.controls.preparationTimeMinutes.setValue(12);
+
+    // Agregar ingrediente libre
+    component.addCustomIngredient();
+    component.updateRow(0, { customIngredientName: 'Salsa especial', quantity: 2, notes: 'Casera' });
     TestBed.flushEffects();
 
     component.submit();
@@ -81,9 +90,18 @@ describe('ProductFormComponent', () => {
         name: 'Menú infantil',
         salePrice: 25000,
         description: 'Con bebida',
-        imageUrl: null,
+        image: null,
         preparationTimeMinutes: 12,
         isInventoryTracked: false,
+        recipe: [
+          {
+            ingredientId: null,
+            customIngredientName: 'Salsa especial',
+            quantity: 2,
+            notes: 'Casera',
+            order: 1,
+          },
+        ],
       },
     ]);
   });

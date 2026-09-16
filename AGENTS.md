@@ -9,21 +9,20 @@ La fase implementada cubre:
 - autenticación y persistencia de sesión;
 - registro y recuperación de acceso;
 - selección y creación de organizaciones (tenants);
-- internacionalización completo español/inglés;
+- internacionalización completa español/inglés;
 - infraestructura JWT, PWA, IndexedDB y SignalR;
-- navegación autenticada ordenada y agrupada con soporte para todos los módulos operativos;
-- administración de categorías de inventario con permisos de lectura y gestión;
-- administración paginada de productos y combos con filtros, estado e inventariabilidad condicionada;
+- navegación autenticada ordenada y agrupada con soporte para los módulos operativos del catálogo;
+- administración de categorías de inventario con permisos de lectura y gestión, e integración con `ImageSelectorComponent`;
+- administración paginada de productos y combos con selector de imagen Base64, editor interactivo de recetas (`ProductRecipeItem`), cálculo de costo estimado vs margen y vinculación con ingredientes de inventario;
 - inventario operativo con existencias, ingredientes, movimientos y unidades de medida;
-- operación y configuración de salas/mesas con permisos granulares, canvas 2D y SignalR por tenant;
-- control de órdenes (`/app/orders`) con búsqueda paginada, filtros por estado y acotación por defecto al día de hoy (`YYYY-MM-DD`);
+- operación y configuración de salas/mesas con permisos granulares, canvas 2D, rediseño de métricas con conmutador Día / Turno y SignalR por tenant;
+- control de órdenes y comandas (`/app/orders`) con búsqueda paginada, filtros por estado y deducción automática de inventario por recetas al pagar;
 - control de turnos de caja (`/app/cash-registers`) con apertura por medio de pago, arqueo, egresos e historial;
-- dashboard de estadísticas (`/app/statistics`) con gráficas interactivas Chart.js para ventas del mes, productos más vendidos, ranking de vendedores y filtro toggle de propinas;
-- módulo de facturación (`/app/billing`) con 2 vistas (lista de documentos y órdenes con documentos), filtros por fecha acotados a hoy por defecto, paginación y modal de reimpresión de comprobantes térmicos;
+- administración de gastos operativos (`/app/expenses`) y directorio de proveedores (`/app/suppliers`);
+- dashboard de estadísticas (`/app/statistics`) con gráficas interactivas Chart.js para ventas del mes, comparativa agrupada Ventas vs Gastos, productos más vendidos y ranking de vendedores;
+- módulo de facturación (`/app/billing`) con lista de documentos y órdenes con documentos, filtros por fecha y modal de reimpresión de comprobantes térmicos;
 - motor de impresión térmica de tirillas de 80mm en `<iframe>` aislado para comandas y comprobantes de pago;
 - sistema de diseño con paleta de marca oficial y alternancia dinámica de **Modo Claro** y **Modo Oscuro** (`ThemeService`).
-
-No inventar todavía módulos de ventas, caja, recetas, compras, reportes o permisos si el requerimiento no los incluye expresamente.
 
 ## Estado técnico y versiones
 
@@ -162,26 +161,33 @@ La selección de adaptadores se hace en `app.config.ts` mediante `useMockApi` y 
 
 ## Rutas y control de acceso
 
-| Ruta                               | Acceso               | Layout | Propósito                         |
-| ---------------------------------- | -------------------- | ------ | --------------------------------- |
-| `/login`                           | Invitado             | Auth   | Inicio de sesión                  |
-| `/register`                        | Invitado             | Auth   | Creación de cuenta                |
-| `/forgot-password`                 | Invitado             | Auth   | Recuperación neutral              |
-| `/select-tenant`                   | Autenticado          | Tenant | Seleccionar organización          |
-| `/create-tenant`                   | Autenticado          | Tenant | Crear organización                |
-| `/app`                             | Autenticado + tenant | App    | Entrada privada/placeholder       |
-| `/app/products`                    | `products.read`      | App    | Administración de productos       |
-| `/app/settings`                    | Algún `settings.*`   | App    | Configuración de la organización  |
-| `/app/inventory`                   | Autenticado + tenant | App    | Entrada al inventario             |
-| `/app/inventory/stock`             | Permiso de lectura   | App    | Existencias paginadas             |
-| `/app/inventory/ingredients`       | Permiso de lectura   | App    | Administración de ingredientes    |
-| `/app/inventory/movements`         | Permiso de lectura   | App    | Historial y nuevos movimientos    |
-| `/app/inventory/complements/units` | Permiso de lectura   | App    | Unidades de medida                |
-| `/app/categories`                  | Autenticado + tenant | App    | Administración de categorías      |
-| `/app/sell/tables`                 | `tables.read`        | App    | Operación de mesas en tiempo real |
-| `/app/configuration/tables/manage` | `tables.manage`      | App    | Configuración de salas y mesas    |
-| `/app/{módulo}`                    | Autenticado + tenant | App    | Módulo conocido habilitado        |
-| `/app/modules/:code`               | Autenticado + tenant | App    | Fallback de módulo desconocido    |
+| Ruta                                       | Acceso               | Layout | Propósito                            |
+| ------------------------------------------ | -------------------- | ------ | ------------------------------------ |
+| `/login`                                   | Invitado             | Auth   | Inicio de sesión                     |
+| `/register`                                | Invitado             | Auth   | Creación de cuenta                   |
+| `/forgot-password`                         | Invitado             | Auth   | Recuperación neutral                 |
+| `/select-tenant`                           | Autenticado          | Tenant | Seleccionar organización             |
+| `/create-tenant`                           | Autenticado          | Tenant | Crear organización                   |
+| `/app`                                     | Autenticado + tenant | App    | Entrada privada/placeholder          |
+| `/app/sell/tables`                         | `tables.read`        | App    | Operación de mesas en tiempo real    |
+| `/app/orders`                              | `orders.read`        | App    | Control y búsqueda de comandas        |
+| `/app/cash-registers`                      | `cash-registers.read`| App    | Control de turnos y arqueos de caja  |
+| `/app/products`                            | `products.read`      | App    | Administración de productos y recetas|
+| `/app/categories`                          | Autenticado + tenant | App    | Administración de categorías         |
+| `/app/inventory`                           | Autenticado + tenant | App    | Entrada al inventario                |
+| `/app/inventory/stock`                     | Permiso de lectura   | App    | Existencias paginadas                |
+| `/app/inventory/ingredients`               | Permiso de lectura   | App    | Administración de ingredientes       |
+| `/app/inventory/movements`                 | Permiso de lectura   | App    | Historial y nuevos movimientos       |
+| `/app/inventory/complements/units`         | Permiso de lectura   | App    | Unidades de medida                   |
+| `/app/expenses`                            | `expenses.read`      | App    | Registro y control de gastos         |
+| `/app/suppliers`                           | `expenses.read`      | App    | Directorio de proveedores            |
+| `/app/statistics`                          | `reports.read`       | App    | Dashboard analítico Chart.js         |
+| `/app/billing`                             | `billing.read`       | App    | Facturación y tirillas térmicas      |
+| `/app/settings`                            | Algún `settings.*`   | App    | Configuración de la organización     |
+| `/app/configuration/tables/manage`         | `tables.manage`      | App    | Configuración de salas y mesas       |
+| `/app/configuration/cash-registers/manage` | `cash-registers.manage` | App | Configuración de cajas registradoras |
+| `/app/{módulo}`                            | Autenticado + tenant | App    | Módulo conocido habilitado           |
+| `/app/modules/:code`                       | Autenticado + tenant | App    | Fallback de módulo desconocido       |
 
 - `GuestGuard` impide que una sesión activa vuelva al flujo de invitado.
 - `AuthGuard` exige sesión válida.
@@ -239,6 +245,12 @@ Seleccionar o crear tenant debe recibir del backend un nuevo par de tokens conte
 `CategoryStore` es el propietario del listado administrativo de categorías. Su estado está limitado al tenant activo: se limpia al cambiar o cerrar el tenant y descarta respuestas tardías de otra organización. La vista se autoriza únicamente con los códigos recibidos desde `GET /api/users/me`: `categories.read` permite consultar y `categories.manage` habilita crear, editar, cambiar estado y eliminar. Nunca inferir estos permisos desde el nombre o código del rol; el backend conserva la autorización efectiva.
 
 `ProductStore` es el propietario de la página, filtros y categorías auxiliares del catálogo de productos. Su estado y permisos se limpian al cambiar tenant y todas las consultas permanecen paginadas en servidor. `products.read` permite entrar y listar; `products.manage` habilita crear, editar, cambiar estado y eliminar. El formulario requiere además `categories.read`, inicia el tipo en `NORMAL` y fuerza `isInventoryTracked=false` cuando la categoría seleccionada no es inventariable. La validación definitiva permanece en backend.
+El formulario de productos integra:
+- Selector de imagen con compresión Base64 (`ImageSelectorComponent`).
+- Editor reactivo de recetas (`ProductRecipeItem`): vinculación con ingredientes de inventario, cálculo automático de costo estimado por porción y proyección del margen de beneficio contra el precio de venta sugerido.
+
+`ExpenseStore` y `SupplierStore` administran egresos y proveedores con Signals, asociando gastos a turnos de caja y filtrando por rangos de fechas.
+`BillingStore` y `StatisticsStore` proveen consultas de comprobantes para impresión y analíticas con Chart.js respectivamente.
 
 `InventoryStore` es el propietario de las páginas, filtros y catálogos auxiliares de inventario. Conserva por separado existencias, ingredientes, movimientos y unidades, siempre paginados por el servidor y limitados al tenant activo. Cada apartado exige su permiso `*.read` exacto y cada mutación su `*.manage` exacto; `manage` no implica `read`. El formulario de ingredientes requiere además `categories.read` e `inventory.complements.read`. Tras un movimiento exitoso debe refrescar la página vigente tanto de movimientos como de existencias.
 

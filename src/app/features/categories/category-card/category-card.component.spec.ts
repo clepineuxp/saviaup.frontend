@@ -8,7 +8,7 @@ const category: Category = {
   id: 'category-1',
   name: 'Bebidas frías',
   description: null,
-  imageUrl: null,
+  image: null,
   isInventoryTracked: true,
   isActive: true,
   createdAt: '2026-08-20T18:00:00Z',
@@ -44,7 +44,7 @@ describe('CategoryCardComponent', () => {
   it('falls back to the placeholder when the remote image fails', () => {
     fixture.componentRef.setInput('category', {
       ...category,
-      imageUrl: 'https://example.com/missing.webp',
+      image: 'https://example.com/missing.webp',
     });
     fixture.detectChanges();
     const image = fixture.nativeElement.querySelector('img') as HTMLImageElement;

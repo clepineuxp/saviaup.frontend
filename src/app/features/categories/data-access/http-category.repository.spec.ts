@@ -11,7 +11,7 @@ const dto: CategoryDto = {
   id: 'category-1',
   name: 'Bebidas frías',
   description: 'Preparadas en barra',
-  imageUrl: 'https://cdn.example.com/drinks.webp',
+  image: 'https://cdn.example.com/drinks.webp',
   isInventoryTracked: true,
   isActive: true,
   createdAt: '2026-08-20T18:00:00Z',
@@ -57,7 +57,7 @@ describe('HttpCategoryRepository', () => {
     const request: CreateCategoryRequest = {
       name: 'Bebidas frías',
       description: null,
-      imageUrl: null,
+      image: null,
       isInventoryTracked: true,
     };
     post.mockReturnValue(of(dto));
