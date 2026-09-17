@@ -1,5 +1,13 @@
 <div class="backdrop" role="presentation">
-  <section class="dialog-container" role="dialog" aria-modal="true" [attr.aria-label]="table().name">
+  <section
+    class="dialog-container"
+    [class.catalogue-view]="
+      table().status === 'AVAILABLE' || (table().status === 'OCCUPIED' && activeMainTab() === 'add')
+    "
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="table().name"
+  >
     <!-- Header -->
     <header class="dialog-header">
       <div class="header-info">
@@ -62,122 +70,126 @@
       <div class="order-taking-layout">
         <!-- Left Column: Product Catalogue -->
         <main class="catalogue-panel">
-          <!-- Mobile Summary Action Button -->
-          <div class="mobile-summary-bar">
-            <button
-              type="button"
-              class="mobile-summary-trigger-btn"
-              [class.has-items]="draftItems().length > 0"
-              (click)="openMobileDraftModal()"
-            >
-              <div class="summary-btn-left">
-                <span class="btn-icon">🛒</span>
-                <strong>Ver Resumen del Pedido</strong>
-              </div>
-              <div class="summary-btn-right">
-                @if (draftItems().length > 0) {
-                  <span class="badge-count">{{ draftItems().length }} ítems</span>
-                  <span class="badge-total">{{ draftTotal() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
-                } @else {
-                  <span class="badge-empty">0 ítems · $0</span>
-                }
-                <span class="btn-arrow">›</span>
-              </div>
-            </button>
-          </div>
-
-          <div class="catalogue-header">
-            <div class="search-box">
-              <span class="search-icon">🔍</span>
-              <input
-                type="text"
-                placeholder="Buscar por nombre, código o equivalente…"
-                [ngModel]="searchQuery()"
-                (ngModelChange)="onSearchChange($event)"
-              />
+          <div class="catalogue-filters">
+            <!-- Mobile Summary Action Button -->
+            <div class="mobile-summary-bar">
+              <button
+                type="button"
+                class="mobile-summary-trigger-btn"
+                [class.has-items]="draftItems().length > 0"
+                (click)="openMobileDraftModal()"
+              >
+                <div class="summary-btn-left">
+                  <span class="btn-icon">🛒</span>
+                  <strong>Ver Resumen del Pedido</strong>
+                </div>
+                <div class="summary-btn-right">
+                  @if (draftItems().length > 0) {
+                    <span class="badge-count">{{ draftItems().length }} ítems</span>
+                    <span class="badge-total">{{
+                      draftTotal() | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                    }}</span>
+                  } @else {
+                    <span class="badge-empty">0 ítems · $0</span>
+                  }
+                  <span class="btn-arrow">›</span>
+                </div>
+              </button>
             </div>
 
-            @if (settingsStore.business()?.enableCustomSales) {
-              <button type="button" class="custom-sale-btn" (click)="openCustomSaleModal()">
-                ✨ Venta Libre +
-              </button>
-            }
-          </div>
+            <div class="catalogue-header">
+              <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre, código o equivalente…"
+                  [ngModel]="searchQuery()"
+                  (ngModelChange)="onSearchChange($event)"
+                />
+              </div>
 
-          <!-- Category Filter Chips -->
-          <div class="categories-bar">
-            <button
-              type="button"
-              class="cat-chip"
-              [class.active]="selectedCategoryId() === null"
-              (click)="selectCategory(null)"
-            >
-              Todas
-            </button>
-            @for (cat of categories(); track cat.id) {
+              @if (settingsStore.business()?.enableCustomSales) {
+                <button type="button" class="custom-sale-btn" (click)="openCustomSaleModal()">
+                  ✨ Venta Libre +
+                </button>
+              }
+            </div>
+
+            <!-- Category Filter Chips -->
+            <div class="categories-bar">
               <button
                 type="button"
                 class="cat-chip"
-                [class.active]="selectedCategoryId() === cat.id"
-                (click)="selectCategory(cat.id)"
+                [class.active]="selectedCategoryId() === null"
+                (click)="selectCategory(null)"
               >
-                {{ cat.name }}
+                Todas
               </button>
-            }
-          </div>
-
-          <!-- Products Grid -->
-          <div class="products-grid">
-            @if (loadingCatalog()) {
-              <div class="catalog-loading">Cargando catálogo de productos…</div>
-            } @else if (products().length === 0) {
-              <div class="catalog-empty">
-                No se encontraron productos coincidentes.
-              </div>
-            } @else {
-              @for (product of products(); track product.id) {
-                <div class="product-card" (click)="openProductConfig(product)">
-                  <div class="product-thumb">
-                    @if (product.image) {
-                      <img [src]="product.image" [alt]="product.name" />
-                    } @else {
-                      <span class="thumb-placeholder">☕</span>
-                    }
-                  </div>
-                  <div class="product-info">
-                    <strong class="product-name">{{ product.name }}</strong>
-                    <span class="product-price">
-                      {{ product.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
-                    </span>
-                  </div>
-                </div>
+              @for (cat of categories(); track cat.id) {
+                <button
+                  type="button"
+                  class="cat-chip"
+                  [class.active]="selectedCategoryId() === cat.id"
+                  (click)="selectCategory(cat.id)"
+                >
+                  {{ cat.name }}
+                </button>
               }
-            }
+            </div>
           </div>
 
-          @if (catalogTotalPages() > 1) {
-            <div class="catalog-pagination">
-              <button
-                type="button"
-                class="page-btn"
-                [disabled]="catalogPage() <= 1"
-                (click)="goToCatalogPage(catalogPage() - 1)"
-              >
-                ‹ Anterior
-              </button>
-              <span class="page-info">
-                Pág. {{ catalogPage() }} de {{ catalogTotalPages() }} ({{ catalogTotalCount() }} prods)
-              </span>
-              <button
-                type="button"
-                class="page-btn"
-                [disabled]="catalogPage() >= catalogTotalPages()"
-                (click)="goToCatalogPage(catalogPage() + 1)"
-              >
-                Siguiente ›
-              </button>
+          <div class="catalogue-products">
+            <!-- Products Grid -->
+            <div class="products-grid">
+              @if (loadingCatalog()) {
+                <div class="catalog-loading">Cargando catálogo de productos…</div>
+              } @else if (products().length === 0) {
+                <div class="catalog-empty">No se encontraron productos coincidentes.</div>
+              } @else {
+                @for (product of products(); track product.id) {
+                  <div class="product-card" (click)="openProductConfig(product)">
+                    <div class="product-thumb">
+                      @if (product.image) {
+                        <img [src]="product.image" [alt]="product.name" />
+                      } @else {
+                        <span class="thumb-placeholder">☕</span>
+                      }
+                    </div>
+                    <div class="product-info">
+                      <strong class="product-name">{{ product.name }}</strong>
+                      <span class="product-price">
+                        {{ product.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                      </span>
+                    </div>
+                  </div>
+                }
+              }
             </div>
-          }
+
+            @if (catalogTotalPages() > 1) {
+              <div class="catalog-pagination">
+                <button
+                  type="button"
+                  class="page-btn"
+                  [disabled]="catalogPage() <= 1"
+                  (click)="goToCatalogPage(catalogPage() - 1)"
+                >
+                  ‹ Anterior
+                </button>
+                <span class="page-info">
+                  Pág. {{ catalogPage() }} de {{ catalogTotalPages() }} ({{ catalogTotalCount() }} prods)
+                </span>
+                <button
+                  type="button"
+                  class="page-btn"
+                  [disabled]="catalogPage() >= catalogTotalPages()"
+                  (click)="goToCatalogPage(catalogPage() + 1)"
+                >
+                  Siguiente ›
+                </button>
+              </div>
+            }
+          </div>
         </main>
 
         <!-- Right Column: Draft Order Summary -->
