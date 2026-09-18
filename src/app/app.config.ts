@@ -12,6 +12,7 @@ import { environment } from '../environments/environment';
 import { AUTH_REPOSITORY, AuthRepository } from './core/auth/auth-repository';
 import { TOKEN_STORAGE } from './core/auth/token-storage';
 import { WebTokenStorage } from './core/auth/web-token-storage.service';
+import { AuthSessionLifecycle } from './core/auth/auth-session-lifecycle.service';
 import { APP_ENVIRONMENT } from './core/config/app-environment';
 import { PwaUpdateService } from './core/pwa/pwa-update.service';
 import {
@@ -93,6 +94,7 @@ export const appConfig: ApplicationConfig = {
     SettingsStore,
     provideAppInitializer(() => {
       inject(PwaUpdateService);
+      inject(AuthSessionLifecycle);
     }),
     provideAppInitializer(() => inject(LocalizationService).initialize()),
   ],

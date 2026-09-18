@@ -333,6 +333,16 @@ El archivo de Figma “Savia Up · Web App” fue creado como espacio de diseño
 - `TableRealtimeClient` conecta únicamente durante el ciclo de vida de la feature, envía el JWT vigente y aplica reconexión automática para `OnTableStatusChanged` y `OnTableOrderUpdated`.
 - El bloqueo de caja abierta se deriva del backend y deshabilita todas las acciones de `tables.operate` sin ocultar el estado actual.
 
+## Continuidad de sesión en la PWA
+
+La sesión se conserva hasta el vencimiento del refresh token informado por la API, aunque el access token haya vencido. Las sesiones guardadas antes de incorporar `refreshTokenExpiresAt` se validan contra el endpoint de refresh. La API sigue siendo la autoridad para revocación y expiración; cada renovación persiste el nuevo par de tokens y sus fechas.
+
+`AuthRefreshCoordinator` comparte una sola renovación entre las peticiones HTTP, la reconexión SignalR y los eventos de reactivación de la app. Renueva cuando al access token le queda un minuto o menos. `AuthSessionLifecycle` comprueba al recuperar visibilidad, foco, conexión o página restaurada, y cada 30 segundos mientras la app está visible y en línea. Los temporizadores arrancan después de la estabilización de Angular para no retrasar el Service Worker.
+
+Los fallos de red, límites de peticiones y errores de servidor conservan las credenciales para reintentar. Una respuesta 401 del refresh o su expiración conocida limpia la sesión. Una respuesta tardía no puede restaurar una sesión cerrada ni sobrescribir una sesión nueva. No se recarga la página para renovar tokens.
+
+Se conserva la opción **Recordarme**: activada usa almacenamiento persistente; desactivada usa el almacenamiento de la sesión del navegador. Para recuperar la sesión incluso después de cerrar por completo la PWA o de que el sistema descarte su instancia, se debe activar esta opción al ingresar. La renovación funciona al volver a la app; no requiere que el sistema operativo permita ejecutar JavaScript en segundo plano.
+
 ## Módulos operativos adicionales
 
 - **Gastos y proveedores (`/app/expenses`, `/app/suppliers`)**: control integral de egresos operativos, categorías de gasto, proveedores y vinculación directa con el turno de caja abierto.

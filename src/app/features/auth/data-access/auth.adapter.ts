@@ -14,7 +14,8 @@ export const mapUserDto = (dto: UserDto): User => ({
 export const mapTokens = (dto: RefreshTokenResponse): SessionTokens => ({
   accessToken: dto.accessToken,
   refreshToken: dto.refreshToken,
-  expiresAt: dto.expiresAt,
+  expiresAt: dto.accessTokenExpiresAt ?? dto.expiresAt,
+  refreshTokenExpiresAt: dto.refreshTokenExpiresAt,
 });
 
 export const mapAuthSession = (dto: AuthSessionDto): AuthResult => ({
