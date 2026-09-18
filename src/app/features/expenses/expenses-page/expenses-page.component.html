@@ -23,14 +23,14 @@
       <div class="kpi-icon icon-expenses">💸</div>
       <div class="kpi-info">
         <span class="kpi-label">{{ 'expenses.kpi.totalAmount' | translate }}</span>
-        <strong class="kpi-value">${{ store.totalAmount() | number:'1.2-2' }}</strong>
+        <strong class="kpi-value">${{ store.totalAmount() | number: '1.2-2' }}</strong>
       </div>
     </div>
     <div class="kpi-card">
       <div class="kpi-icon icon-cashout">🏦</div>
       <div class="kpi-info">
         <span class="kpi-label">{{ 'expenses.kpi.totalCashOut' | translate }}</span>
-        <strong class="kpi-value">${{ store.totalCashOutAmount() | number:'1.2-2' }}</strong>
+        <strong class="kpi-value">${{ store.totalCashOutAmount() | number: '1.2-2' }}</strong>
       </div>
     </div>
   </div>
@@ -155,7 +155,9 @@
                   </span>
                 </td>
                 <td>
-                  <span class="date-text">{{ expense.expenseDate | date:'mediumDate' }}</span>
+                  <span class="date-text">{{
+                    expense.businessDate ?? expense.expenseDate | organizationDate: 'mediumDate'
+                  }}</span>
                 </td>
                 <td>
                   <div class="expense-info">
@@ -180,11 +182,14 @@
                     [class.cashout]="expense.isCashOut"
                     [class.external]="!expense.isCashOut"
                   >
-                    {{ (expense.isCashOut ? 'expenses.origin.cashOut' : 'expenses.origin.external') | translate }}
+                    {{
+                      (expense.isCashOut ? 'expenses.origin.cashOut' : 'expenses.origin.external')
+                        | translate
+                    }}
                   </span>
                 </td>
                 <td>
-                  <strong class="amount-text">${{ expense.amount | number:'1.2-2' }}</strong>
+                  <strong class="amount-text">${{ expense.amount | number: '1.2-2' }}</strong>
                 </td>
                 <td>
                   <span
@@ -192,7 +197,12 @@
                     [class.active]="expense.status === 'ACTIVE'"
                     [class.annulled]="expense.status === 'ANNULLED'"
                   >
-                    {{ (expense.status === 'ANNULLED' ? 'expenses.status.annulled' : 'expenses.status.active') | translate }}
+                    {{
+                      (expense.status === 'ANNULLED'
+                        ? 'expenses.status.annulled'
+                        : 'expenses.status.active'
+                      ) | translate
+                    }}
                   </span>
                 </td>
                 <td class="text-right">
@@ -237,7 +247,9 @@
           >
             ← Anterior
           </button>
-          <span class="page-number">Página {{ store.page() }} de {{ store.totalPages() || 1 }}</span>
+          <span class="page-number"
+            >Página {{ store.page() }} de {{ store.totalPages() || 1 }}</span
+          >
           <button
             type="button"
             class="pag-btn"

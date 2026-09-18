@@ -67,17 +67,21 @@ export class SettingsStore {
       switchMap((user) => {
         this.userPermissionsState.set(new Set(user.permissions));
         const can = (permission: string) => user.permissions.includes(permission);
-        const canOperateOrRead = can('orders.create') || can('tables.operate') || can('orders.read') || can('tables.read');
+        const canOperateOrRead =
+          can('orders.create') || can('tables.operate') || can('orders.read') || can('tables.read');
         return forkJoin({
-          organization: (can(SETTINGS_PERMISSIONS.organizationRead) || canOperateOrRead)
-            ? this.repository.getOrganization()
-            : of(null),
-          business: (can(SETTINGS_PERMISSIONS.businessRead) || canOperateOrRead)
-            ? this.repository.getBusiness()
-            : of(null),
-          payments: (can(SETTINGS_PERMISSIONS.paymentsRead) || canOperateOrRead)
-            ? this.repository.listPaymentMethods()
-            : of([]),
+          organization:
+            can(SETTINGS_PERMISSIONS.organizationRead) || canOperateOrRead
+              ? this.repository.getOrganization()
+              : of(null),
+          business:
+            can(SETTINGS_PERMISSIONS.businessRead) || canOperateOrRead
+              ? this.repository.getBusiness()
+              : of(null),
+          payments:
+            can(SETTINGS_PERMISSIONS.paymentsRead) || canOperateOrRead
+              ? this.repository.listPaymentMethods()
+              : of([]),
           roles: can(SETTINGS_PERMISSIONS.rolesRead) ? this.repository.listRoles() : of([]),
           catalog: can(SETTINGS_PERMISSIONS.rolesRead) ? this.repository.listPermissions() : of([]),
           users: can(SETTINGS_PERMISSIONS.usersRead) ? this.repository.listUsers() : of([]),
@@ -112,7 +116,8 @@ export class SettingsStore {
       tap((value) => {
         this.organizationState.set(value);
         const active = this.tenant.activeTenant();
-        if (active) this.tenant.select({ ...active, name: value.name });
+        if (active)
+          this.tenant.select({ ...active, name: value.name, timeZoneId: value.timeZoneId });
       }),
     );
   }

@@ -1,6 +1,11 @@
+import { OrganizationTime } from '../../../core/tenant/organization-time.service';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Expense } from '../models/expense.model';
-import { AnnulExpensePayload, CreateExpensePayload, UpdateExpensePayload } from './expense.contracts';
+import {
+  AnnulExpensePayload,
+  CreateExpensePayload,
+  UpdateExpensePayload,
+} from './expense.contracts';
 import { HttpExpenseRepository } from './http-expense.repository';
 import { ExpenseQueryFilters } from './expense.repository';
 
@@ -8,14 +13,11 @@ import { ExpenseQueryFilters } from './expense.repository';
   providedIn: 'root',
 })
 export class ExpenseStoreService {
+  private readonly organizationTime = inject(OrganizationTime);
   private readonly repository = inject(HttpExpenseRepository);
 
   private getTodayString(): string {
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return this.organizationTime.localDate();
   }
 
   readonly items = signal<Expense[]>([]);
@@ -45,13 +47,13 @@ export class ExpenseStoreService {
   readonly totalAmount = computed(() =>
     this.items()
       .filter((e) => e.status === 'ACTIVE')
-      .reduce((sum, e) => sum + e.amount, 0)
+      .reduce((sum, e) => sum + e.amount, 0),
   );
 
   readonly totalCashOutAmount = computed(() =>
     this.items()
       .filter((e) => e.status === 'ACTIVE' && e.isCashOut)
-      .reduce((sum, e) => sum + e.amount, 0)
+      .reduce((sum, e) => sum + e.amount, 0),
   );
 
   loadPage(page: number = this.page()): void {
@@ -59,8 +61,8 @@ export class ExpenseStoreService {
     this.error.set(null);
     this.page.set(page);
 
-    const fromStr = this.fromDateFilter() ? new Date(`${this.fromDateFilter()}T00:00:00`).toISOString() : undefined;
-    const toStr = this.toDateFilter() ? new Date(`${this.toDateFilter()}T23:59:59.999`).toISOString() : undefined;
+    const fromStr = this.fromDateFilter() || undefined;
+    const toStr = this.toDateFilter() || undefined;
 
     const filters: ExpenseQueryFilters = {
       fromDate: fromStr,
@@ -95,7 +97,7 @@ export class ExpenseStoreService {
     supplierId: string,
     status: string,
     paymentMethod: string,
-    isCashOut?: boolean
+    isCashOut?: boolean,
   ): void {
     this.fromDateFilter.set(fromDate);
     this.toDateFilter.set(toDate);

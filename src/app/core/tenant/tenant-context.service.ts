@@ -2,6 +2,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 
 export interface ActiveTenant {
+  readonly timeZoneId?: string;
   readonly id: string;
   readonly name: string;
 }

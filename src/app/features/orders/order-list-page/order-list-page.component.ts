@@ -1,5 +1,14 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
-import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
+import { OrganizationTime } from '../../../core/tenant/organization-time.service';
+import { OrganizationDatePipe } from '../../../shared/pipes/organization-date.pipe';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+  computed,
+  OnInit,
+} from '@angular/core';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ORDER_REPOSITORY } from '../data-access/order.repository';
 import { Order, OrderItemReport, OrderQueryRequest } from '../models/order.model';
@@ -15,12 +24,20 @@ export interface ColumnDefinition {
 @Component({
   selector: 'app-order-list-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe, DatePipe, TranslatePipe, OrderDetailsDialogComponent],
+  imports: [
+    OrganizationDatePipe,
+    CommonModule,
+    FormsModule,
+    CurrencyPipe,
+    TranslatePipe,
+    OrderDetailsDialogComponent,
+  ],
   templateUrl: './order-list-page.component.html',
   styleUrl: './order-list-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrderListPageComponent implements OnInit {
+  private readonly organizationTime = inject(OrganizationTime);
   private readonly orderRepo = inject(ORDER_REPOSITORY);
 
   // Active View Tab: 'orders' (por comanda) | 'items' (detalle por producto)
@@ -76,17 +93,26 @@ export class OrderListPageComponent implements OnInit {
 
   // Computed total sum of subtotalAmount (Total Productos) for visible non-cancelled orders
   readonly ordersSubtotalProductsSum = computed(() =>
-    this.orders().reduce((sum, order) => sum + (order.status !== 'CANCELLED' ? order.subtotalAmount : 0), 0),
+    this.orders().reduce(
+      (sum, order) => sum + (order.status !== 'CANCELLED' ? order.subtotalAmount : 0),
+      0,
+    ),
   );
 
   // Computed total sum of tipAmount (Propina) for visible non-cancelled orders
   readonly ordersTipsSum = computed(() =>
-    this.orders().reduce((sum, order) => sum + (order.status !== 'CANCELLED' ? order.tipAmount : 0), 0),
+    this.orders().reduce(
+      (sum, order) => sum + (order.status !== 'CANCELLED' ? order.tipAmount : 0),
+      0,
+    ),
   );
 
   // Computed total sum of totalAmount (Total Pagado) for visible non-cancelled orders
   readonly ordersTotalSum = computed(() =>
-    this.orders().reduce((sum, order) => sum + (order.status !== 'CANCELLED' ? order.totalAmount : 0), 0),
+    this.orders().reduce(
+      (sum, order) => sum + (order.status !== 'CANCELLED' ? order.totalAmount : 0),
+      0,
+    ),
   );
 
   // Computed total sum of subtotal of ALL visible items in current page (backend paginated)
@@ -95,11 +121,7 @@ export class OrderListPageComponent implements OnInit {
   );
 
   private getTodayDateString(): string {
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return this.organizationTime.localDate();
   }
 
   ngOnInit(): void {
@@ -124,8 +146,8 @@ export class OrderListPageComponent implements OnInit {
       pageSize: this.pageSize(),
       search: this.searchQuery(),
       statuses: this.selectedStatuses().length > 0 ? this.selectedStatuses() : null,
-      fromDate: this.fromDate() ? new Date(this.fromDate() + 'T00:00:00').toISOString() : null,
-      toDate: this.toDate() ? new Date(this.toDate() + 'T23:59:59').toISOString() : null,
+      fromDate: this.fromDate() || null,
+      toDate: this.toDate() || null,
     };
 
     if (this.activeTab() === 'orders') {

@@ -1,6 +1,7 @@
 export type SettingsTab = 'organization' | 'business' | 'payments' | 'users' | 'roles';
 
 export interface OrganizationSettings {
+  readonly timeZoneId?: string;
   readonly id: string;
   readonly name: string;
   readonly responsibleName: string | null;
@@ -91,6 +92,7 @@ export interface OrganizationUser {
 }
 
 export interface UpdateOrganizationUser {
+  readonly disabledThroughDate?: string | null;
   readonly roleId: string;
   readonly isActive: boolean;
   readonly disabledUntil: string | null;

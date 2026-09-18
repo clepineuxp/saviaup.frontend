@@ -67,6 +67,7 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
     email: ['', [Validators.email, Validators.maxLength(320)]],
     address: ['', Validators.maxLength(500)],
     country: ['', Validators.maxLength(100)],
+    timeZoneId: ['America/Bogota', [Validators.required, Validators.maxLength(100)]],
     state: ['', Validators.maxLength(120)],
     city: ['', Validators.maxLength(120)],
     phone: ['', Validators.maxLength(50)],
@@ -117,6 +118,7 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
               email: organization.email ?? '',
               address: organization.address ?? '',
               country: organization.country ?? '',
+              timeZoneId: organization.timeZoneId ?? 'America/Bogota',
               state: organization.state ?? '',
               city: organization.city ?? '',
               phone: organization.phone ?? '',
@@ -371,8 +373,8 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
       .updateUser(user.membershipId, {
         roleId: user.roleId,
         isActive: enabling,
-        disabledUntil:
-          enabling || !disabledUntil ? null : new Date(`${disabledUntil}T23:59:59`).toISOString(),
+        disabledUntil: null,
+        disabledThroughDate: enabling || !disabledUntil ? null : disabledUntil,
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ error: () => undefined });

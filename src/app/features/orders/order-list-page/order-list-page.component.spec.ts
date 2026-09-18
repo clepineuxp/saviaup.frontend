@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
+import { TRANSLATION_REPOSITORY } from '../../../shared/i18n/translation.repository';
 import { ORDER_REPOSITORY } from '../data-access/order.repository';
 import { Order, OrderItemReport } from '../models/order.model';
 import { OrderListPageComponent } from './order-list-page.component';
@@ -107,6 +108,7 @@ describe('OrderListPageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [OrderListPageComponent],
       providers: [
+        { provide: TRANSLATION_REPOSITORY, useValue: { load: () => of({}) } },
         {
           provide: ORDER_REPOSITORY,
           useValue: {

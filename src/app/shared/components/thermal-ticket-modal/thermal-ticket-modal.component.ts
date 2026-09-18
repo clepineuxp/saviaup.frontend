@@ -1,4 +1,5 @@
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { OrganizationDatePipe } from '../../pipes/organization-date.pipe';
+import { CurrencyPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -15,7 +16,7 @@ import { SettingsStore } from '../../../features/settings/data-access/settings-s
 @Component({
   selector: 'app-thermal-ticket-modal',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe],
+  imports: [OrganizationDatePipe, CurrencyPipe],
   templateUrl: './thermal-ticket-modal.component.html',
   styleUrl: './thermal-ticket-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

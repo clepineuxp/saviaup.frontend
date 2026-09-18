@@ -1,4 +1,6 @@
-import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
+import { OrganizationTime } from '../../../core/tenant/organization-time.service';
+import { OrganizationDatePipe } from '../../../shared/pipes/organization-date.pipe';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
@@ -16,17 +18,18 @@ import {
   selector: 'app-billing-page',
   standalone: true,
   imports: [
+    OrganizationDatePipe,
     CommonModule,
     FormsModule,
     TranslatePipe,
     CurrencyPipe,
-    DatePipe,
     ThermalTicketModalComponent,
   ],
   templateUrl: './billing-page.component.html',
   styleUrl: './billing-page.component.scss',
 })
 export class BillingPageComponent implements OnInit {
+  private readonly organizationTime = inject(OrganizationTime);
   private readonly billingService = inject(BillingService);
 
   readonly activeTab = signal<'receipts' | 'orders'>('receipts');
@@ -43,7 +46,7 @@ export class BillingPageComponent implements OnInit {
   readonly selectedOrder = signal<BillingOrder | null>(null);
 
   ngOnInit(): void {
-    const today = new Date().toISOString().substring(0, 10);
+    const today = this.organizationTime.localDate();
     this.fromDate.set(today);
     this.toDate.set(today);
     this.loadData();

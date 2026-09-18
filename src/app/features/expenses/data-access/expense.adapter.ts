@@ -12,6 +12,7 @@ export function mapExpenseDtoToModel(dto: ExpenseDto): Expense {
     paymentMethod: dto.paymentMethod,
     supplier: dto.supplier ? { id: dto.supplier.id, name: dto.supplier.name } : null,
     expenseDate: dto.expenseDate,
+    businessDate: dto.businessDate,
     status: dto.status,
     annulledReason: dto.annulledReason,
     annulledAt: dto.annulledAt,

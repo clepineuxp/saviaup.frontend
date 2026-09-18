@@ -13,6 +13,7 @@ export interface ExpenseDto {
   paymentMethod: string;
   supplier: ExpenseSupplierDto | null;
   expenseDate: string;
+  businessDate?: string | null;
   status: 'ACTIVE' | 'ANNULLED';
   annulledReason: string | null;
   annulledAt: string | null;
@@ -31,6 +32,7 @@ export interface CreateExpensePayload {
   paymentMethod: string;
   supplierId?: string | null;
   expenseDate?: string | null;
+  businessDate?: string | null;
 }
 
 export interface UpdateExpensePayload {
@@ -41,6 +43,7 @@ export interface UpdateExpensePayload {
   paymentMethod: string;
   supplierId?: string | null;
   expenseDate?: string | null;
+  businessDate?: string | null;
 }
 
 export interface AnnulExpensePayload {

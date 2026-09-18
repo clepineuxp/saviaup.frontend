@@ -1,4 +1,5 @@
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { OrganizationDatePipe } from '../../../shared/pipes/organization-date.pipe';
+import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PagedResponse } from '../../../shared/models/paged-response.model';
@@ -24,9 +25,9 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
   selector: 'app-cash-register-page',
   standalone: true,
   imports: [
+    OrganizationDatePipe,
     FormsModule,
     CurrencyPipe,
-    DatePipe,
     TranslatePipe,
     UiAlertComponent,
     UiButtonComponent,
@@ -140,9 +141,7 @@ export class CashRegisterPageComponent implements OnInit {
         },
         error: (err: { message?: string }) => {
           this.submittingShift.set(false);
-          this.shiftErrorMessage.set(
-            err?.message || 'No se pudo realizar la apertura de la caja.',
-          );
+          this.shiftErrorMessage.set(err?.message || 'No se pudo realizar la apertura de la caja.');
         },
       });
   }
@@ -212,23 +211,21 @@ export class CashRegisterPageComponent implements OnInit {
       ([methodName, actualAmount]) => ({ methodName, actualAmount }),
     );
 
-    this.repository
-      .closeShift(state.shiftId, { closingBalances })
-      .subscribe({
-        next: () => {
-          this.submittingShift.set(false);
-          this.closeCloseShiftModal();
-          this.store.load(true).subscribe();
-          const currentPage = this.shiftsPage()?.pageNumber ?? 1;
-          this.loadShiftsPage(currentPage);
-        },
-        error: (err: { message?: string }) => {
-          this.submittingShift.set(false);
-          this.shiftErrorMessage.set(
-            err?.message ||
-              'No se puede cerrar la caja porque existen mesas ocupadas o comandas pendientes por cobrar.',
-          );
-        },
-      });
+    this.repository.closeShift(state.shiftId, { closingBalances }).subscribe({
+      next: () => {
+        this.submittingShift.set(false);
+        this.closeCloseShiftModal();
+        this.store.load(true).subscribe();
+        const currentPage = this.shiftsPage()?.pageNumber ?? 1;
+        this.loadShiftsPage(currentPage);
+      },
+      error: (err: { message?: string }) => {
+        this.submittingShift.set(false);
+        this.shiftErrorMessage.set(
+          err?.message ||
+            'No se puede cerrar la caja porque existen mesas ocupadas o comandas pendientes por cobrar.',
+        );
+      },
+    });
   }
 }

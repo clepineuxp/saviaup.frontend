@@ -1,4 +1,5 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { OrganizationDatePipe } from '../../../shared/pipes/organization-date.pipe';
+import { DecimalPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -25,7 +26,7 @@ import { InventoryPaginationComponent } from '../shared/inventory-pagination.com
 @Component({
   selector: 'app-movements-page',
   imports: [
-    DatePipe,
+    OrganizationDatePipe,
     DecimalPipe,
     ReactiveFormsModule,
     MovementFormComponent,

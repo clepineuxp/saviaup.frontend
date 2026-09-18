@@ -35,6 +35,9 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'settings.organization.contact': 'Contacto',
     'settings.organization.address': 'Dirección',
     'settings.organization.country': 'País',
+    'settings.organization.timeZone': 'Zona horaria',
+    'settings.organization.timeZoneHint':
+      'Usa un identificador IANA, por ejemplo America/Bogota. Cambiarlo modifica los días de los reportes.',
     'settings.organization.state': 'Departamento',
     'settings.organization.city': 'Ciudad',
     'settings.organization.phone': 'Teléfono',
@@ -644,7 +647,8 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'orders.title': 'Gestión de Comandas y Pedidos',
     'orders.badgeComandas': 'comandas',
     'orders.badgeItems': 'ítems',
-    'orders.subtitle': 'Historial de comandas, productos vendidos, estados y auditoría por usuario.',
+    'orders.subtitle':
+      'Historial de comandas, productos vendidos, estados y auditoría por usuario.',
     'orders.customizeColumns': 'Personalizar Columnas',
     'orders.toggleColumnsHeader': 'Mostrar u ocultar columnas',
     'orders.refresh': 'Actualizar',
@@ -707,7 +711,8 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
 
     // Cash Register Shift Page (es)
     'cashRegisters.shift.title': 'Control de Caja Registradora',
-    'cashRegisters.shift.subtitle': 'Apertura, cierres parciales, registro de gastos y resumen de turnos de caja.',
+    'cashRegisters.shift.subtitle':
+      'Apertura, cierres parciales, registro de gastos y resumen de turnos de caja.',
     'cashRegisters.shift.manageRegisters': 'Gestionar Cajas',
     'cashRegisters.shift.activeRegister': 'Caja Registradora Activa:',
     'cashRegisters.shift.activeLocation': 'Ubicación:',
@@ -719,8 +724,10 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'cashRegisters.shift.initialFund': 'Inicial:',
     'cashRegisters.shift.closeShiftBtn': 'Cerrar Turno de Caja',
     'cashRegisters.shift.addExpenseBtn': 'Registrar Gasto / Salida',
-    'cashRegisters.shift.closedShiftNotice': 'No hay un turno de caja abierto actualmente en esta caja.',
-    'cashRegisters.shift.closedShiftHint': 'Abre un turno para registrar movimientos y habilitar operaciones de cobro.',
+    'cashRegisters.shift.closedShiftNotice':
+      'No hay un turno de caja abierto actualmente en esta caja.',
+    'cashRegisters.shift.closedShiftHint':
+      'Abre un turno para registrar movimientos y habilitar operaciones de cobro.',
     'cashRegisters.shift.openShiftModalTitle': 'Abrir Turno de Caja',
     'cashRegisters.shift.initialAmountLabel': 'Monto Fondo Inicial (Efectivo)',
     'cashRegisters.shift.observationsLabel': 'Observaciones (opcional)',
@@ -743,7 +750,8 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     // Statistics Dashboard (es)
     'statistics.eyebrow': 'Reportes y métricas de negocio',
     'statistics.title': 'Estadísticas',
-    'statistics.subtitle': 'Analiza el rendimiento de ventas, productos más vendidos y ranking de tu equipo en tiempo real.',
+    'statistics.subtitle':
+      'Analiza el rendimiento de ventas, productos más vendidos y ranking de tu equipo en tiempo real.',
     'statistics.period.currentMonth': '📅 Mes Actual',
     'statistics.period.last30Days': '📆 Últimos 30 días',
     'statistics.tips.include': '💰 Incluir Propinas',
@@ -754,20 +762,23 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'statistics.kpi.totalTips': 'Propinas Recaudadas',
     'statistics.kpi.topSeller': 'Top Vendedor',
     'statistics.charts.salesTrend': 'Gráfica de Ventas del Mes',
-    'statistics.charts.salesTrendSubtitle': 'Tendencia diaria de facturación y movimientos acumulados',
+    'statistics.charts.salesTrendSubtitle':
+      'Tendencia diaria de facturación y movimientos acumulados',
     'statistics.charts.productsTitle': 'Productos Más Vendidos',
     'statistics.charts.productsQty': '📦 Por Cantidad',
     'statistics.charts.productsVal': '💲 Por Valor ($)',
     'statistics.charts.monthlyComparison': 'Comparativa Histórica (Últimos 6 Meses)',
     'statistics.charts.monthlyComparisonSubtitle': 'Evolución mensual del volumen de ventas',
     'statistics.userSales.title': 'Ventas por Usuario / Vendedor',
-    'statistics.userSales.subtitle': 'Desglose individual del volumen facturado por cada miembro del equipo',
+    'statistics.userSales.subtitle':
+      'Desglose individual del volumen facturado por cada miembro del equipo',
     'statistics.userSales.topBadge': '🏆 Top Vendedor del Mes',
 
     // Billing / Facturación (es)
     'billing.eyebrow': 'Gestión de Comprobantes',
     'billing.title': 'Facturación',
-    'billing.subtitle': 'Consulta, filtra y reimprime todos los tiquets y facturas generadas en la operación.',
+    'billing.subtitle':
+      'Consulta, filtra y reimprime todos los tiquets y facturas generadas en la operación.',
     'billing.tabs.receipts': '📋 Lista de Documentos',
     'billing.tabs.orders': '🧾 Órdenes con Documentos',
     'billing.filters.from': 'Desde',
@@ -863,11 +874,13 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'expenses.modal.supplierLabel': 'Proveedor (Opcional)',
     'expenses.modal.descriptionLabel': 'Descripción (Opcional)',
     'expenses.modal.isCashOutLabel': 'Gasto sale de caja chica / turno activo',
-    'expenses.modal.isCashOutHint': 'Desmarca esta opción si el dinero no fue tomado del dinero en caja.',
+    'expenses.modal.isCashOutHint':
+      'Desmarca esta opción si el dinero no fue tomado del dinero en caja.',
     'expenses.modal.save': 'Guardar Cambios',
     'expenses.modal.create': 'Registrar Gasto',
     'expenses.annul.title': 'Anular Gasto',
-    'expenses.annul.warning': '¿Estás seguro de que deseas anular este gasto? Esta acción no se puede deshacer.',
+    'expenses.annul.warning':
+      '¿Estás seguro de que deseas anular este gasto? Esta acción no se puede deshacer.',
     'expenses.annul.reasonLabel': 'Motivo de Anulación (Opcional)',
     'expenses.annul.reasonPlaceholder': 'Escriba la razón de la anulación...',
     'expenses.annul.confirm': 'Confirmar Anulación',
@@ -907,6 +920,9 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'settings.organization.contact': 'Contact',
     'settings.organization.address': 'Address',
     'settings.organization.country': 'Country',
+    'settings.organization.timeZone': 'Time zone',
+    'settings.organization.timeZoneHint':
+      'Use an IANA identifier, such as America/New_York. Changing it affects reporting days.',
     'settings.organization.state': 'State / Department',
     'settings.organization.city': 'City',
     'settings.organization.phone': 'Phone',
@@ -1216,8 +1232,7 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'products.recipe.typeToggleToFree': 'Change to free ingredient',
     'products.recipe.typeToggleToInventory': 'Link to inventory ingredient',
     'products.recipe.empty': 'This product has no recipe ingredients yet.',
-    'products.recipe.emptyCta':
-      'Add ingredients to automatically track stock upon sales.',
+    'products.recipe.emptyCta': 'Add ingredients to automatically track stock upon sales.',
     'inventory.eyebrow': 'Operations control',
     'inventory.title': 'Inventory',
     'inventory.subtitle':
@@ -1570,7 +1585,8 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
 
     // Cash Register Shift Page (en)
     'cashRegisters.shift.title': 'Cash Register Control',
-    'cashRegisters.shift.subtitle': 'Opening, partial closes, expense logs and cash register shift summaries.',
+    'cashRegisters.shift.subtitle':
+      'Opening, partial closes, expense logs and cash register shift summaries.',
     'cashRegisters.shift.manageRegisters': 'Manage Registers',
     'cashRegisters.shift.activeRegister': 'Active Cash Register:',
     'cashRegisters.shift.activeLocation': 'Location:',
@@ -1582,8 +1598,10 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'cashRegisters.shift.initialFund': 'Initial:',
     'cashRegisters.shift.closeShiftBtn': 'Close Register Shift',
     'cashRegisters.shift.addExpenseBtn': 'Log Expense / Payout',
-    'cashRegisters.shift.closedShiftNotice': 'There is currently no open shift in this cash register.',
-    'cashRegisters.shift.closedShiftHint': 'Open a shift to log transactions and enable selling operations.',
+    'cashRegisters.shift.closedShiftNotice':
+      'There is currently no open shift in this cash register.',
+    'cashRegisters.shift.closedShiftHint':
+      'Open a shift to log transactions and enable selling operations.',
     'cashRegisters.shift.openShiftModalTitle': 'Open Cash Register Shift',
     'cashRegisters.shift.initialAmountLabel': 'Initial Cash Fund',
     'cashRegisters.shift.observationsLabel': 'Notes (optional)',
@@ -1606,7 +1624,8 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     // Statistics Dashboard (en)
     'statistics.eyebrow': 'Reports & Business Metrics',
     'statistics.title': 'Statistics',
-    'statistics.subtitle': 'Analyze sales performance, top products, and team leaderboard in real time.',
+    'statistics.subtitle':
+      'Analyze sales performance, top products, and team leaderboard in real time.',
     'statistics.period.currentMonth': '📅 Current Month',
     'statistics.period.last30Days': '📆 Last 30 Days',
     'statistics.tips.include': '💰 Include Tips',
@@ -1630,7 +1649,8 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     // Billing (en)
     'billing.eyebrow': 'Receipt Management',
     'billing.title': 'Billing',
-    'billing.subtitle': 'View, filter, and reprint all tickets and receipts generated during operation.',
+    'billing.subtitle':
+      'View, filter, and reprint all tickets and receipts generated during operation.',
     'billing.tabs.receipts': '📋 Receipts List',
     'billing.tabs.orders': '🧾 Orders with Receipts',
     'billing.filters.from': 'From',
@@ -1730,7 +1750,8 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'expenses.modal.save': 'Save Changes',
     'expenses.modal.create': 'Record Expense',
     'expenses.annul.title': 'Annul Expense',
-    'expenses.annul.warning': 'Are you sure you want to annul this expense? This action cannot be undone.',
+    'expenses.annul.warning':
+      'Are you sure you want to annul this expense? This action cannot be undone.',
     'expenses.annul.reasonLabel': 'Annulment Reason (Optional)',
     'expenses.annul.reasonPlaceholder': 'Write reason for annulment...',
     'expenses.annul.confirm': 'Confirm Annulment',
