@@ -26,7 +26,9 @@
         </span>
       </div>
 
-      <button type="button" class="close-button" (click)="closed.emit()" aria-label="Cerrar">✕</button>
+      <button type="button" class="close-button" (click)="closed.emit()" aria-label="Cerrar">
+        ✕
+      </button>
     </header>
 
     @if (blocked()) {
@@ -36,7 +38,8 @@
       </div>
     } @else if (!canOperate()) {
       <div class="gate-warning info" role="alert">
-        ℹ️ Modo vista: Necesitas el permiso <code>tables.operate</code> para tomar pedidos o facturar.
+        ℹ️ Modo vista: Necesitas el permiso <code>tables.operate</code> para tomar pedidos o
+        facturar.
       </div>
     }
 
@@ -66,7 +69,9 @@
     }
 
     <!-- TAB 1: ADD PRODUCTS / ORDER TAKING -->
-    @if (table().status === 'AVAILABLE' || (table().status === 'OCCUPIED' && activeMainTab() === 'add')) {
+    @if (
+      table().status === 'AVAILABLE' || (table().status === 'OCCUPIED' && activeMainTab() === 'add')
+    ) {
       <div class="order-taking-layout">
         <!-- Left Column: Product Catalogue -->
         <main class="catalogue-panel">
@@ -177,7 +182,8 @@
                   ‹ Anterior
                 </button>
                 <span class="page-info">
-                  Pág. {{ catalogPage() }} de {{ catalogTotalPages() }} ({{ catalogTotalCount() }} prods)
+                  Pág. {{ catalogPage() }} de {{ catalogTotalPages() }} ({{ catalogTotalCount() }}
+                  prods)
                 </span>
                 <button
                   type="button"
@@ -204,7 +210,8 @@
           <div class="draft-items-list">
             @if (draftItems().length === 0) {
               <div class="draft-empty">
-                Selecciona productos del catálogo o usa <strong>Venta Libre</strong> para armar el pedido.
+                Selecciona productos del catálogo o usa <strong>Venta Libre</strong> para armar el
+                pedido.
               </div>
             } @else {
               @for (item of draftItems(); track $index) {
@@ -215,14 +222,21 @@
                       <small class="item-notes">📝 {{ item.notes }}</small>
                     }
                     <span class="item-price">
-                      {{ item.unitPrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} x {{ item.quantity }}
+                      {{ item.unitPrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} x
+                      {{ item.quantity }}
                     </span>
                   </div>
                   <div class="draft-item-controls">
-                    <button type="button" class="qty-btn" (click)="updateDraftQty($index, -1)">-</button>
+                    <button type="button" class="qty-btn" (click)="updateDraftQty($index, -1)">
+                      -
+                    </button>
                     <span class="qty-val">{{ item.quantity }}</span>
-                    <button type="button" class="qty-btn" (click)="updateDraftQty($index, 1)">+</button>
-                    <button type="button" class="remove-btn" (click)="removeDraftItem($index)">✕</button>
+                    <button type="button" class="qty-btn" (click)="updateDraftQty($index, 1)">
+                      +
+                    </button>
+                    <button type="button" class="remove-btn" (click)="removeDraftItem($index)">
+                      ✕
+                    </button>
                   </div>
                 </div>
               }
@@ -268,7 +282,8 @@
           <div class="section-title-row">
             <h3>Ítems de la Comanda (Trazabilidad y Estado)</h3>
             <span class="order-total-badge">
-              Total Activo: {{ table().activeOrderTotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+              Total Activo:
+              {{ table().activeOrderTotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
             </span>
           </div>
 
@@ -296,10 +311,15 @@
                         <div class="item-notes">📝 Observaciones: {{ item.notes }}</div>
                       }
                       <div class="item-audit-info">
-                        Ingresado por <strong>{{ item.createdByUserName }}</strong> el {{ item.createdAt | date: 'shortTime' }}
+                        Ingresado por <strong>{{ item.createdByUserName }}</strong> el
+                        {{ item.createdAt | organizationDate: 'shortTime' }}
                       </div>
                       @if (canOperate() && !blocked()) {
-                        <button type="button" class="cancel-item-btn" (click)="openCancelItemModal(item)">
+                        <button
+                          type="button"
+                          class="cancel-item-btn"
+                          (click)="openCancelItemModal(item)"
+                        >
                           🚫 Cancelar este producto
                         </button>
                       }
@@ -323,7 +343,8 @@
                         </span>
                       </div>
                       <div class="item-audit-info">
-                        Pagado · Última mod. por {{ item.lastModifiedByUserName }} el {{ item.updatedAt | date: 'shortTime' }}
+                        Pagado · Última mod. por {{ item.lastModifiedByUserName }} el
+                        {{ item.updatedAt | organizationDate: 'shortTime' }}
                       </div>
                     </div>
                   }
@@ -348,7 +369,8 @@
                         ❌ Motivo de cancelación: {{ item.cancellationReason }}
                       </div>
                       <div class="item-audit-info">
-                        Cancelado por <strong>{{ item.cancelledByUserName }}</strong> el {{ item.cancelledAt | date: 'shortTime' }}
+                        Cancelado por <strong>{{ item.cancelledByUserName }}</strong> el
+                        {{ item.cancelledAt | organizationDate: 'shortTime' }}
                       </div>
                     </div>
                   }
@@ -370,17 +392,26 @@
               @for (receipt of orderReceipts(); track receipt.id) {
                 <div class="receipt-history-card">
                   <div class="receipt-info-left">
-                    <strong class="receipt-title">{{ receipt.title }} (#{{ receipt.receiptNumber }})</strong>
+                    <strong class="receipt-title"
+                      >{{ receipt.title }} (#{{ receipt.receiptNumber }})</strong
+                    >
                     <span class="receipt-meta">
-                      Emitido el {{ receipt.createdAt | date: 'dd/MM/yyyy HH:mm' }} por {{ receipt.issuedByUserName }}
+                      Emitido el {{ receipt.createdAt | organizationDate: 'dd/MM/yyyy HH:mm' }} por
+                      {{ receipt.issuedByUserName }}
                     </span>
                     @if (receipt.paymentMethod) {
                       <span class="receipt-payment-tag">💳 Medio: {{ receipt.paymentMethod }}</span>
                     }
                   </div>
                   <div class="receipt-info-right">
-                    <strong class="receipt-total">{{ receipt.totalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
-                    <button type="button" class="reprint-btn" (click)="openPrintReceiptModal(receipt)">
+                    <strong class="receipt-total">{{
+                      receipt.totalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                    }}</strong>
+                    <button
+                      type="button"
+                      class="reprint-btn"
+                      (click)="openPrintReceiptModal(receipt)"
+                    >
                       🖨️ Re-imprimir
                     </button>
                   </div>
@@ -445,14 +476,17 @@
         <div class="sub-modal mobile-draft-modal">
           <header class="sub-modal-header">
             <h3>🛒 Resumen del Pedido (Borrador)</h3>
-            <button type="button" class="close-btn-icon" (click)="closeMobileDraftModal()">✕</button>
+            <button type="button" class="close-btn-icon" (click)="closeMobileDraftModal()">
+              ✕
+            </button>
           </header>
 
           <div class="sub-modal-body">
             <div class="draft-items-list">
               @if (draftItems().length === 0) {
                 <div class="draft-empty">
-                  No has seleccionado productos aún. Elige productos del catálogo o usa <strong>Venta Libre</strong>.
+                  No has seleccionado productos aún. Elige productos del catálogo o usa
+                  <strong>Venta Libre</strong>.
                 </div>
               } @else {
                 @for (item of draftItems(); track $index) {
@@ -463,14 +497,21 @@
                         <small class="item-notes">📝 {{ item.notes }}</small>
                       }
                       <span class="item-price">
-                        {{ item.unitPrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} x {{ item.quantity }}
+                        {{ item.unitPrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} x
+                        {{ item.quantity }}
                       </span>
                     </div>
                     <div class="draft-item-controls">
-                      <button type="button" class="qty-btn" (click)="updateDraftQty($index, -1)">-</button>
+                      <button type="button" class="qty-btn" (click)="updateDraftQty($index, -1)">
+                        -
+                      </button>
                       <span class="qty-val">{{ item.quantity }}</span>
-                      <button type="button" class="qty-btn" (click)="updateDraftQty($index, 1)">+</button>
-                      <button type="button" class="remove-btn" (click)="removeDraftItem($index)">✕</button>
+                      <button type="button" class="qty-btn" (click)="updateDraftQty($index, 1)">
+                        +
+                      </button>
+                      <button type="button" class="remove-btn" (click)="removeDraftItem($index)">
+                        ✕
+                      </button>
                     </div>
                   </div>
                 }
@@ -507,7 +548,9 @@
                 {{ submittingOrder() ? 'Procesando…' : 'Confirmar e ingresar pedido' }}
               </button>
             } @else {
-              <button type="button" class="btn-cancel" (click)="closeMobileDraftModal()">Cerrar</button>
+              <button type="button" class="btn-cancel" (click)="closeMobileDraftModal()">
+                Cerrar
+              </button>
             }
           </footer>
         </div>
@@ -526,15 +569,21 @@
           <div class="sub-modal-body">
             <div class="sub-modal-price">
               <span>Precio unitario:</span>
-              <strong>{{ cfg.product.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+              <strong>{{
+                cfg.product.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+              }}</strong>
             </div>
 
             <div class="qty-picker">
               <span>Cantidad de unidades:</span>
               <div class="qty-controls">
-                <button type="button" class="qty-ctrl-btn" (click)="updateProductConfigQty(-1)">-</button>
+                <button type="button" class="qty-ctrl-btn" (click)="updateProductConfigQty(-1)">
+                  -
+                </button>
                 <strong class="qty-val-badge">{{ cfg.quantity }}</strong>
-                <button type="button" class="qty-ctrl-btn" (click)="updateProductConfigQty(1)">+</button>
+                <button type="button" class="qty-ctrl-btn" (click)="updateProductConfigQty(1)">
+                  +
+                </button>
               </div>
             </div>
 
@@ -571,9 +620,13 @@
           </div>
 
           <footer class="sub-modal-footer">
-            <button type="button" class="btn-cancel" (click)="closeProductConfig()">Cancelar</button>
+            <button type="button" class="btn-cancel" (click)="closeProductConfig()">
+              Cancelar
+            </button>
             <button type="button" class="btn-confirm primary" (click)="confirmAddProductConfig()">
-              Agregar ({{ cfg.product.salePrice * cfg.quantity | currency: 'COP' : 'symbol-narrow' : '1.0-0' }})
+              Agregar ({{
+                cfg.product.salePrice * cfg.quantity | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+              }})
             </button>
           </footer>
         </div>
@@ -612,7 +665,9 @@
                   (ngModelChange)="customSaleState.set({ ...cs, price: +$event })"
                 />
                 @if (cs.price > 0) {
-                  <span class="input-currency-hint">💵 {{ cs.price | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+                  <span class="input-currency-hint"
+                    >💵 {{ cs.price | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span
+                  >
                 }
               </label>
 
@@ -639,7 +694,9 @@
           </div>
 
           <footer class="sub-modal-footer">
-            <button type="button" class="btn-cancel" (click)="closeCustomSaleModal()">Cancelar</button>
+            <button type="button" class="btn-cancel" (click)="closeCustomSaleModal()">
+              Cancelar
+            </button>
             <button type="button" class="btn-confirm primary" (click)="confirmCustomSale()">
               Agregar Venta Libre
             </button>
@@ -674,7 +731,9 @@
           </div>
 
           <footer class="sub-modal-footer">
-            <button type="button" class="btn-cancel" (click)="closeCancelItemModal()">Volver</button>
+            <button type="button" class="btn-cancel" (click)="closeCancelItemModal()">
+              Volver
+            </button>
             <button type="button" class="btn-confirm danger" (click)="confirmCancelItem()">
               Confirmar Cancelación
             </button>
@@ -712,7 +771,9 @@
           </div>
 
           <footer class="sub-modal-footer">
-            <button type="button" class="btn-cancel" (click)="closeMoveTableModal()">Cancelar</button>
+            <button type="button" class="btn-cancel" (click)="closeMoveTableModal()">
+              Cancelar
+            </button>
             <button type="button" class="btn-confirm primary" (click)="confirmMoveTable()">
               Confirmar Traslado
             </button>
@@ -727,7 +788,9 @@
         <div class="sub-modal large-modal">
           <header class="sub-modal-header">
             <h3>💳 Seleccionar Productos para Pago Parcial</h3>
-            <button type="button" class="close-btn-icon" (click)="closePartialPaySelectorModal()">✕</button>
+            <button type="button" class="close-btn-icon" (click)="closePartialPaySelectorModal()">
+              ✕
+            </button>
           </header>
 
           <div class="sub-modal-body">
@@ -749,16 +812,33 @@
 
                   @if (entry.selected) {
                     <div class="qty-selector-inline">
-                      <button type="button" class="qty-ctrl-btn" (click)="updatePartialItemQty(idx, -1)">-</button>
-                      <span class="qty-val-text">{{ entry.quantityToPay }} de {{ entry.item.quantity }}</span>
-                      <button type="button" class="qty-ctrl-btn" (click)="updatePartialItemQty(idx, 1)">+</button>
+                      <button
+                        type="button"
+                        class="qty-ctrl-btn"
+                        (click)="updatePartialItemQty(idx, -1)"
+                      >
+                        -
+                      </button>
+                      <span class="qty-val-text"
+                        >{{ entry.quantityToPay }} de {{ entry.item.quantity }}</span
+                      >
+                      <button
+                        type="button"
+                        class="qty-ctrl-btn"
+                        (click)="updatePartialItemQty(idx, 1)"
+                      >
+                        +
+                      </button>
                     </div>
                   } @else {
                     <span class="qty-val-text muted">{{ entry.item.quantity }} disp.</span>
                   }
 
                   <span class="item-calc-subtotal">
-                    {{ (entry.item.unitPrice * (entry.selected ? entry.quantityToPay : 0)) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                    {{
+                      entry.item.unitPrice * (entry.selected ? entry.quantityToPay : 0)
+                        | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                    }}
                   </span>
                 </div>
               }
@@ -766,19 +846,25 @@
 
             <div class="partial-subtotal-summary">
               <span>Subtotal Parcial Seleccionado:</span>
-              <strong>{{ partialSubtotalToPay() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+              <strong>{{
+                partialSubtotalToPay() | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+              }}</strong>
             </div>
           </div>
 
           <footer class="sub-modal-footer">
-            <button type="button" class="btn-cancel" (click)="closePartialPaySelectorModal()">Cancelar</button>
+            <button type="button" class="btn-cancel" (click)="closePartialPaySelectorModal()">
+              Cancelar
+            </button>
             <button
               type="button"
               class="btn-confirm primary"
               [disabled]="partialSubtotalToPay() <= 0"
               (click)="confirmPartialSelectionAndProceedToCheckout()"
             >
-              Continuar a Pagar ({{ partialSubtotalToPay() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }})
+              Continuar a Pagar ({{
+                partialSubtotalToPay() | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+              }})
             </button>
           </footer>
         </div>
@@ -790,7 +876,10 @@
       <div class="sub-modal-backdrop">
         <div class="sub-modal large-modal">
           <header class="sub-modal-header">
-            <h3>💰 {{ co.isPartial ? 'Pago Parcial de Mesa' : 'Facturar y Cerrar Mesa' }} {{ table().name }}</h3>
+            <h3>
+              💰 {{ co.isPartial ? 'Pago Parcial de Mesa' : 'Facturar y Cerrar Mesa' }}
+              {{ table().name }}
+            </h3>
             <button type="button" class="close-btn-icon" (click)="closeCheckoutModal()">✕</button>
           </header>
 
@@ -820,7 +909,9 @@
               <div class="ticket-summary-lines">
                 <div class="t-line">
                   <span>Subtotal:</span>
-                  <strong>{{ co.subtotalToPay | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                  <strong>{{
+                    co.subtotalToPay | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                  }}</strong>
                 </div>
 
                 <div class="t-line tip-row">
@@ -836,7 +927,9 @@
                         (ngModelChange)="updateTipAmount($event)"
                       />
                       @if (co.tipAmount > 0) {
-                        <span class="formatted-hint">💵 {{ co.tipAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+                        <span class="formatted-hint"
+                          >💵 {{ co.tipAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span
+                        >
                       }
                     </div>
                   </label>
@@ -855,7 +948,9 @@
 
             <!-- Payment Type Option with Switch Knob Toggle -->
             <div class="payment-toggle-bar">
-              <span class="toggle-label">Habilitar Pago Mixto (Dividir cobro en varios medios)</span>
+              <span class="toggle-label"
+                >Habilitar Pago Mixto (Dividir cobro en varios medios)</span
+              >
               <button
                 type="button"
                 class="toggle-switch-btn"
@@ -877,11 +972,13 @@
               [class.error]="diff < 0"
             >
               @if (diff > 0) {
-                ⚠️ Falta por ingresar en el medio de pago: {{ diff | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                ⚠️ Falta por ingresar en el medio de pago:
+                {{ diff | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
               } @else if (diff === 0) {
                 ✅ Monto cubierto correctamente
               } @else {
-                ❌ El monto ingresado excede el total por: {{ Math.abs(diff) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                ❌ El monto ingresado excede el total por:
+                {{ Math.abs(diff) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
               }
             </div>
 
@@ -914,7 +1011,12 @@
                       (ngModelChange)="updateSinglePaymentAmount($event)"
                     />
                     @if (co.splits[0].amount > 0) {
-                      <span class="input-currency-hint">💵 {{ co.splits[0].amount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+                      <span class="input-currency-hint"
+                        >💵
+                        {{
+                          co.splits[0].amount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                        }}</span
+                      >
                     }
                   </label>
                 </div>
@@ -936,7 +1038,10 @@
                     @if (co.singleCashReceived && co.singleCashReceived >= co.splits[0].amount) {
                       <div class="change-due-badge">
                         <span>💰 Cambio a entregar al cliente:</span>
-                        <strong>{{ (co.singleCashReceived - co.splits[0].amount) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                        <strong>{{
+                          co.singleCashReceived - co.splits[0].amount
+                            | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                        }}</strong>
                       </div>
                     }
                   </div>
@@ -1006,7 +1111,10 @@
                           @if (split.cashReceived && split.cashReceived >= split.amount) {
                             <div class="change-due-badge">
                               <span>💰 Cambio a entregar:</span>
-                              <strong>{{ (split.cashReceived - split.amount) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                              <strong>{{
+                                split.cashReceived - split.amount
+                                  | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                              }}</strong>
                             </div>
                           } @else if (split.cashReceived && split.cashReceived < split.amount) {
                             <div class="change-due-badge warning">
@@ -1023,7 +1131,9 @@
           </div>
 
           <footer class="sub-modal-footer">
-            <button type="button" class="btn-cancel" (click)="closeCheckoutModal()">Cancelar</button>
+            <button type="button" class="btn-cancel" (click)="closeCheckoutModal()">
+              Cancelar
+            </button>
             <button
               type="button"
               class="btn-confirm primary large-btn"

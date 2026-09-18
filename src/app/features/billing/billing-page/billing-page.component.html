@@ -108,13 +108,19 @@
                     <span class="payment-badge">{{ item.paymentMethod || 'Efectivo' }}</span>
                   </td>
                   <td>
-                    <strong class="total-amount">{{ item.totalAmount | currency:'USD':'symbol':'1.2-2' }}</strong>
+                    <strong class="total-amount">{{
+                      item.totalAmount | currency: 'USD' : 'symbol' : '1.2-2'
+                    }}</strong>
                   </td>
                   <td>
-                    <span class="date-text">{{ item.createdAt | date:'short' }}</span>
+                    <span class="date-text">{{ item.createdAt | organizationDate: 'short' }}</span>
                   </td>
                   <td class="text-right">
-                    <button type="button" class="btn-action print-btn" (click)="openReceiptModal(item.receiptId)">
+                    <button
+                      type="button"
+                      class="btn-action print-btn"
+                      (click)="openReceiptModal(item.receiptId)"
+                    >
                       {{ 'billing.reprint' | translate }}
                     </button>
                   </td>
@@ -127,7 +133,8 @@
         <!-- Pagination -->
         <div class="pagination-bar">
           <span class="pagination-info">
-            Mostrando {{ receiptsData()!.items.length }} de {{ receiptsData()!.totalCount }} comprobantes
+            Mostrando {{ receiptsData()!.items.length }} de
+            {{ receiptsData()!.totalCount }} comprobantes
           </span>
           <div class="pagination-controls">
             <button
@@ -138,7 +145,9 @@
             >
               ← Anterior
             </button>
-            <span class="page-number">Página {{ page() }} de {{ receiptsData()!.totalPages || 1 }}</span>
+            <span class="page-number"
+              >Página {{ page() }} de {{ receiptsData()!.totalPages || 1 }}</span
+            >
             <button
               type="button"
               class="pag-btn"
@@ -184,7 +193,9 @@
                     <span class="table-badge">{{ order.tableName }}</span>
                   </td>
                   <td>
-                    <span class="status-badge" [class.paid]="order.status === 'PAID'">{{ order.status }}</span>
+                    <span class="status-badge" [class.paid]="order.status === 'PAID'">{{
+                      order.status
+                    }}</span>
                   </td>
                   <td>
                     <span class="user-info">👤 {{ order.createdByUserName }}</span>
@@ -196,13 +207,19 @@
                     <span class="badge badge-count">{{ order.receiptsCount }} comprobante(s)</span>
                   </td>
                   <td>
-                    <strong class="total-amount">{{ order.totalAmount | currency:'USD':'symbol':'1.2-2' }}</strong>
+                    <strong class="total-amount">{{
+                      order.totalAmount | currency: 'USD' : 'symbol' : '1.2-2'
+                    }}</strong>
                   </td>
                   <td>
-                    <span class="date-text">{{ order.createdAt | date:'short' }}</span>
+                    <span class="date-text">{{ order.createdAt | organizationDate: 'short' }}</span>
                   </td>
                   <td class="text-right">
-                    <button type="button" class="btn-action view-btn" (click)="openOrderReceiptsModal(order)">
+                    <button
+                      type="button"
+                      class="btn-action view-btn"
+                      (click)="openOrderReceiptsModal(order)"
+                    >
                       {{ 'billing.viewDocuments' | translate }} ({{ order.receiptsCount }})
                     </button>
                   </td>
@@ -226,7 +243,9 @@
             >
               ← Anterior
             </button>
-            <span class="page-number">Página {{ page() }} de {{ ordersData()!.totalPages || 1 }}</span>
+            <span class="page-number"
+              >Página {{ page() }} de {{ ordersData()!.totalPages || 1 }}</span
+            >
             <button
               type="button"
               class="pag-btn"
@@ -249,10 +268,7 @@
 
   <!-- MODAL: REIMPRIMIR TICKET DE COMPROBANTE -->
   @if (selectedReceipt()) {
-    <app-thermal-ticket-modal
-      [receipt]="selectedReceipt()!"
-      (closed)="closeModal()"
-    />
+    <app-thermal-ticket-modal [receipt]="selectedReceipt()!" (closed)="closeModal()" />
   }
 
   <!-- MODAL: DOCUMENTOS DE LA ORDEN (VISTA 2) -->
@@ -269,7 +285,10 @@
             <p><strong>Mesa:</strong> {{ selectedOrder()!.tableName }}</p>
             <p><strong>Creada por:</strong> {{ selectedOrder()!.createdByUserName }}</p>
             <p><strong>Pagada por:</strong> {{ selectedOrder()!.paidByUserName || 'N/A' }}</p>
-            <p><strong>Total Comanda:</strong> {{ selectedOrder()!.totalAmount | currency:'USD':'symbol':'1.2-2' }}</p>
+            <p>
+              <strong>Total Comanda:</strong>
+              {{ selectedOrder()!.totalAmount | currency: 'USD' : 'symbol' : '1.2-2' }}
+            </p>
           </div>
 
           <h3>Comprobantes Generados ({{ selectedOrder()!.receipts.length }}):</h3>
@@ -279,12 +298,18 @@
               <div class="receipt-item-card">
                 <div class="rcpt-info">
                   <strong>Ticket #{{ rcpt.receiptNumber }} - {{ rcpt.title }}</strong>
-                  <span class="rcpt-date">{{ rcpt.createdAt | date:'short' }}</span>
+                  <span class="rcpt-date">{{ rcpt.createdAt | organizationDate: 'short' }}</span>
                   <span class="rcpt-issuer">Cobrado por: {{ rcpt.issuedByUserName }}</span>
                 </div>
                 <div class="rcpt-totals">
-                  <strong class="rcpt-amount">{{ rcpt.totalAmount | currency:'USD':'symbol':'1.2-2' }}</strong>
-                  <button type="button" class="btn-action print-btn" (click)="openReceiptModal(rcpt.id)">
+                  <strong class="rcpt-amount">{{
+                    rcpt.totalAmount | currency: 'USD' : 'symbol' : '1.2-2'
+                  }}</strong>
+                  <button
+                    type="button"
+                    class="btn-action print-btn"
+                    (click)="openReceiptModal(rcpt.id)"
+                  >
                     🖨️ Reimprimir
                   </button>
                 </div>

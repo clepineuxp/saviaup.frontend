@@ -61,6 +61,20 @@
         </div>
         <div class="form-grid">
           <label
+            ><span>{{ 'settings.organization.timeZone' | translate }}</span
+            ><input formControlName="timeZoneId" list="organization-time-zones" required /><small>{{
+              'settings.organization.timeZoneHint' | translate
+            }}</small></label
+          >
+          <datalist id="organization-time-zones">
+            <option value="America/Bogota"></option>
+            <option value="America/New_York"></option>
+            <option value="America/Chicago"></option>
+            <option value="America/Los_Angeles"></option>
+            <option value="Europe/Madrid"></option>
+            <option value="Europe/London"></option>
+          </datalist>
+          <label
             ><span>{{ 'settings.organization.name' | translate }}</span
             ><input formControlName="name"
           /></label>

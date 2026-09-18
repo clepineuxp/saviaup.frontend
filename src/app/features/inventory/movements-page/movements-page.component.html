@@ -78,7 +78,7 @@
               }}</span>
             </div>
             <p>{{ movement.note || ('inventory.value.noNote' | translate) }}</p>
-            <small>{{ movement.createdAt | date: 'medium' }}</small>
+            <small>{{ movement.createdAt | organizationDate: 'medium' }}</small>
           </div>
           <div class="movement-quantity">
             <strong

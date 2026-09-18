@@ -13,15 +13,15 @@
           [ngClass]="{
             'status-pending': order().status === 'PENDING',
             'status-paid': order().status === 'PAID',
-            'status-cancelled': order().status === 'CANCELLED'
+            'status-cancelled': order().status === 'CANCELLED',
           }"
         >
           {{
             order().status === 'PENDING'
               ? ('orders.statusPending' | translate)
               : order().status === 'PAID'
-              ? ('orders.statusPaid' | translate)
-              : ('orders.statusCancelled' | translate)
+                ? ('orders.statusPaid' | translate)
+                : ('orders.statusCancelled' | translate)
           }}
         </span>
         <button type="button" class="btn-close" (click)="close.emit()" title="Cerrar">✕</button>
@@ -34,17 +34,23 @@
         <div class="audit-item">
           <span class="audit-label">✉️ {{ 'orders.details.createdBy' | translate }}</span>
           <span class="audit-val">{{ order().createdByUserName || 'N/A' }}</span>
-          <span class="audit-time">{{ order().createdAt | date: 'dd/MM/yyyy, HH:mm' }}</span>
+          <span class="audit-time">{{
+            order().createdAt | organizationDate: 'dd/MM/yyyy, HH:mm'
+          }}</span>
         </div>
         <div class="audit-item" *ngIf="order().status === 'PAID'">
           <span class="audit-label">💳 {{ 'orders.details.paidBy' | translate }}</span>
           <span class="audit-val text-success">{{ order().paidByUserName || 'N/A' }}</span>
-          <span class="audit-time">{{ order().paidAt | date: 'dd/MM/yyyy, HH:mm' }}</span>
+          <span class="audit-time">{{
+            order().paidAt | organizationDate: 'dd/MM/yyyy, HH:mm'
+          }}</span>
         </div>
         <div class="audit-item" *ngIf="order().status === 'CANCELLED'">
           <span class="audit-label">⚠️ {{ 'orders.details.status' | translate }}</span>
           <span class="audit-val text-danger">{{ 'orders.statusCancelled' | translate }}</span>
-          <span class="audit-time">{{ order().updatedAt | date: 'dd/MM/yyyy, HH:mm' }}</span>
+          <span class="audit-time">{{
+            order().updatedAt | organizationDate: 'dd/MM/yyyy, HH:mm'
+          }}</span>
         </div>
         <div class="audit-item" *ngIf="order().paymentMethod">
           <span class="audit-label">💰 {{ 'settings.tabs.payments' | translate }}:</span>
@@ -60,8 +66,10 @@
 
       <!-- Items List Table -->
       <div class="items-section">
-        <h3 class="section-title">{{ 'orders.details.itemsTitle' | translate }} ({{ order().items.length }})</h3>
-        
+        <h3 class="section-title">
+          {{ 'orders.details.itemsTitle' | translate }} ({{ order().items.length }})
+        </h3>
+
         <div class="table-responsive">
           <table class="items-table">
             <thead>
@@ -74,7 +82,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of order().items" [class.cancelled-row]="item.status === 'CANCELLED'">
+              <tr
+                *ngFor="let item of order().items"
+                [class.cancelled-row]="item.status === 'CANCELLED'"
+              >
                 <td class="qty-cell">
                   <span class="qty-badge">{{ item.quantity }}x</span>
                 </td>
@@ -85,15 +96,33 @@
                     <small>💬 {{ item.notes }}</small>
                   </div>
                 </td>
-                <td class="text-right">{{ item.unitPrice | currency: 'COP': 'symbol': '1.0-0' }}</td>
-                <td class="text-right bold-text">{{ item.subtotal | currency: 'COP': 'symbol': '1.0-0' }}</td>
+                <td class="text-right">
+                  {{ item.unitPrice | currency: 'COP' : 'symbol' : '1.0-0' }}
+                </td>
+                <td class="bold-text text-right">
+                  {{ item.subtotal | currency: 'COP' : 'symbol' : '1.0-0' }}
+                </td>
                 <td>
-                  <span class="item-status-pill" [class.status-cancelled]="item.status === 'CANCELLED'" [class.status-paid]="item.status === 'PAID'">
-                    {{ item.status === 'PENDING' ? ('orders.statusPending' | translate) : item.status === 'PAID' ? ('orders.statusPaid' | translate) : ('orders.statusCancelled' | translate) }}
+                  <span
+                    class="item-status-pill"
+                    [class.status-cancelled]="item.status === 'CANCELLED'"
+                    [class.status-paid]="item.status === 'PAID'"
+                  >
+                    {{
+                      item.status === 'PENDING'
+                        ? ('orders.statusPending' | translate)
+                        : item.status === 'PAID'
+                          ? ('orders.statusPaid' | translate)
+                          : ('orders.statusCancelled' | translate)
+                    }}
                   </span>
                   <div class="cancel-detail" *ngIf="item.status === 'CANCELLED'">
-                    <small class="text-danger" *ngIf="item.cancellationReason">Motivo: {{ item.cancellationReason }}</small>
-                    <small class="text-muted" *ngIf="item.cancelledByUserName"> por {{ item.cancelledByUserName }}</small>
+                    <small class="text-danger" *ngIf="item.cancellationReason"
+                      >Motivo: {{ item.cancellationReason }}</small
+                    >
+                    <small class="text-muted" *ngIf="item.cancelledByUserName">
+                      por {{ item.cancelledByUserName }}</small
+                    >
                   </div>
                 </td>
               </tr>
@@ -106,21 +135,27 @@
       <div class="totals-summary-card">
         <div class="totals-row">
           <span>{{ 'orders.details.subtotalLabel' | translate }}</span>
-          <strong>{{ order().subtotalAmount | currency: 'COP': 'symbol': '1.0-0' }}</strong>
+          <strong>{{ order().subtotalAmount | currency: 'COP' : 'symbol' : '1.0-0' }}</strong>
         </div>
         <div class="totals-row" *ngIf="order().tipAmount > 0">
           <span>{{ 'orders.details.tipLabel' | translate }}</span>
-          <strong class="text-success">+ {{ order().tipAmount | currency: 'COP': 'symbol': '1.0-0' }}</strong>
+          <strong class="text-success"
+            >+ {{ order().tipAmount | currency: 'COP' : 'symbol' : '1.0-0' }}</strong
+          >
         </div>
         <div class="totals-row grand-total">
           <span>{{ 'orders.details.totalLabel' | translate }}</span>
-          <strong class="total-amount">{{ order().totalAmount | currency: 'COP': 'symbol': '1.0-0' }}</strong>
+          <strong class="total-amount">{{
+            order().totalAmount | currency: 'COP' : 'symbol' : '1.0-0'
+          }}</strong>
         </div>
       </div>
     </div>
 
     <footer class="modal-footer">
-      <button type="button" class="sav-btn sav-btn-secondary" (click)="close.emit()">{{ 'common.cancel' | translate }}</button>
+      <button type="button" class="sav-btn sav-btn-secondary" (click)="close.emit()">
+        {{ 'common.cancel' | translate }}
+      </button>
     </footer>
   </div>
 </div>

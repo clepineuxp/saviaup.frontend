@@ -19,6 +19,7 @@ export const mapUserInfoDto = (dto: UserInfoDto): UserInfo => ({
   organization: {
     id: dto.organization.id,
     name: dto.organization.name,
+    timeZoneId: dto.organization.timeZoneId,
   },
   role: {
     id: dto.role.id,

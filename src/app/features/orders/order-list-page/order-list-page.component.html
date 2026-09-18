@@ -5,7 +5,10 @@
       <h1 class="page-title">
         {{ 'orders.title' | translate }}
         <span class="total-badge" *ngIf="!loading()">
-          {{ totalItems() }} {{ (activeTab() === 'orders' ? 'orders.badgeComandas' : 'orders.badgeItems') | translate }}
+          {{ totalItems() }}
+          {{
+            (activeTab() === 'orders' ? 'orders.badgeComandas' : 'orders.badgeItems') | translate
+          }}
         </span>
       </h1>
       <p class="page-subtitle">{{ 'orders.subtitle' | translate }}</p>
@@ -25,11 +28,7 @@
           </div>
           <div class="picker-options">
             <label *ngFor="let col of activeColumns()" class="picker-option">
-              <input
-                type="checkbox"
-                [checked]="col.visible"
-                (change)="toggleColumn(col.id)"
-              />
+              <input type="checkbox" [checked]="col.visible" (change)="toggleColumn(col.id)" />
               <span>{{ col.label | translate }}</span>
             </label>
           </div>
@@ -153,18 +152,28 @@
       <table class="sav-data-table" *ngIf="orders().length > 0; else emptyState">
         <thead>
           <tr>
-            <th *ngIf="isColumnVisible('orderNumber')">{{ 'orders.cols.orderNumber' | translate }}</th>
+            <th *ngIf="isColumnVisible('orderNumber')">
+              {{ 'orders.cols.orderNumber' | translate }}
+            </th>
             <th *ngIf="isColumnVisible('tableName')">{{ 'orders.cols.tableName' | translate }}</th>
             <th *ngIf="isColumnVisible('status')">{{ 'orders.cols.status' | translate }}</th>
             <th *ngIf="isColumnVisible('itemCount')">{{ 'orders.cols.itemCount' | translate }}</th>
-            <th *ngIf="isColumnVisible('subtotalAmount')" class="text-right">{{ 'orders.cols.subtotalAmount' | translate }}</th>
-            <th *ngIf="isColumnVisible('tipAmount')" class="text-right">{{ 'orders.cols.tipAmount' | translate }}</th>
-            <th *ngIf="isColumnVisible('totalAmount')" class="text-right">{{ 'orders.cols.totalAmount' | translate }}</th>
+            <th *ngIf="isColumnVisible('subtotalAmount')" class="text-right">
+              {{ 'orders.cols.subtotalAmount' | translate }}
+            </th>
+            <th *ngIf="isColumnVisible('tipAmount')" class="text-right">
+              {{ 'orders.cols.tipAmount' | translate }}
+            </th>
+            <th *ngIf="isColumnVisible('totalAmount')" class="text-right">
+              {{ 'orders.cols.totalAmount' | translate }}
+            </th>
             <th *ngIf="isColumnVisible('createdBy')">{{ 'orders.cols.createdBy' | translate }}</th>
             <th *ngIf="isColumnVisible('createdAt')">{{ 'orders.cols.createdAt' | translate }}</th>
             <th *ngIf="isColumnVisible('paidBy')">{{ 'orders.cols.paidBy' | translate }}</th>
             <th *ngIf="isColumnVisible('paidAt')">{{ 'orders.cols.paidAt' | translate }}</th>
-            <th *ngIf="isColumnVisible('actions')" class="text-center">{{ 'orders.cols.actions' | translate }}</th>
+            <th *ngIf="isColumnVisible('actions')" class="text-center">
+              {{ 'orders.cols.actions' | translate }}
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -183,29 +192,33 @@
                 [ngClass]="{
                   'tag-pending': order.status === 'PENDING',
                   'tag-paid': order.status === 'PAID',
-                  'tag-cancelled': order.status === 'CANCELLED'
+                  'tag-cancelled': order.status === 'CANCELLED',
                 }"
               >
                 {{
                   order.status === 'PENDING'
                     ? ('orders.statusPending' | translate)
                     : order.status === 'PAID'
-                    ? ('orders.statusPaid' | translate)
-                    : ('orders.statusCancelled' | translate)
+                      ? ('orders.statusPaid' | translate)
+                      : ('orders.statusCancelled' | translate)
                 }}
               </span>
             </td>
             <td *ngIf="isColumnVisible('itemCount')">
               <span class="items-count">{{ order.items.length }} prod.</span>
             </td>
-            <td *ngIf="isColumnVisible('subtotalAmount')" class="text-right bold-text">
-              {{ order.subtotalAmount | currency: 'COP': 'symbol': '1.0-0' }}
+            <td *ngIf="isColumnVisible('subtotalAmount')" class="bold-text text-right">
+              {{ order.subtotalAmount | currency: 'COP' : 'symbol' : '1.0-0' }}
             </td>
-            <td *ngIf="isColumnVisible('tipAmount')" class="text-right text-success">
-              {{ order.tipAmount > 0 ? ('+ ' + (order.tipAmount | currency: 'COP': 'symbol': '1.0-0')) : '$0' }}
+            <td *ngIf="isColumnVisible('tipAmount')" class="text-success text-right">
+              {{
+                order.tipAmount > 0
+                  ? '+ ' + (order.tipAmount | currency: 'COP' : 'symbol' : '1.0-0')
+                  : '$0'
+              }}
             </td>
-            <td *ngIf="isColumnVisible('totalAmount')" class="text-right bold-text primary-val">
-              {{ order.totalAmount | currency: 'COP': 'symbol': '1.0-0' }}
+            <td *ngIf="isColumnVisible('totalAmount')" class="bold-text primary-val text-right">
+              {{ order.totalAmount | currency: 'COP' : 'symbol' : '1.0-0' }}
             </td>
             <td *ngIf="isColumnVisible('createdBy')">
               <div class="user-audit-tag">
@@ -213,22 +226,32 @@
               </div>
             </td>
             <td *ngIf="isColumnVisible('createdAt')">
-              <span class="time-text">{{ order.createdAt | date: 'dd/MM/yyyy, HH:mm' }}</span>
+              <span class="time-text">{{
+                order.createdAt | organizationDate: 'dd/MM/yyyy, HH:mm'
+              }}</span>
             </td>
             <td *ngIf="isColumnVisible('paidBy')">
               <div class="user-audit-tag" *ngIf="order.status === 'PAID'">
                 <span class="user-email text-success">💳 {{ order.paidByUserName || 'N/A' }}</span>
               </div>
               <div class="user-audit-tag" *ngIf="order.status === 'CANCELLED'">
-                <span class="user-email text-danger">✕ {{ 'orders.statusCancelled' | translate }}</span>
+                <span class="user-email text-danger"
+                  >✕ {{ 'orders.statusCancelled' | translate }}</span
+                >
               </div>
               <span class="text-muted" *ngIf="order.status === 'PENDING'">-</span>
             </td>
             <td *ngIf="isColumnVisible('paidAt')">
-              <span class="time-text" *ngIf="order.paidAt">{{ order.paidAt | date: 'dd/MM/yyyy, HH:mm' }}</span>
+              <span class="time-text" *ngIf="order.paidAt">{{
+                order.paidAt | organizationDate: 'dd/MM/yyyy, HH:mm'
+              }}</span>
               <span class="text-muted" *ngIf="!order.paidAt">-</span>
             </td>
-            <td *ngIf="isColumnVisible('actions')" class="text-center" (click)="$event.stopPropagation()">
+            <td
+              *ngIf="isColumnVisible('actions')"
+              class="text-center"
+              (click)="$event.stopPropagation()"
+            >
               <button type="button" class="btn-detail-action" (click)="openOrderDetails(order)">
                 👁️ {{ 'orders.viewDetails' | translate }}
               </button>
@@ -242,7 +265,9 @@
         <div class="empty-data-card">
           <span class="empty-icon">📋</span>
           <h3>{{ 'orders.emptyOrders' | translate }}</h3>
-          <button type="button" class="sav-btn sav-btn-ghost" (click)="resetFilters()">{{ 'orders.clearFilters' | translate }}</button>
+          <button type="button" class="sav-btn sav-btn-ghost" (click)="resetFilters()">
+            {{ 'orders.clearFilters' | translate }}
+          </button>
         </div>
       </ng-template>
     </div>
@@ -251,7 +276,11 @@
     <footer class="table-pagination-footer" *ngIf="!loading() && orders().length > 0">
       <div class="page-size-selector">
         <label>{{ 'orders.perPage' | translate }}</label>
-        <select class="sav-select-sm" [ngModel]="pageSize()" (ngModelChange)="changePageSize($event)">
+        <select
+          class="sav-select-sm"
+          [ngModel]="pageSize()"
+          (ngModelChange)="changePageSize($event)"
+        >
           <option [value]="10">10</option>
           <option [value]="25">25</option>
           <option [value]="50">50</option>
@@ -263,20 +292,31 @@
       <div class="grand-total-summary-group">
         <div class="grand-total-badge-card subtotal-card">
           <span>Prod. Vista:</span>
-          <strong class="grand-total-val subtotal-val">{{ ordersSubtotalProductsSum() | currency: 'COP': 'symbol': '1.0-0' }}</strong>
+          <strong class="grand-total-val subtotal-val">{{
+            ordersSubtotalProductsSum() | currency: 'COP' : 'symbol' : '1.0-0'
+          }}</strong>
         </div>
         <div class="grand-total-badge-card tip-card">
           <span>{{ 'orders.cols.tipAmount' | translate }}:</span>
-          <strong class="grand-total-val tip-val">+ {{ ordersTipsSum() | currency: 'COP': 'symbol': '1.0-0' }}</strong>
+          <strong class="grand-total-val tip-val"
+            >+ {{ ordersTipsSum() | currency: 'COP' : 'symbol' : '1.0-0' }}</strong
+          >
         </div>
         <div class="grand-total-badge-card total-card">
           <span>{{ 'orders.cols.totalAmount' | translate }}:</span>
-          <strong class="grand-total-val total-val">{{ ordersTotalSum() | currency: 'COP': 'symbol': '1.0-0' }}</strong>
+          <strong class="grand-total-val total-val">{{
+            ordersTotalSum() | currency: 'COP' : 'symbol' : '1.0-0'
+          }}</strong>
         </div>
       </div>
 
       <div class="pagination-info">
-        <span>Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong> ({{ totalItems() }} {{ 'orders.badgeComandas' | translate }})</span>
+        <span
+          >Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong> ({{
+            totalItems()
+          }}
+          {{ 'orders.badgeComandas' | translate }})</span
+        >
       </div>
 
       <div class="pagination-controls">
@@ -311,20 +351,35 @@
       <table class="sav-data-table" *ngIf="orderItems().length > 0; else emptyStateItems">
         <thead>
           <tr>
-            <th *ngIf="isColumnVisible('orderNumber')">{{ 'orders.cols.orderNumber' | translate }}</th>
+            <th *ngIf="isColumnVisible('orderNumber')">
+              {{ 'orders.cols.orderNumber' | translate }}
+            </th>
             <th *ngIf="isColumnVisible('tableName')">{{ 'orders.cols.tableName' | translate }}</th>
-            <th *ngIf="isColumnVisible('productName')">{{ 'orders.cols.productName' | translate }}</th>
+            <th *ngIf="isColumnVisible('productName')">
+              {{ 'orders.cols.productName' | translate }}
+            </th>
             <th *ngIf="isColumnVisible('quantity')">{{ 'orders.cols.quantity' | translate }}</th>
-            <th *ngIf="isColumnVisible('unitPrice')" class="text-right">{{ 'orders.cols.unitPrice' | translate }}</th>
-            <th *ngIf="isColumnVisible('subtotal')" class="text-right">{{ 'orders.cols.subtotal' | translate }}</th>
+            <th *ngIf="isColumnVisible('unitPrice')" class="text-right">
+              {{ 'orders.cols.unitPrice' | translate }}
+            </th>
+            <th *ngIf="isColumnVisible('subtotal')" class="text-right">
+              {{ 'orders.cols.subtotal' | translate }}
+            </th>
             <th *ngIf="isColumnVisible('status')">{{ 'orders.cols.status' | translate }}</th>
             <th *ngIf="isColumnVisible('createdBy')">{{ 'orders.cols.createdBy' | translate }}</th>
             <th *ngIf="isColumnVisible('createdAt')">{{ 'orders.cols.createdAt' | translate }}</th>
-            <th *ngIf="isColumnVisible('actions')" class="text-center">{{ 'orders.cols.viewOrder' | translate }}</th>
+            <th *ngIf="isColumnVisible('actions')" class="text-center">
+              {{ 'orders.cols.viewOrder' | translate }}
+            </th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let itemRow of orderItems()" (click)="openOrderItemDetails(itemRow)" class="order-row" [class.cancelled-row]="itemRow.status === 'CANCELLED'">
+          <tr
+            *ngFor="let itemRow of orderItems()"
+            (click)="openOrderItemDetails(itemRow)"
+            class="order-row"
+            [class.cancelled-row]="itemRow.status === 'CANCELLED'"
+          >
             <td *ngIf="isColumnVisible('orderNumber')">
               <span class="order-number-badge">#{{ itemRow.orderNumber }}</span>
             </td>
@@ -344,10 +399,10 @@
               <span class="item-qty-badge">{{ itemRow.quantity }}x</span>
             </td>
             <td *ngIf="isColumnVisible('unitPrice')" class="text-right">
-              {{ itemRow.unitPrice | currency: 'COP': 'symbol': '1.0-0' }}
+              {{ itemRow.unitPrice | currency: 'COP' : 'symbol' : '1.0-0' }}
             </td>
-            <td *ngIf="isColumnVisible('subtotal')" class="text-right bold-text primary-val">
-              {{ itemRow.subtotal | currency: 'COP': 'symbol': '1.0-0' }}
+            <td *ngIf="isColumnVisible('subtotal')" class="bold-text primary-val text-right">
+              {{ itemRow.subtotal | currency: 'COP' : 'symbol' : '1.0-0' }}
             </td>
             <td *ngIf="isColumnVisible('status')">
               <span
@@ -355,18 +410,21 @@
                 [ngClass]="{
                   'tag-pending': itemRow.status === 'PENDING',
                   'tag-paid': itemRow.status === 'PAID',
-                  'tag-cancelled': itemRow.status === 'CANCELLED'
+                  'tag-cancelled': itemRow.status === 'CANCELLED',
                 }"
               >
                 {{
                   itemRow.status === 'PENDING'
                     ? ('orders.statusPending' | translate)
                     : itemRow.status === 'PAID'
-                    ? ('orders.statusPaid' | translate)
-                    : ('orders.statusCancelled' | translate)
+                      ? ('orders.statusPaid' | translate)
+                      : ('orders.statusCancelled' | translate)
                 }}
               </span>
-              <div class="cancel-reason" *ngIf="itemRow.status === 'CANCELLED' && itemRow.cancellationReason">
+              <div
+                class="cancel-reason"
+                *ngIf="itemRow.status === 'CANCELLED' && itemRow.cancellationReason"
+              >
                 <small class="text-danger">Motivo: {{ itemRow.cancellationReason }}</small>
               </div>
             </td>
@@ -376,10 +434,20 @@
               </div>
             </td>
             <td *ngIf="isColumnVisible('createdAt')">
-              <span class="time-text">{{ itemRow.createdAt | date: 'dd/MM/yyyy, HH:mm' }}</span>
+              <span class="time-text">{{
+                itemRow.createdAt | organizationDate: 'dd/MM/yyyy, HH:mm'
+              }}</span>
             </td>
-            <td *ngIf="isColumnVisible('actions')" class="text-center" (click)="$event.stopPropagation()">
-              <button type="button" class="btn-detail-action" (click)="openOrderItemDetails(itemRow)">
+            <td
+              *ngIf="isColumnVisible('actions')"
+              class="text-center"
+              (click)="$event.stopPropagation()"
+            >
+              <button
+                type="button"
+                class="btn-detail-action"
+                (click)="openOrderItemDetails(itemRow)"
+              >
                 👁️ {{ 'orders.cols.viewOrder' | translate }}
               </button>
             </td>
@@ -392,7 +460,9 @@
         <div class="empty-data-card">
           <span class="empty-icon">📦</span>
           <h3>{{ 'orders.emptyItems' | translate }}</h3>
-          <button type="button" class="sav-btn sav-btn-ghost" (click)="resetFilters()">{{ 'orders.clearFilters' | translate }}</button>
+          <button type="button" class="sav-btn sav-btn-ghost" (click)="resetFilters()">
+            {{ 'orders.clearFilters' | translate }}
+          </button>
         </div>
       </ng-template>
     </div>
@@ -401,7 +471,11 @@
     <footer class="table-pagination-footer" *ngIf="!loading() && orderItems().length > 0">
       <div class="page-size-selector">
         <label>{{ 'orders.perPage' | translate }}</label>
-        <select class="sav-select-sm" [ngModel]="pageSize()" (ngModelChange)="changePageSize($event)">
+        <select
+          class="sav-select-sm"
+          [ngModel]="pageSize()"
+          (ngModelChange)="changePageSize($event)"
+        >
           <option [value]="10">10</option>
           <option [value]="25">25</option>
           <option [value]="50">50</option>
@@ -411,11 +485,18 @@
 
       <div class="grand-total-badge-card total-card">
         <span>Suma Total Ítems en Pantalla:</span>
-        <strong class="grand-total-val total-val">{{ flatItemsTotalSum() | currency: 'COP': 'symbol': '1.0-0' }}</strong>
+        <strong class="grand-total-val total-val">{{
+          flatItemsTotalSum() | currency: 'COP' : 'symbol' : '1.0-0'
+        }}</strong>
       </div>
 
       <div class="pagination-info">
-        <span>Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong> ({{ totalItems() }} {{ 'orders.badgeItems' | translate }})</span>
+        <span
+          >Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong> ({{
+            totalItems()
+          }}
+          {{ 'orders.badgeItems' | translate }})</span
+        >
       </div>
 
       <div class="pagination-controls">

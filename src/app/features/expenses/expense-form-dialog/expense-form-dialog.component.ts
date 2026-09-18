@@ -1,3 +1,4 @@
+import { OrganizationTime } from '../../../core/tenant/organization-time.service';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -35,6 +36,7 @@ interface ConfiguredPaymentMethod {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExpenseFormDialogComponent implements OnInit {
+  private readonly organizationTime = inject(OrganizationTime);
   private readonly formBuilder = inject(FormBuilder);
   private readonly api = inject(ApiClient);
   readonly supplierStore = inject(SupplierStoreService);
@@ -49,11 +51,7 @@ export class ExpenseFormDialogComponent implements OnInit {
   readonly cancelled = output<void>();
 
   private getTodayDateString(): string {
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return this.organizationTime.localDate();
   }
 
   readonly form = this.formBuilder.nonNullable.group({
@@ -68,16 +66,17 @@ export class ExpenseFormDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.supplierStore.loadLookup();
-    this.api.get<ConfiguredPaymentMethod[]>(API_ENDPOINTS.settings.paymentMethods)
+    this.api
+      .get<ConfiguredPaymentMethod[]>(API_ENDPOINTS.settings.paymentMethods)
       .pipe(catchError(() => of([])))
-      .subscribe((methods) => this.customPaymentMethods.set(methods.filter(m => m.isActive)));
+      .subscribe((methods) => this.customPaymentMethods.set(methods.filter((m) => m.isActive)));
 
     setTimeout(() => {
       const exp = this.expense();
       if (exp) {
         let dateVal = this.getTodayDateString();
         if (exp.expenseDate) {
-          dateVal = exp.expenseDate.substring(0, 10);
+          dateVal = exp.businessDate ?? this.organizationTime.localDate(exp.expenseDate);
         }
 
         this.form.reset({
@@ -100,7 +99,6 @@ export class ExpenseFormDialogComponent implements OnInit {
     }
 
     const val = this.form.getRawValue();
-    const isoDate = new Date(`${val.expenseDate}T12:00:00`).toISOString();
 
     this.submitted.emit({
       name: val.name.trim(),
@@ -109,7 +107,8 @@ export class ExpenseFormDialogComponent implements OnInit {
       isCashOut: val.isCashOut,
       paymentMethod: val.paymentMethod.trim(),
       supplierId: val.supplierId ? val.supplierId : null,
-      expenseDate: isoDate,
+      expenseDate: null,
+      businessDate: val.expenseDate,
     });
   }
 

@@ -17,15 +17,21 @@
             <span class="icon-glyph">◫</span>
             <div>
               <h3>{{ register.name }}</h3>
-              <small class="location">{{ register.location || ('cashRegisters.shift.noLocation' | translate) }}</small>
+              <small class="location">{{
+                register.location || ('cashRegisters.shift.noLocation' | translate)
+              }}</small>
             </div>
           </div>
 
           <div class="status-tags">
             @if (register.hasOpenShift) {
-              <span class="shift-badge open">🟢 {{ 'cashRegisters.shift.activeShiftBadge' | translate }}</span>
+              <span class="shift-badge open"
+                >🟢 {{ 'cashRegisters.shift.activeShiftBadge' | translate }}</span
+              >
             } @else {
-              <span class="shift-badge closed">🔴 {{ 'cashRegisters.status.inactive' | translate }}</span>
+              <span class="shift-badge closed"
+                >🔴 {{ 'cashRegisters.status.inactive' | translate }}</span
+              >
             }
           </div>
         </div>
@@ -63,7 +69,11 @@
       <div class="header-text">
         <h3>📋 {{ 'cashRegisters.shift.historyTitle' | translate }}</h3>
       </div>
-      <button type="button" class="refresh-btn" (click)="loadShiftsPage(shiftsPage()?.pageNumber || 1)">
+      <button
+        type="button"
+        class="refresh-btn"
+        (click)="loadShiftsPage(shiftsPage()?.pageNumber || 1)"
+      >
         🔄 {{ 'orders.refresh' | translate }}
       </button>
     </div>
@@ -90,7 +100,9 @@
               </tr>
             } @else if (shiftsPage()?.items?.length === 0) {
               <tr>
-                <td colspan="8" class="empty-cell">{{ 'cashRegisters.management.emptyState' | translate }}</td>
+                <td colspan="8" class="empty-cell">
+                  {{ 'cashRegisters.management.emptyState' | translate }}
+                </td>
               </tr>
             } @else {
               @for (shift of shiftsPage()?.items; track shift.id) {
@@ -100,16 +112,22 @@
                   </td>
                   <td>
                     @if (shift.status === 'OPEN') {
-                      <span class="status-tag open">{{ 'cashRegisters.shift.activeShiftBadge' | translate }}</span>
+                      <span class="status-tag open">{{
+                        'cashRegisters.shift.activeShiftBadge' | translate
+                      }}</span>
                     } @else {
-                      <span class="status-tag closed">{{ 'cashRegisters.status.inactive' | translate }}</span>
+                      <span class="status-tag closed">{{
+                        'cashRegisters.status.inactive' | translate
+                      }}</span>
                     }
                   </td>
                   <td>
                     <span class="user-email-tag">✉️ {{ shift.openedByUserName }}</span>
                   </td>
                   <td>
-                    <span class="date-text">{{ shift.openedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                    <span class="date-text">{{
+                      shift.openedAt | organizationDate: 'dd/MM/yyyy HH:mm'
+                    }}</span>
                   </td>
                   <td>
                     @if (shift.closedByUserName) {
@@ -120,21 +138,33 @@
                   </td>
                   <td>
                     @if (shift.closedAt) {
-                      <span class="date-text">{{ shift.closedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                      <span class="date-text">{{
+                        shift.closedAt | organizationDate: 'dd/MM/yyyy HH:mm'
+                      }}</span>
                     } @else {
                       <span class="muted-dash">-</span>
                     }
                   </td>
                   <td>
-                    <strong class="total-text">{{ shift.totalCollectedAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                    <strong class="total-text">{{
+                      shift.totalCollectedAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                    }}</strong>
                   </td>
                   <td class="text-end">
                     @if (shift.status === 'OPEN') {
-                      <button type="button" class="table-action-btn close-btn" (click)="openCloseShiftModal(shift.id)">
+                      <button
+                        type="button"
+                        class="table-action-btn close-btn"
+                        (click)="openCloseShiftModal(shift.id)"
+                      >
                         🔒 {{ 'cashRegisters.shift.closeShiftBtn' | translate }}
                       </button>
                     } @else {
-                      <button type="button" class="table-action-btn view-btn" (click)="openCloseShiftModal(shift.id, true)">
+                      <button
+                        type="button"
+                        class="table-action-btn view-btn"
+                        (click)="openCloseShiftModal(shift.id, true)"
+                      >
                         👁️ {{ 'orders.viewDetails' | translate }}
                       </button>
                     }
@@ -182,7 +212,9 @@
         <header class="modal-header">
           <div class="title-group">
             <span class="icon">🔓</span>
-            <h3>{{ 'cashRegisters.shift.openShiftModalTitle' | translate }} · {{ register.name }}</h3>
+            <h3>
+              {{ 'cashRegisters.shift.openShiftModalTitle' | translate }} · {{ register.name }}
+            </h3>
           </div>
           <button type="button" class="close-button" (click)="closeOpenShiftModal()">✕</button>
         </header>
@@ -196,7 +228,11 @@
             @for (method of openingMethodsList(); track method.id) {
               <div class="method-field">
                 <label>
-                  <span>💰 {{ 'cashRegisters.shift.initialFund' | translate }} <strong>{{ method.name }}</strong>:</span>
+                  <span
+                    >💰 {{ 'cashRegisters.shift.initialFund' | translate }}
+                    <strong>{{ method.name }}</strong
+                    >:</span
+                  >
                   <div class="input-currency-wrap">
                     <span class="currency-prefix">$</span>
                     <input
@@ -223,7 +259,11 @@
             [disabled]="submittingShift()"
             (click)="confirmOpenShift()"
           >
-            {{ submittingShift() ? ('common.loading' | translate) : ('cashRegisters.shift.openSubmitBtn' | translate) }}
+            {{
+              submittingShift()
+                ? ('common.loading' | translate)
+                : ('cashRegisters.shift.openSubmitBtn' | translate)
+            }}
           </app-ui-button>
         </footer>
       </div>
@@ -238,7 +278,12 @@
           <div class="title-group">
             <span class="icon">🔒</span>
             <h3>
-              {{ (state.isReadOnly ? 'orders.details.totalsTitle' : 'cashRegisters.shift.closeShiftModalTitle') | translate }}
+              {{
+                (state.isReadOnly
+                  ? 'orders.details.totalsTitle'
+                  : 'cashRegisters.shift.closeShiftModalTitle'
+                ) | translate
+              }}
               · {{ state.summary.cashRegisterName }}
             </h3>
           </div>
@@ -256,15 +301,23 @@
             <div class="metrics-grid">
               <div class="metric-card">
                 <span class="metric-label">{{ 'orders.cols.subtotalAmount' | translate }}</span>
-                <strong class="metric-val">{{ state.summary.totalSalesAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                <strong class="metric-val">{{
+                  state.summary.totalSalesAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                }}</strong>
               </div>
               <div class="metric-card">
                 <span class="metric-label">{{ 'cashRegisters.shift.tips' | translate }}</span>
-                <strong class="metric-val tip">{{ state.summary.totalTipsAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                <strong class="metric-val tip">{{
+                  state.summary.totalTipsAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                }}</strong>
               </div>
               <div class="metric-card highlight">
-                <span class="metric-label">{{ 'cashRegisters.shift.totalInCash' | translate }}</span>
-                <strong class="metric-val collected">{{ state.summary.totalCollectedAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                <span class="metric-label">{{
+                  'cashRegisters.shift.totalInCash' | translate
+                }}</span>
+                <strong class="metric-val collected">{{
+                  state.summary.totalCollectedAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                }}</strong>
               </div>
             </div>
           </section>
@@ -288,15 +341,36 @@
                 </thead>
                 <tbody>
                   @for (m of state.summary.methodSummaries; track m.methodName) {
-                    @let totalCol = (m.totalCollectedAmount !== undefined && m.totalCollectedAmount !== null) ? m.totalCollectedAmount : (m.salesCollectedAmount + (m.tipsCollectedAmount || 0));
+                    @let totalCol =
+                      m.totalCollectedAmount !== undefined && m.totalCollectedAmount !== null
+                        ? m.totalCollectedAmount
+                        : m.salesCollectedAmount + (m.tipsCollectedAmount || 0);
                     <tr>
-                      <td><strong>{{ m.methodName }}</strong></td>
-                      <td>{{ m.initialOpeningAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
-                      <td>{{ m.salesCollectedAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
-                      <td>{{ (m.tipsCollectedAmount || 0) | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
+                      <td>
+                        <strong>{{ m.methodName }}</strong>
+                      </td>
+                      <td>
+                        {{ m.initialOpeningAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                      </td>
+                      <td>
+                        {{ m.salesCollectedAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                      </td>
+                      <td>
+                        {{
+                          m.tipsCollectedAmount || 0 | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                        }}
+                      </td>
                       <td>{{ m.expensesAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
-                      <td><strong class="collected-val">{{ totalCol | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></td>
-                      <td><strong class="expected-val">{{ m.expectedTotalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong></td>
+                      <td>
+                        <strong class="collected-val">{{
+                          totalCol | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                        }}</strong>
+                      </td>
+                      <td>
+                        <strong class="expected-val">{{
+                          m.expectedTotalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                        }}</strong>
+                      </td>
                     </tr>
                   }
                 </tbody>
@@ -317,7 +391,11 @@
               [disabled]="submittingShift()"
               (click)="confirmCloseShift()"
             >
-              {{ submittingShift() ? ('common.loading' | translate) : ('cashRegisters.shift.closeSubmitBtn' | translate) }}
+              {{
+                submittingShift()
+                  ? ('common.loading' | translate)
+                  : ('cashRegisters.shift.closeSubmitBtn' | translate)
+              }}
             </app-ui-button>
           }
         </footer>

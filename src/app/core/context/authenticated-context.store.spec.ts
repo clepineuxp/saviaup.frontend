@@ -17,7 +17,7 @@ import { AuthenticatedContextStore } from './authenticated-context.store';
 const userInfo: UserInfo = {
   firstName: 'Ana',
   lastName: 'Prueba',
-  organization: { id: 'tenant-1', name: 'Secret Garden' },
+  organization: { id: 'tenant-1', name: 'Secret Garden', timeZoneId: 'America/New_York' },
   role: { id: 'role-1', code: 'TENANT_OWNER', name: 'Owner' },
 };
 
@@ -65,7 +65,11 @@ describe('AuthenticatedContextStore', () => {
         },
         {
           provide: TenantContext,
-          useValue: { activeTenant: activeTenant.asReadonly(), clear: clearTenant },
+          useValue: {
+            activeTenant: activeTenant.asReadonly(),
+            clear: clearTenant,
+            select: (tenant: ActiveTenant) => activeTenant.set(tenant),
+          },
         },
       ],
     });
@@ -98,6 +102,7 @@ describe('AuthenticatedContextStore', () => {
     });
     expect(store.ready()).toBe(true);
     expect(store.displayName()).toBe('Ana Prueba');
+    expect(activeTenant()?.timeZoneId).toBe('America/New_York');
   });
 
   it('does not request contextual resources before a tenant is selected', () => {

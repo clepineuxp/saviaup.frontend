@@ -127,6 +127,7 @@ export class AuthenticatedContextStore {
           return;
         }
         this.userInfoState.set(context.userInfo);
+        this.tenantContext.select(context.userInfo.organization);
         this.sectionsState.set(context.sections);
         this.emptyStateMessageState.set(context.emptyStateMessage);
         this.loadedTenantIdState.set(tenant.id);

@@ -1,4 +1,5 @@
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { OrganizationDatePipe } from '../../../shared/pipes/organization-date.pipe';
+import { CurrencyPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -80,8 +81,8 @@ import { ThermalTicketModalComponent } from '../../../shared/components/thermal-
 @Component({
   selector: 'app-table-operation-dialog',
   imports: [
+    OrganizationDatePipe,
     CurrencyPipe,
-    DatePipe,
     FormsModule,
     ReactiveFormsModule,
     TranslatePipe,
@@ -164,16 +165,16 @@ export class TableOperationDialogComponent {
     this.draftItems().reduce((acc, item) => acc + item.unitPrice * item.quantity, 0),
   );
 
-  readonly activeItemsPending = computed(() =>
-    this.activeOrder()?.items.filter((i) => i.status === 'PENDING') ?? [],
+  readonly activeItemsPending = computed(
+    () => this.activeOrder()?.items.filter((i) => i.status === 'PENDING') ?? [],
   );
 
-  readonly activeItemsPaid = computed(() =>
-    this.activeOrder()?.items.filter((i) => i.status === 'PAID') ?? [],
+  readonly activeItemsPaid = computed(
+    () => this.activeOrder()?.items.filter((i) => i.status === 'PAID') ?? [],
   );
 
-  readonly activeItemsCancelled = computed(() =>
-    this.activeOrder()?.items.filter((i) => i.status === 'CANCELLED') ?? [],
+  readonly activeItemsCancelled = computed(
+    () => this.activeOrder()?.items.filter((i) => i.status === 'CANCELLED') ?? [],
   );
 
   constructor() {
@@ -199,7 +200,13 @@ export class TableOperationDialogComponent {
 
     this.loadCategories();
     this.loadCatalog(1);
-    this.settingsStore.load().pipe(takeUntilDestroyed(), catchError(() => EMPTY)).subscribe();
+    this.settingsStore
+      .load()
+      .pipe(
+        takeUntilDestroyed(),
+        catchError(() => EMPTY),
+      )
+      .subscribe();
   }
 
   private loadLogoUrl(): void {
@@ -315,7 +322,8 @@ export class TableOperationDialogComponent {
     if (!order) return;
 
     const pendingItems = order.items.filter((i) => i.status === 'PENDING');
-    const itemsToSummarize = pendingItems.length > 0 ? pendingItems : order.items.filter((i) => i.status !== 'CANCELLED');
+    const itemsToSummarize =
+      pendingItems.length > 0 ? pendingItems : order.items.filter((i) => i.status !== 'CANCELLED');
     const subtotal = itemsToSummarize.reduce((sum, item) => sum + item.subtotal, 0);
 
     const business = this.settingsStore.business();
@@ -608,7 +616,11 @@ export class TableOperationDialogComponent {
   confirmCustomSale(): void {
     const curr = this.customSaleState();
     if (!curr || !curr.description.trim() || curr.price <= 0 || curr.quantity <= 0) {
-      this.toastService.show('Ingresa una descripción y precio válido para la venta libre', 'warning', 3000);
+      this.toastService.show(
+        'Ingresa una descripción y precio válido para la venta libre',
+        'warning',
+        3000,
+      );
       return;
     }
     const item: CreateOrderItem = {
@@ -689,7 +701,11 @@ export class TableOperationDialogComponent {
   confirmCancelItem(): void {
     const state = this.cancellingItemState();
     if (!state || !state.reason.trim()) {
-      this.toastService.show('Debes ingresar un motivo de cancelación obligatorio', 'warning', 3000);
+      this.toastService.show(
+        'Debes ingresar un motivo de cancelación obligatorio',
+        'warning',
+        3000,
+      );
       return;
     }
     this.orderRepo
@@ -835,7 +851,7 @@ export class TableOperationDialogComponent {
     const tipAmount = showTip ? Math.round(subtotalToPay * (tipPct / 100)) : 0;
 
     const methods = this.settingsStore.paymentMethods().filter((pm) => pm.isActive);
-    const defaultMethod = methods.length > 0 ? methods[0]?.name ?? 'Efectivo' : 'Efectivo';
+    const defaultMethod = methods.length > 0 ? (methods[0]?.name ?? 'Efectivo') : 'Efectivo';
 
     this.checkoutState.set({
       isPartial,
@@ -858,7 +874,7 @@ export class TableOperationDialogComponent {
     const nextMixed = !curr.isMixed;
     const targetTotal = curr.subtotalToPay + curr.tipAmount;
     const methods = this.settingsStore.paymentMethods().filter((pm) => pm.isActive);
-    const defaultMethod = methods.length > 0 ? methods[0]?.name ?? 'Efectivo' : 'Efectivo';
+    const defaultMethod = methods.length > 0 ? (methods[0]?.name ?? 'Efectivo') : 'Efectivo';
 
     this.checkoutState.set({
       ...curr,
@@ -984,7 +1000,10 @@ export class TableOperationDialogComponent {
       return;
     }
 
-    const splitsToSend: PaymentSplit[] = state.splits.map((s) => ({ method: s.method, amount: s.amount }));
+    const splitsToSend: PaymentSplit[] = state.splits.map((s) => ({
+      method: s.method,
+      amount: s.amount,
+    }));
 
     const itemsToPayPayload: PartialItemPay[] | undefined = state.itemsToPay.map((i) => ({
       itemId: i.item.id,
@@ -996,7 +1015,7 @@ export class TableOperationDialogComponent {
 
     this.orderRepo
       .checkout(this.table().id, {
-        paymentMethod: state.isMixed ? 'Pago Mixto' : state.splits[0]?.method ?? 'Efectivo',
+        paymentMethod: state.isMixed ? 'Pago Mixto' : (state.splits[0]?.method ?? 'Efectivo'),
         splits: splitsToSend,
         tipAmount: state.tipAmount,
         itemsToPay: itemsToPayPayload,
