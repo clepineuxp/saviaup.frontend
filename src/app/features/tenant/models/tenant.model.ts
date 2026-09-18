@@ -1,4 +1,5 @@
 export interface Tenant {
+  readonly timeZoneId?: string;
   readonly id: string;
   readonly name: string;
   readonly logoUrl?: string;
@@ -7,6 +8,7 @@ export interface Tenant {
 }
 
 export interface TenantDto {
+  readonly timeZoneId?: string;
   readonly id: string;
   readonly name: string;
   readonly logoUrl?: string;

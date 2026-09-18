@@ -1,4 +1,5 @@
 export interface OrganizationDto {
+  readonly timeZoneId?: string;
   readonly id: string;
   readonly name: string;
 }

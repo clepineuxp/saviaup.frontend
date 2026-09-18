@@ -1,4 +1,4 @@
-export type StatisticsPeriod = 'current_month' | 'last_30_days';
+export type StatisticsPeriod = 'current_month' | 'last_30_days' | 'custom_range';
 
 export interface TopSeller {
   readonly userId: string;

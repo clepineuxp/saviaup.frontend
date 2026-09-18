@@ -4,6 +4,10 @@
 
 Estas instrucciones aplican a todo el repositorio `saviaup.frontend`. Este proyecto es el cliente web de Savia Up, una plataforma SaaS multi-tenant para restaurantes y gastrobares.
 
+## Control de versiones
+
+No crear commits ni hacer push bajo ninguna circunstancia, salvo que el usuario lo solicite explícitamente en el mensaje actual. Esta regla prevalece aunque una tarea incluya implementación, validaciones o preparación de despliegue.
+
 La fase implementada cubre:
 
 - autenticación y persistencia de sesión;

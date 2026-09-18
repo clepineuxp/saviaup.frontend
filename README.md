@@ -2,6 +2,8 @@
 
 Frontend de **Savia Up**, una plataforma SaaS multi-tenant para restaurantes y gastrobares. Esta fase cubre autenticación, recuperación de acceso, selección o creación de organización, navegación contextual, categorías, productos con recetas y control de costos, existencias e inventario operativo, gestión de órdenes y comandas, control de turnos de caja, salas y mesas interactivas en tiempo real, facturación con comprobantes térmicos, estadísticas analíticas y administración de gastos y proveedores.
 
+> Control de versiones: no se crean commits ni se hace push salvo solicitud explícita del usuario en el mensaje actual.
+
 ## Stack
 
 - Angular 21.2 con componentes standalone, Signals y Router.

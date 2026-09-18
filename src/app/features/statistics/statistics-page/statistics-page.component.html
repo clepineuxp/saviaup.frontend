@@ -8,7 +8,7 @@
 
     <!-- Global Filter Controls -->
     <div class="filters-bar">
-      <div class="btn-group period-toggle">
+      <div class="period-segmented" [attr.data-period]="period()" role="tablist">
         <button
           type="button"
           [class.active]="period() === 'current_month'"
@@ -23,7 +23,41 @@
         >
           {{ 'statistics.period.last30Days' | translate }}
         </button>
+        <button
+          type="button"
+          [class.active]="period() === 'custom_range'"
+          (click)="setPeriod('custom_range')"
+        >
+          {{ 'statistics.period.customRange' | translate }}
+        </button>
       </div>
+
+      @if (period() === 'custom_range') {
+        <div class="range-fields">
+          <div class="field-item">
+            <label for="statistics-from-date">{{ 'statistics.period.fromDate' | translate }}:</label>
+            <input
+              id="statistics-from-date"
+              type="date"
+              class="date-input"
+              [ngModel]="fromDate()"
+              [max]="toDate()"
+              (ngModelChange)="fromDate.set($event); onCustomRangeChange()"
+            />
+          </div>
+          <div class="field-item">
+            <label for="statistics-to-date">{{ 'statistics.period.toDate' | translate }}:</label>
+            <input
+              id="statistics-to-date"
+              type="date"
+              class="date-input"
+              [ngModel]="toDate()"
+              [min]="fromDate()"
+              (ngModelChange)="toDate.set($event); onCustomRangeChange()"
+            />
+          </div>
+        </div>
+      }
 
       <button
         type="button"
@@ -62,9 +96,25 @@
       <article class="kpi-card kpi-card--expense">
         <div class="kpi-icon">💸</div>
         <div class="kpi-content">
-          <span class="kpi-label">Gastos Totales</span>
+          <span class="kpi-label">{{ 'statistics.kpi.totalExpenses' | translate }}</span>
           <strong class="kpi-value">{{ dash.summary.totalExpenses | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
           <span class="kpi-subtext">Gastos del período</span>
+        </div>
+      </article>
+
+      <article
+        class="kpi-card kpi-card--balance"
+        [class.kpi-card--balance-positive]="balance() > 0"
+        [class.kpi-card--balance-negative]="balance() < 0"
+        [class.kpi-card--balance-neutral]="balance() === 0"
+      >
+        <div class="kpi-icon">⚖️</div>
+        <div class="kpi-content">
+          <span class="kpi-label">{{ 'statistics.kpi.balance' | translate }}</span>
+          <strong class="kpi-value">{{ balance() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+          <span class="kpi-subtext">
+            {{ (balance() > 0 ? 'statistics.kpi.balancePositive' : balance() < 0 ? 'statistics.kpi.balanceNegative' : 'statistics.kpi.balanceNeutral') | translate }}
+          </span>
         </div>
       </article>
 

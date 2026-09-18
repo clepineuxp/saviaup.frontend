@@ -27,6 +27,7 @@ export interface UserDto {
 }
 
 export interface ActiveTenantDto {
+  readonly timeZoneId?: string;
   readonly id: string;
   readonly name: string;
 }

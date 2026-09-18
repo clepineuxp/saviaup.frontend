@@ -35,7 +35,11 @@ export class TenantStore {
       this.repository.select(tenant.id).pipe(
         tap((result) => {
           this.authStore.acceptContextualTokens(result.tokens);
-          this.tenantContext.select({ id: result.tenant.id, name: result.tenant.name });
+          this.tenantContext.select({
+            id: result.tenant.id,
+            name: result.tenant.name,
+            timeZoneId: result.tenant.timeZoneId,
+          });
         }),
         switchMap(() => this.authenticatedContext.load()),
         map(() => undefined),
@@ -50,7 +54,11 @@ export class TenantStore {
         tap((result) => {
           this.authStore.acceptContextualTokens(result.tokens);
           this.tenantsState.update((tenants) => [...tenants, result.tenant]);
-          this.tenantContext.select({ id: result.tenant.id, name: result.tenant.name });
+          this.tenantContext.select({
+            id: result.tenant.id,
+            name: result.tenant.name,
+            timeZoneId: result.tenant.timeZoneId,
+          });
         }),
         switchMap((result) => this.authenticatedContext.load().pipe(map(() => result.tenant))),
       ),

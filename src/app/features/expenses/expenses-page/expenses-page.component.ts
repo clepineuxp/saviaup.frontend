@@ -1,10 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  inject,
-  signal,
-} from '@angular/core';
+import { OrganizationTime } from '../../../core/tenant/organization-time.service';
+import { OrganizationDatePipe } from '../../../shared/pipes/organization-date.pipe';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiAlertComponent } from '../../../shared/components/ui-alert/ui-alert.component';
@@ -13,13 +9,18 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { ExpenseStoreService } from '../data-access/expense-store.service';
 import { SupplierStoreService } from '../../suppliers/data-access/supplier-store.service';
 import { Expense } from '../models/expense.model';
-import { AnnulExpensePayload, CreateExpensePayload, UpdateExpensePayload } from '../data-access/expense.contracts';
+import {
+  AnnulExpensePayload,
+  CreateExpensePayload,
+  UpdateExpensePayload,
+} from '../data-access/expense.contracts';
 import { ExpenseFormDialogComponent } from '../expense-form-dialog/expense-form-dialog.component';
 import { ExpenseAnnulDialogComponent } from '../expense-annul-dialog/expense-annul-dialog.component';
 
 @Component({
   selector: 'app-expenses-page',
   imports: [
+    OrganizationDatePipe,
     CommonModule,
     FormsModule,
     UiAlertComponent,
@@ -33,6 +34,7 @@ import { ExpenseAnnulDialogComponent } from '../expense-annul-dialog/expense-ann
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExpensesPageComponent implements OnInit {
+  private readonly organizationTime = inject(OrganizationTime);
   readonly store = inject(ExpenseStoreService);
   readonly supplierStore = inject(SupplierStoreService);
 
@@ -58,8 +60,8 @@ export class ExpensesPageComponent implements OnInit {
       this.cashOutFilter() === 'CASHOUT'
         ? true
         : this.cashOutFilter() === 'NON_CASHOUT'
-        ? false
-        : undefined;
+          ? false
+          : undefined;
 
     this.store.setFilters(
       this.fromDateInput(),
@@ -68,13 +70,12 @@ export class ExpensesPageComponent implements OnInit {
       this.supplierFilter(),
       this.statusFilter(),
       this.paymentMethodFilter(),
-      cashOutVal
+      cashOutVal,
     );
   }
 
   resetDateFilters(): void {
-    const d = new Date();
-    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const today = this.organizationTime.localDate();
     this.fromDateInput.set(today);
     this.toDateInput.set(today);
     this.applyFilters();
@@ -99,12 +100,10 @@ export class ExpensesPageComponent implements OnInit {
     const current = this.selectedExpense();
     if (current) {
       this.store.updateExpense(current.id, payload as UpdateExpensePayload, () =>
-        this.closeFormDialog()
+        this.closeFormDialog(),
       );
     } else {
-      this.store.createExpense(payload as CreateExpensePayload, () =>
-        this.closeFormDialog()
-      );
+      this.store.createExpense(payload as CreateExpensePayload, () => this.closeFormDialog());
     }
   }
 

@@ -45,12 +45,18 @@
         <!-- META TRANSACCIÓN -->
         <div class="ticket-meta-block">
           <div class="ticket-meta-line">
-            <span>TICKET N°: <strong>#{{ rcpt.receiptNumber }}</strong></span>
-            <span>COMANDA: <strong>#{{ EffectiveOrderNumber }}</strong></span>
+            <span
+              >TICKET N°: <strong>#{{ rcpt.receiptNumber }}</strong></span
+            >
+            <span
+              >COMANDA: <strong>#{{ EffectiveOrderNumber }}</strong></span
+            >
           </div>
           <div class="ticket-meta-line">
-            <span>MESA: <strong>{{ EffectiveTableName }}</strong></span>
-            <span>FECHA: {{ rcpt.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+            <span
+              >MESA: <strong>{{ EffectiveTableName }}</strong></span
+            >
+            <span>FECHA: {{ rcpt.createdAt | organizationDate: 'dd/MM/yyyy HH:mm' }}</span>
           </div>
           <div class="ticket-meta-line">
             <span>ATENDIDO POR: {{ rcpt.issuedByUserName }}</span>
@@ -72,7 +78,9 @@
           @for (item of parsedItems; track $index) {
             <div class="ticket-item-row">
               <div class="t-item-name">{{ item.quantity }}x {{ item.productName }}</div>
-              <div class="t-item-val">{{ item.subtotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</div>
+              <div class="t-item-val">
+                {{ item.subtotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+              </div>
             </div>
           }
         </div>
@@ -88,10 +96,16 @@
           </div>
 
           <!-- 9- PROPINA VOLUNTARIA O SUGERIDA -->
-          @if (rcpt.receiptType === 'PRE_BILLING' && (biz?.showVoluntaryTip || rcpt.tipAmount > 0)) {
+          @if (
+            rcpt.receiptType === 'PRE_BILLING' && (biz?.showVoluntaryTip || rcpt.tipAmount > 0)
+          ) {
             @if (rcpt.tipAmount > 0) {
               <div class="ticket-total-line">
-                <span>{{ biz?.tipMessage || 'Servicio Voluntario' }} ({{ biz?.suggestedTipPercentage || 10 }}%):</span>
+                <span
+                  >{{ biz?.tipMessage || 'Servicio Voluntario' }} ({{
+                    biz?.suggestedTipPercentage || 10
+                  }}%):</span
+                >
                 <span>{{ rcpt.tipAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
               </div>
             }
@@ -114,7 +128,11 @@
 
           <!-- 12- TOTAL A PAGAR CON PROPINA -->
           <div class="ticket-total-line total-grand">
-            <span>{{ rcpt.receiptType === 'PRE_BILLING' && rcpt.tipAmount > 0 ? ('Total con ' + (biz?.tipMessage || 'Servicio Voluntario') + ':') : 'TOTAL A PAGAR:' }}</span>
+            <span>{{
+              rcpt.receiptType === 'PRE_BILLING' && rcpt.tipAmount > 0
+                ? 'Total con ' + (biz?.tipMessage || 'Servicio Voluntario') + ':'
+                : 'TOTAL A PAGAR:'
+            }}</span>
             <strong>{{ rcpt.totalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
           </div>
         </div>
@@ -137,7 +155,9 @@
 
         <!-- 13- PIE DE COMPROBANTE -->
         <footer class="ticket-footer-block">
-          <h3 class="ticket-footer-title">*** {{ rcpt.receiptType === 'PAYMENT' ? 'COMPROBANTE DE PAGO' : rcpt.title }} ***</h3>
+          <h3 class="ticket-footer-title">
+            *** {{ rcpt.receiptType === 'PAYMENT' ? 'COMPROBANTE DE PAGO' : rcpt.title }} ***
+          </h3>
           <p class="ticket-footer-msg">¡Gracias por su visita!</p>
           <small class="ticket-software-credit">SaviaUp SaaS · Sistema POS</small>
         </footer>

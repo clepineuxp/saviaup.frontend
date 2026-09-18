@@ -10,6 +10,8 @@
 }
 
 .metric {
+  --metric-label-bg: #eff6ff;
+  --metric-label-color: #1d4ed8;
   position: relative;
   display: flex;
   min-width: 0;
@@ -38,16 +40,45 @@
   background: var(--color-savia-500, #22c55e);
 }
 
+.metric--tables {
+  --metric-label-bg: var(--color-savia-50, #edf7f0);
+  --metric-label-color: var(--color-savia-700, #245d3b);
+}
+
 .metric--sales::before {
   background: #ed974d;
+}
+
+.metric--sales {
+  --metric-label-bg: #fff7ed;
+  --metric-label-color: #9a3412;
 }
 
 .metric--dynamic-sales::before {
   background: #3b82f6;
 }
 
+.metric--dynamic-sales {
+  --metric-label-bg: #eff6ff;
+  --metric-label-color: #1d4ed8;
+}
+
 .metric--dynamic-expenses::before {
   background: #ef4444;
+}
+
+.metric--dynamic-expenses {
+  --metric-label-bg: #fef2f2;
+  --metric-label-color: #b91c1c;
+}
+
+.metric--dynamic-balance::before {
+  background: var(--color-muted, #657168);
+}
+
+.metric--dynamic-balance {
+  --metric-label-bg: var(--color-canvas, #f6f7f3);
+  --metric-label-color: var(--color-muted, #657168);
 }
 
 .metric--toggle-group {
@@ -115,9 +146,51 @@
   color: var(--color-muted, #64748b);
 }
 
+.metric-value--positive {
+  color: var(--color-savia-700, #245d3b) !important;
+}
+
+.metric-value--negative {
+  color: #b91c1c !important;
+}
+
+.metric-value--neutral {
+  color: var(--color-muted, #657168) !important;
+}
+
 @media (max-width: 620px) {
   .metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metric:not(.metric--toggle-group) {
+    min-height: 4.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.25rem;
+
+    &::before {
+      display: none;
+    }
+
+    span {
+      align-self: stretch;
+      width: auto;
+      margin: -0.65rem -0.85rem 0;
+      padding: 0.42rem 0.75rem 0.38rem;
+      border-radius: 0.8rem 0.8rem 0.55rem 0;
+      background: linear-gradient(110deg, var(--metric-label-bg) 0%, var(--metric-label-bg) 72%, transparent 100%);
+      color: var(--metric-label-color, #1d4ed8);
+      overflow: visible;
+      text-overflow: clip;
+      white-space: normal;
+      line-height: 1.15;
+    }
+
+    strong {
+      align-self: flex-end;
+    }
   }
 
   .metric--toggle-group {

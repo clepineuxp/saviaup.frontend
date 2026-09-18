@@ -1,4 +1,5 @@
 :host {
+  --color-primary: var(--color-savia-600, #2e7449);
   display: block;
   width: 100%;
   max-width: 100%;
@@ -246,8 +247,8 @@
   font-weight: 700;
 
   &-ticket {
-    background: #e0e7ff;
-    color: #4338ca;
+    background: var(--color-savia-50, #edf7f0);
+    color: var(--color-savia-700, #245d3b);
   }
 
   &-count {
@@ -321,11 +322,11 @@
   transition: all 0.2s;
 
   &.print-btn {
-    background: #e0e7ff;
-    color: #4338ca;
+    background: var(--color-savia-50, #edf7f0);
+    color: var(--color-savia-700, #245d3b);
 
     &:hover {
-      background: #c7d2fe;
+      background: var(--color-savia-100, #d7ebdc);
     }
   }
 

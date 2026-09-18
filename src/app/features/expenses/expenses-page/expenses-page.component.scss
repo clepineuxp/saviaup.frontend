@@ -1,4 +1,5 @@
 :host {
+  --color-primary: var(--color-savia-600, #2e7449);
   display: block;
   width: 100%;
   max-width: 100%;
@@ -77,7 +78,7 @@
       font-size: 1.4rem;
 
       &.icon-expenses {
-        background: #e0e7ff;
+        background: var(--color-savia-50, #edf7f0);
       }
 
       &.icon-cashout {
@@ -157,13 +158,13 @@
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--color-primary, #6366f1);
-    background: #e0e7ff;
+    background: var(--color-savia-50, #edf7f0);
     border: none;
     border-radius: 0.6rem;
     cursor: pointer;
 
     &:hover {
-      background: #c7d2fe;
+      background: var(--color-savia-100, #d7ebdc);
     }
   }
 }
@@ -294,8 +295,8 @@
 .badge-consecutive {
   display: inline-block;
   padding: 0.25rem 0.6rem;
-  background: #e0e7ff;
-  color: #4338ca;
+  background: var(--color-savia-50, #edf7f0);
+  color: var(--color-savia-700, #245d3b);
   border-radius: 0.4rem;
   font-size: 0.82rem;
   font-weight: 700;
@@ -398,9 +399,9 @@
   transition: all 0.2s;
 
   &.edit-btn {
-    background: #e0e7ff;
-    color: #4338ca;
-    &:hover { background: #c7d2fe; }
+    background: var(--color-savia-50, #edf7f0);
+    color: var(--color-savia-700, #245d3b);
+    &:hover { background: var(--color-savia-100, #d7ebdc); }
   }
 
   &.annul-btn {

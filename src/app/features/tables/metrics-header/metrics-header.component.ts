@@ -49,6 +49,8 @@ export class MetricsHeaderComponent {
     return m.todayExpensesTotal ?? 0;
   });
 
+  readonly balanceValue = computed(() => this.salesValue() - this.expensesValue());
+
   toggleMode(newMode: MetricsMode): void {
     this.mode.set(newMode);
   }

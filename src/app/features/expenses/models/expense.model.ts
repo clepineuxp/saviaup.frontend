@@ -13,6 +13,7 @@ export interface Expense {
   paymentMethod: string;
   supplier: ExpenseSupplier | null;
   expenseDate: string;
+  businessDate?: string | null;
   status: 'ACTIVE' | 'ANNULLED';
   annulledReason: string | null;
   annulledAt: string | null;
