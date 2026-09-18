@@ -41,6 +41,22 @@ export const routes: Routes = [
       import('./features/tenant/tenant.routes').then((routesFile) => routesFile.TENANT_ROUTES),
   },
   {
+    path: 'm/:slug',
+    loadComponent: () =>
+      import('./layouts/digital-menu-layout/digital-menu-layout.component').then(
+        (component) => component.DigitalMenuLayoutComponent,
+      ),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/digital-menu/public-menu/public-menu.component').then(
+            (component) => component.PublicMenuComponent,
+          ),
+      },
+    ],
+  },
+  {
     path: 'app',
     canActivate: [authGuard, tenantGuard],
     loadComponent: () =>
@@ -95,6 +111,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'configuration/digital-menu/manage',
+        title: 'Administrar menú · Savia Up',
+        loadChildren: () =>
+          import('./features/digital-menu/digital-menu.routes').then(
+            (routesFile) => routesFile.DIGITAL_MENU_ROUTES,
+          ),
+      },
+      {
         path: 'cash-registers',
         title: 'Manejo de cajas · Savia Up',
         canActivate: [
@@ -131,6 +155,11 @@ export const routes: Routes = [
           import('./features/settings/settings.routes').then(
             (routesFile) => routesFile.SETTINGS_ROUTES,
           ),
+      },
+      {
+        path: 'digital-menu',
+        pathMatch: 'prefix',
+        redirectTo: 'configuration/digital-menu/manage',
       },
       {
         path: 'inventory',
@@ -194,6 +223,16 @@ export const routes: Routes = [
     path: 'configuration/cash-registers/manage',
     pathMatch: 'full',
     redirectTo: 'app/configuration/cash-registers/manage',
+  },
+  {
+    path: 'configuration/digital-menu/manage',
+    pathMatch: 'prefix',
+    redirectTo: 'app/configuration/digital-menu/manage',
+  },
+  {
+    path: 'digital-menu',
+    pathMatch: 'prefix',
+    redirectTo: 'app/configuration/digital-menu/manage',
   },
   {
     path: 'cash-registers',

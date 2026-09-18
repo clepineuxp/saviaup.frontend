@@ -34,6 +34,8 @@ export interface BusinessSettings {
   readonly suggestedTipPercentage: number;
 }
 
+export type UpdateBusinessSettings = BusinessSettings;
+
 export interface PaymentMethod {
   readonly id: string;
   readonly name: string;

@@ -1,0 +1,201 @@
+<div class="products-config-page">
+    <div class="controls-bar">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          [placeholder]="'digitalMenu.products.searchPlaceholder' | translate"
+          class="search-input"
+        />
+        @if (searchQuery()) {
+          <button type="button" class="clear-btn" (click)="searchQuery.set('')">✕</button>
+        }
+      </div>
+
+      <div class="actions">
+        <button
+          type="button"
+          class="button-save"
+          [disabled]="store.saving()"
+          (click)="save()"
+        >
+          @if (store.saving()) {
+            <span class="spinner"></span>
+            <span>{{ 'digitalMenu.action.saving' | translate }}</span>
+          } @else {
+            <span class="icon">💾</span>
+            <span>{{ 'digitalMenu.action.saveChanges' | translate }}</span>
+          }
+        </button>
+      </div>
+    </div>
+
+    @if (store.loading()) {
+      <div class="loading-state">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+    } @else if (filteredCategories().length === 0) {
+      <div class="empty-state">
+        <p>{{ 'digitalMenu.products.empty' | translate }}</p>
+      </div>
+    } @else {
+      <div class="categories-list">
+        @for (category of filteredCategories(); track category.targetId) {
+          <article
+            class="category-card"
+            [class.inactive]="!category.isActive"
+            [class.dragging]="draggedCategoryId() === category.targetId"
+            draggable="true"
+            (dragstart)="startCategoryDrag(category.targetId, $event)"
+            (dragover)="$event.preventDefault()"
+            (drop)="dropCategory(category.targetId, $event)"
+          >
+            <header
+              class="category-header"
+              role="button"
+              tabindex="0"
+              (click)="toggleCategoryExpanded(category.targetId)"
+              (keyup.enter)="toggleCategoryExpanded(category.targetId)"
+              (keyup.space)="toggleCategoryExpanded(category.targetId)"
+            >
+              <div class="left-section">
+                <div class="reorder-controls" title="También puedes arrastrar esta categoría">
+                  <span class="drag-handle" aria-hidden="true">⠿</span>
+                  <button
+                    type="button"
+                    class="btn-reorder"
+                    [disabled]="!canMoveCategory(category.targetId, 'up')"
+                    (click)="moveCategory(category.targetId, 'up', $event)"
+                    title="Mover arriba"
+                  >
+                    ▲
+                  </button>
+                  <span class="order-badge">{{ category.sortOrder }}</span>
+                  <button
+                    type="button"
+                    class="btn-reorder"
+                    [disabled]="!canMoveCategory(category.targetId, 'down')"
+                    (click)="moveCategory(category.targetId, 'down', $event)"
+                    title="Mover abajo"
+                  >
+                    ▼
+                  </button>
+                </div>
+
+                <div class="category-meta">
+                  <h3 class="category-name notranslate" translate="no">{{ category.name }}</h3>
+                  <span class="product-count">
+                    {{ getProductsForCategory(category.targetId).length }} {{ 'digitalMenu.products.itemsCount' | translate }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="right-section">
+                <label class="toggle-container">
+                  <span class="toggle-label">{{ (category.isActive ? 'digitalMenu.status.visible' : 'digitalMenu.status.hidden') | translate }}</span>
+                  <input
+                    type="checkbox"
+                    [checked]="category.isActive"
+                    (click)="$event.stopPropagation()"
+                    (change)="toggleCategory(category.targetId, $event)"
+                  />
+                  <span class="toggle-slider"></span>
+                </label>
+
+                <button
+                  type="button"
+                  class="btn-expand"
+                  [attr.aria-expanded]="isCategoryExpanded(category.targetId)"
+                >
+                  {{ isCategoryExpanded(category.targetId) ? '▲' : '▼' }}
+                </button>
+              </div>
+            </header>
+
+            @if (isCategoryExpanded(category.targetId)) {
+              <div class="products-table-wrap">
+                @if (getProductsForCategory(category.targetId).length === 0) {
+                  <div class="empty-category">
+                    <span>{{ 'digitalMenu.products.noProductsInCategory' | translate }}</span>
+                  </div>
+                } @else {
+                  <table class="products-table">
+                    <thead>
+                      <tr>
+                        <th class="th-order">{{ 'digitalMenu.column.order' | translate }}</th>
+                        <th class="th-name">{{ 'digitalMenu.column.product' | translate }}</th>
+                        <th class="th-price">{{ 'digitalMenu.column.price' | translate }}</th>
+                        <th class="th-status">{{ 'digitalMenu.column.status' | translate }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (prod of getProductsForCategory(category.targetId); track prod.targetId; let prodIndex = $index) {
+                        <tr
+                          [class.product-inactive]="!prod.isActive"
+                          [class.dragging]="draggedProductId() === prod.targetId"
+                          draggable="true"
+                          (dragstart)="startProductDrag(prod.targetId, $event)"
+                          (dragover)="$event.preventDefault()"
+                          (drop)="dropProduct(prod.targetId, $event)"
+                        >
+                          <td class="td-order">
+                            <div class="reorder-controls-small" title="También puedes arrastrar este producto">
+                              <span class="drag-handle-small" aria-hidden="true">⠿</span>
+                              <button
+                                type="button"
+                                class="btn-reorder-small"
+                                [disabled]="prodIndex === 0"
+                                (click)="moveProduct(prod.targetId, 'up')"
+                                title="Mover arriba"
+                              >
+                                ▲
+                              </button>
+                              <span class="order-badge-small">{{ prod.sortOrder }}</span>
+                              <button
+                                type="button"
+                                class="btn-reorder-small"
+                                [disabled]="prodIndex === getProductsForCategory(category.targetId).length - 1"
+                                (click)="moveProduct(prod.targetId, 'down')"
+                                title="Mover abajo"
+                              >
+                                ▼
+                              </button>
+                            </div>
+                          </td>
+                          <td class="td-name">
+                            <div class="product-info">
+                              <span class="name notranslate" translate="no">{{ prod.name }}</span>
+                              @if (prod.description) {
+                                <span class="desc">{{ prod.description }}</span>
+                              }
+                            </div>
+                          </td>
+                          <td class="td-price">
+                            <span class="price-tag">${{ prod.price | number:'1.0-2' }}</span>
+                          </td>
+                          <td class="td-status">
+                            <label class="toggle-container small">
+                              <input
+                                type="checkbox"
+                                [checked]="prod.isActive"
+                                (change)="toggleProduct(prod.targetId)"
+                              />
+                              <span class="toggle-slider"></span>
+                            </label>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+              </div>
+            }
+          </article>
+        }
+      </div>
+    }
+  </div>

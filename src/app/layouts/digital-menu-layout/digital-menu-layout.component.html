@@ -1,0 +1,83 @@
+<div
+  class="digital-menu-app"
+  [attr.data-template]="menu()?.style?.templateId ?? 'bistro'"
+  [attr.data-header-alignment]="menu()?.style?.headerAlignment ?? 'left'"
+  [style.--menu-primary]="menu()?.style?.primaryColor ?? '#10b981'"
+  [style.--menu-accent]="menu()?.style?.accentColor ?? '#f59e0b'"
+  [style.--menu-bg]="menu()?.style?.backgroundColor ?? '#ffffff'"
+  [style.--menu-text]="menu()?.style?.textColor ?? '#0f172a'"
+  [style.--menu-selected-button-text]="menu()?.style?.selectedButtonTextColor ?? '#ffffff'"
+  [style.font-family]="(menu()?.style?.fontFamily ?? 'Inter') + ', sans-serif'"
+>
+  @if (loading()) {
+    <div class="menu-loader-container">
+      <div class="pulse-loader"></div>
+      <p>Cargando menú digital…</p>
+    </div>
+  } @else if (error()) {
+    <div class="menu-error-container">
+      <div class="error-icon">🍽️</div>
+      <h2>Menú no disponible</h2>
+      <p>{{ error() }}</p>
+      <a href="/" class="btn-home">Ir al inicio</a>
+    </div>
+  } @else if (menu(); as m) {
+    <ng-template #businessInfo>
+      <div class="brand-details">
+        <h1 class="restaurant-name notranslate" translate="no">{{ m.organizationName }}</h1>
+        @if (m.style.welcomeMessage) {
+          <p class="restaurant-welcome">{{ m.style.welcomeMessage }}</p>
+        }
+
+        <div class="meta-chips">
+          @if (m.address) {
+            <span class="meta-chip">📍 {{ m.address }}</span>
+          }
+          @if (m.phone) {
+            <a [href]="'tel:' + m.phone" class="meta-chip">📞 {{ m.phone }}</a>
+          }
+          @if (m.website) {
+            <a [href]="m.website" target="_blank" rel="noopener noreferrer" class="meta-chip">🌐 Web</a>
+          }
+        </div>
+      </div>
+    </ng-template>
+
+    @if (m.style.infoPlacement !== 'footer' || (m.logo && (m.style.logoPlacement === 'header' || m.style.logoPlacement === 'both'))) {
+      <header class="public-restaurant-header">
+        <div class="header-container">
+          <div class="brand-block">
+            @if (m.logo && (m.style.logoPlacement === 'header' || m.style.logoPlacement === 'both')) {
+              <img [src]="m.logo" [alt]="m.organizationName" class="restaurant-logo" />
+            }
+            @if (m.style.infoPlacement !== 'footer') {
+              <ng-container [ngTemplateOutlet]="businessInfo" />
+            }
+          </div>
+        </div>
+      </header>
+    }
+
+    <main class="menu-main-content">
+      <router-outlet />
+    </main>
+
+    <footer class="public-menu-footer">
+      @if (m.style.infoPlacement === 'footer' || (m.logo && (m.style.logoPlacement === 'footer' || m.style.logoPlacement === 'both'))) {
+        <div class="footer-business-info">
+          <div class="brand-block">
+            @if (m.logo && (m.style.logoPlacement === 'footer' || m.style.logoPlacement === 'both')) {
+              <img [src]="m.logo" [alt]="m.organizationName" class="restaurant-logo" />
+            }
+            @if (m.style.infoPlacement === 'footer') {
+              <ng-container [ngTemplateOutlet]="businessInfo" />
+            }
+          </div>
+        </div>
+      }
+      <div class="footer-container">
+        <span>Menú digital impulsado por <strong>Savia Up</strong></span>
+      </div>
+    </footer>
+  }
+</div>

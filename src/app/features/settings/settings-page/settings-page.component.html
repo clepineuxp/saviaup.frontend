@@ -264,6 +264,7 @@
             ><input type="number" min="0" max="100" formControlName="suggestedTipPercentage"
           /></label>
         </div>
+
         @if (store.hasPermission('settings.business.manage')) {
           <div class="actions">
             <button class="button primary" type="submit" [disabled]="store.mutating()">

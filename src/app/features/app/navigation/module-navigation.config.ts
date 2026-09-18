@@ -17,6 +17,7 @@ export type ModuleIcon =
   | 'expenses'
   | 'suppliers'
   | 'settings'
+  | 'menu'
   | 'module';
 
 export interface ModuleNavigationDefinition {
@@ -68,6 +69,10 @@ const optionDefinitions = new Map<string, ModuleNavigationDefinition>([
     'cash-registers.manage',
     { code: 'cash-registers.manage', path: 'configuration/cash-registers/manage', icon: 'billing' },
   ],
+  [
+    'digital-menu.manage',
+    { code: 'digital-menu.manage', path: 'configuration/digital-menu/manage', icon: 'menu' },
+  ],
 ]);
 
 export const MODULE_ICON_GLYPHS: Readonly<Record<ModuleIcon, string>> = {
@@ -82,6 +87,7 @@ export const MODULE_ICON_GLYPHS: Readonly<Record<ModuleIcon, string>> = {
   expenses: '💳',
   suppliers: '🏢',
   settings: '⚙',
+  menu: '🍽',
   module: '◫',
 };
 
