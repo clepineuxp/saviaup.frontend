@@ -176,6 +176,66 @@ Las opciones futuras se resuelven por `option.code` y, si no existe una configur
 
 El manifest, iconos, `ngsw-config.json` y registro de Service Worker están configurados. El Service Worker solo se habilita en builds de producción y requiere HTTPS (excepto localhost) para instalación.
 
+La detección de actualizaciones se inicia con la aplicación, incluso en login y selección de
+organización. Después de que Angular se estabiliza, consulta inmediatamente y cada 60 segundos
+mientras la página esté visible y conectada. También consulta al recuperar foco, visibilidad o
+conexión, sin ejecutar consultas simultáneas. El aviso aparece cuando Angular termina de descargar
+y validar la nueva versión (`VERSION_READY`); nunca se recarga una orden en curso automáticamente.
+"Actualizar ahora" recarga la página completa para mantener consistentes el shell y los chunks.
+"Ignorar" oculta esa versión durante la sesión de la pestaña; otra versión puede volver a avisar.
+Los fallos se identifican en consola con códigos `[PWA]`; los detalles del worker pueden consultarse
+en `/ngsw/state` desde el navegador afectado.
+
+### Configuración pública de Kubernetes en tiempo de ejecución
+
+La misma imagen sirve para todos los ambientes. Al iniciar el contenedor,
+`docker-entrypoint.d/40-env-config.sh` genera `/usr/share/nginx/html/env-config.js` usando únicamente
+`API_URL` y `SIGNALR_URL` del entorno del proceso. Kubernetes puede suministrarlas mediante
+`env`, `envFrom`, `configMapKeyRef` o `secretKeyRef`; no es necesario reconstruir la imagen.
+Por ejemplo, dentro del contenedor del Deployment (ajustar nombres y claves a los manifiestos existentes):
+
+```yaml
+env:
+  - name: API_URL
+    valueFrom:
+      configMapKeyRef:
+        name: frontend-config
+        key: API_URL
+  - name: SIGNALR_URL
+    valueFrom:
+      secretKeyRef:
+        name: frontend-public-endpoints
+        key: SIGNALR_URL
+```
+
+Ambas variables son **URLs públicas visibles en el navegador**, aunque su origen sea un Secret.
+Nunca mapear contraseñas, claves JWT, credenciales de base de datos u otros secretos del servidor
+a estas variables. El generador no exporta otras variables del contenedor y no registra sus valores.
+Usa `jq` para serializar JSON y reemplaza el archivo de forma atómica, sin interpolar valores sin
+escapar dentro de JavaScript.
+
+`index.html` carga este archivo antes de Angular mediante `/env-config.js?ngsw-bypass=true`.
+Se excluye expresamente de `ngsw-config.json` y se sirve con `Cache-Control: no-store`: la
+configuración pertenece al pod, no al hash del build. Los endpoints inyectados tienen prioridad
+sobre los valores de respaldo del environment; si `SIGNALR_URL` está vacío, se deriva de `API_URL`.
+Para despliegues Kubernetes, definir `API_URL` explícitamente; los valores vacíos conservan los
+valores de respaldo existentes. Si se cambia un ConfigMap o Secret consumido como variable de
+entorno, se debe reiniciar el pod y recargar el cliente para obtener la nueva configuración.
+Una modificación de configuración sin un nuevo build no genera por sí sola un aviso de nueva
+versión de Angular ni cambia los endpoints de una sesión que ya esté abierta.
+
+Nginx sirve `ngsw.json` y los scripts del worker sin caché persistente, y reserva `immutable` para
+bundles JS/CSS cuyo nombre contiene el hash del build. Los archivos estáticos ausentes devuelven
+404, en lugar del HTML de la SPA. Si un CDN tiene una copia antigua de `ngsw-worker.js`, invalidarla
+al desplegar este cambio para que reciba las nuevas cabeceras; no configurar reglas de CDN que
+ignoren `no-store` para el manifiesto, el worker o `env-config.js`.
+
+La primera actualización desde un cliente antiguo conserva su intervalo anterior hasta recargar;
+la comprobación cada minuto comienza una vez cargado este build. El tiempo de descarga y las
+restricciones de suspensión del navegador pueden añadir demora. Durante un rollout, todos los
+recursos de un manifiesto deben estar disponibles de forma consistente; usar imágenes identificadas
+por SHA/digest y comprobar que el manifiesto y sus chunks no se sirvan desde builds distintos.
+
 `OfflineDatabaseService` abre IndexedDB bajo demanda y no almacena estado arbitrario. `RealtimeService` construye conexiones SignalR, pero no inicia ninguna hasta que una feature futura lo solicite.
 
 ## Endpoints preparados
@@ -272,6 +332,16 @@ El archivo de Figma “Savia Up · Web App” fue creado como espacio de diseño
 - `/app/configuration/tables/manage` administra salas y mesas, reordena salas y edita capacidad, flags, estado y forma (`SQUARE`, `ROUND`, `RECTANGLE_HORIZONTAL`, `RECTANGLE_VERTICAL`). La posición se define arrastrando la misma tarjeta y con las mismas dimensiones que usa la operación (`100×100`, `150×100` o `100×150`); doble clic abre la edición y el modal permite eliminar con confirmación. El estado se comunica por color y su etiqueta aparece solo con `hover`/foco.
 - `TableRealtimeClient` conecta únicamente durante el ciclo de vida de la feature, envía el JWT vigente y aplica reconexión automática para `OnTableStatusChanged` y `OnTableOrderUpdated`.
 - El bloqueo de caja abierta se deriva del backend y deshabilita todas las acciones de `tables.operate` sin ocultar el estado actual.
+
+## Continuidad de sesión en la PWA
+
+La sesión se conserva hasta el vencimiento del refresh token informado por la API, aunque el access token haya vencido. Las sesiones guardadas antes de incorporar `refreshTokenExpiresAt` se validan contra el endpoint de refresh. La API sigue siendo la autoridad para revocación y expiración; cada renovación persiste el nuevo par de tokens y sus fechas.
+
+`AuthRefreshCoordinator` comparte una sola renovación entre las peticiones HTTP, la reconexión SignalR y los eventos de reactivación de la app. Renueva cuando al access token le queda un minuto o menos. `AuthSessionLifecycle` comprueba al recuperar visibilidad, foco, conexión o página restaurada, y cada 30 segundos mientras la app está visible y en línea. Los temporizadores arrancan después de la estabilización de Angular para no retrasar el Service Worker.
+
+Los fallos de red, límites de peticiones y errores de servidor conservan las credenciales para reintentar. Una respuesta 401 del refresh o su expiración conocida limpia la sesión. Una respuesta tardía no puede restaurar una sesión cerrada ni sobrescribir una sesión nueva. No se recarga la página para renovar tokens.
+
+Se conserva la opción **Recordarme**: activada usa almacenamiento persistente; desactivada usa el almacenamiento de la sesión del navegador. Para recuperar la sesión incluso después de cerrar por completo la PWA o de que el sistema descarte su instancia, se debe activar esta opción al ingresar. La renovación funciona al volver a la app; no requiere que el sistema operativo permita ejecutar JavaScript en segundo plano.
 
 ## Módulos operativos adicionales
 

@@ -176,4 +176,26 @@ describe('AuthStore', () => {
 
     expect(store.user()).toBeNull();
   });
+
+  it('keeps a session navigable after access expiry while refresh remains valid', () => {
+    store.acceptRefreshedTokens({
+      ...testTokens,
+      expiresAt: new Date(0).toISOString(),
+      refreshTokenExpiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+    });
+    expect(store.hasValidSession()).toBe(true);
+  });
+
+  it('rejects a session after refresh expiry', () => {
+    store.acceptRefreshedTokens({
+      ...testTokens,
+      refreshTokenExpiresAt: new Date(0).toISOString(),
+    });
+    expect(store.hasValidSession()).toBe(false);
+  });
+
+  it('allows legacy stored sessions to be validated by refresh instead of forcing login', () => {
+    store.acceptRefreshedTokens({ ...testTokens, expiresAt: new Date(0).toISOString() });
+    expect(store.hasValidSession()).toBe(true);
+  });
 });

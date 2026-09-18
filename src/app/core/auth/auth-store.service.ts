@@ -30,7 +30,12 @@ export class AuthStore {
 
   hasValidSession(): boolean {
     const tokens = this.tokensState();
-    return tokens !== null && new Date(tokens.expiresAt).getTime() > Date.now();
+    // Older persisted sessions do not have refresh expiry; let the API validate them.
+    return (
+      tokens !== null &&
+      Boolean(tokens.refreshToken) &&
+      (!tokens.refreshTokenExpiresAt || Date.parse(tokens.refreshTokenExpiresAt) > Date.now())
+    );
   }
 
   login(command: LoginCommand, rememberMe: boolean): Observable<AuthResult> {

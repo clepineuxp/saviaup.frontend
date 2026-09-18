@@ -1,6 +1,6 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { catchError, of, switchMap, throwError } from 'rxjs';
 import { LocalizationService } from '../../shared/i18n/localization.service';
 import { AuthRefreshCoordinator } from '../auth/auth-refresh-coordinator.service';
 import { TOKEN_STORAGE } from '../auth/token-storage';
@@ -26,20 +26,31 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
     return request.clone({ headers });
   };
 
-  const initial = addContext(storage.load()?.accessToken ?? null);
-  return next(initial).pipe(
-    catchError((error: unknown) => {
-      const canRefresh =
-        error instanceof HttpErrorResponse &&
-        error.status === 401 &&
-        !request.context.get(SKIP_AUTH) &&
-        Boolean(storage.load()?.refreshToken);
+  const tokens = request.context.get(SKIP_AUTH) ? of(null) : refreshCoordinator.ensureFreshTokens();
+  return tokens.pipe(
+    switchMap((session) => {
+      const initial = addContext(session?.accessToken ?? null);
+      return next(initial).pipe(
+        catchError((error: unknown) => {
+          const canRefresh =
+            error instanceof HttpErrorResponse &&
+            error.status === 401 &&
+            !request.context.get(SKIP_AUTH) &&
+            Boolean(storage.load()?.refreshToken);
 
-      if (!canRefresh) return throwError(() => error);
+          if (!canRefresh) return throwError(() => error);
 
-      return refreshCoordinator
-        .refresh()
-        .pipe(switchMap((tokens) => next(addContext(tokens.accessToken))));
+          // Another request may already have rotated the token while this one was in flight.
+          const latest = storage.load();
+          if (latest && latest.accessToken !== session?.accessToken) {
+            return next(addContext(latest.accessToken));
+          }
+
+          return refreshCoordinator
+            .refresh()
+            .pipe(switchMap((tokens) => next(addContext(tokens.accessToken))));
+        }),
+      );
     }),
   );
 };

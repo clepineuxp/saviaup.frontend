@@ -13,8 +13,6 @@ import { UiButtonComponent } from '../../shared/components/ui-button/ui-button.c
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { AppShellState } from './app-shell-state.service';
 
-import { PwaUpdateBannerComponent } from '../../shared/components/pwa-update-banner/pwa-update-banner.component';
-
 @Component({
   selector: 'app-app-layout',
   imports: [
@@ -25,7 +23,6 @@ import { PwaUpdateBannerComponent } from '../../shared/components/pwa-update-ban
     UiAlertComponent,
     UiButtonComponent,
     ToastContainerComponent,
-    PwaUpdateBannerComponent,
     TranslatePipe,
   ],
   templateUrl: './app-layout.component.html',
