@@ -13,7 +13,8 @@
           "/logo/Logo-192.png",
           "/manifest.webmanifest",
           "/*.css",
-          "/*.js"
+          "/*.js",
+          "!/env-config.js"
         ]
       }
     },

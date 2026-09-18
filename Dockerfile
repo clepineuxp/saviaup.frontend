@@ -10,6 +10,7 @@ RUN npm run build
 
 # Stage 2: Serve with Nginx
 FROM nginx:alpine AS final
+RUN apk add --no-cache jq
 WORKDIR /usr/share/nginx/html
 
 # Clean default nginx files
@@ -19,7 +20,7 @@ RUN rm -rf ./*
 COPY --from=build /app/dist/savia-up-web/browser .
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker-entrypoint.d/ /docker-entrypoint.d/
-RUN chmod +x /docker-entrypoint.d/*.sh
+RUN chmod +x /docker-entrypoint.d/*.sh && nginx -t
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
