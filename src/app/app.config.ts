@@ -13,6 +13,7 @@ import { AUTH_REPOSITORY, AuthRepository } from './core/auth/auth-repository';
 import { TOKEN_STORAGE } from './core/auth/token-storage';
 import { WebTokenStorage } from './core/auth/web-token-storage.service';
 import { APP_ENVIRONMENT } from './core/config/app-environment';
+import { PwaUpdateService } from './core/pwa/pwa-update.service';
 import {
   AUTHENTICATED_CONTEXT_REPOSITORY,
   AuthenticatedContextRepository,
@@ -90,6 +91,9 @@ export const appConfig: ApplicationConfig = {
     { provide: PRODUCT_REPOSITORY, useClass: HttpProductRepository },
     { provide: SETTINGS_REPOSITORY, useClass: HttpSettingsRepository },
     SettingsStore,
+    provideAppInitializer(() => {
+      inject(PwaUpdateService);
+    }),
     provideAppInitializer(() => inject(LocalizationService).initialize()),
   ],
 };

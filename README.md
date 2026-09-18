@@ -176,6 +176,66 @@ Las opciones futuras se resuelven por `option.code` y, si no existe una configur
 
 El manifest, iconos, `ngsw-config.json` y registro de Service Worker están configurados. El Service Worker solo se habilita en builds de producción y requiere HTTPS (excepto localhost) para instalación.
 
+La detección de actualizaciones se inicia con la aplicación, incluso en login y selección de
+organización. Después de que Angular se estabiliza, consulta inmediatamente y cada 60 segundos
+mientras la página esté visible y conectada. También consulta al recuperar foco, visibilidad o
+conexión, sin ejecutar consultas simultáneas. El aviso aparece cuando Angular termina de descargar
+y validar la nueva versión (`VERSION_READY`); nunca se recarga una orden en curso automáticamente.
+"Actualizar ahora" recarga la página completa para mantener consistentes el shell y los chunks.
+"Ignorar" oculta esa versión durante la sesión de la pestaña; otra versión puede volver a avisar.
+Los fallos se identifican en consola con códigos `[PWA]`; los detalles del worker pueden consultarse
+en `/ngsw/state` desde el navegador afectado.
+
+### Configuración pública de Kubernetes en tiempo de ejecución
+
+La misma imagen sirve para todos los ambientes. Al iniciar el contenedor,
+`docker-entrypoint.d/40-env-config.sh` genera `/usr/share/nginx/html/env-config.js` usando únicamente
+`API_URL` y `SIGNALR_URL` del entorno del proceso. Kubernetes puede suministrarlas mediante
+`env`, `envFrom`, `configMapKeyRef` o `secretKeyRef`; no es necesario reconstruir la imagen.
+Por ejemplo, dentro del contenedor del Deployment (ajustar nombres y claves a los manifiestos existentes):
+
+```yaml
+env:
+  - name: API_URL
+    valueFrom:
+      configMapKeyRef:
+        name: frontend-config
+        key: API_URL
+  - name: SIGNALR_URL
+    valueFrom:
+      secretKeyRef:
+        name: frontend-public-endpoints
+        key: SIGNALR_URL
+```
+
+Ambas variables son **URLs públicas visibles en el navegador**, aunque su origen sea un Secret.
+Nunca mapear contraseñas, claves JWT, credenciales de base de datos u otros secretos del servidor
+a estas variables. El generador no exporta otras variables del contenedor y no registra sus valores.
+Usa `jq` para serializar JSON y reemplaza el archivo de forma atómica, sin interpolar valores sin
+escapar dentro de JavaScript.
+
+`index.html` carga este archivo antes de Angular mediante `/env-config.js?ngsw-bypass=true`.
+Se excluye expresamente de `ngsw-config.json` y se sirve con `Cache-Control: no-store`: la
+configuración pertenece al pod, no al hash del build. Los endpoints inyectados tienen prioridad
+sobre los valores de respaldo del environment; si `SIGNALR_URL` está vacío, se deriva de `API_URL`.
+Para despliegues Kubernetes, definir `API_URL` explícitamente; los valores vacíos conservan los
+valores de respaldo existentes. Si se cambia un ConfigMap o Secret consumido como variable de
+entorno, se debe reiniciar el pod y recargar el cliente para obtener la nueva configuración.
+Una modificación de configuración sin un nuevo build no genera por sí sola un aviso de nueva
+versión de Angular ni cambia los endpoints de una sesión que ya esté abierta.
+
+Nginx sirve `ngsw.json` y los scripts del worker sin caché persistente, y reserva `immutable` para
+bundles JS/CSS cuyo nombre contiene el hash del build. Los archivos estáticos ausentes devuelven
+404, en lugar del HTML de la SPA. Si un CDN tiene una copia antigua de `ngsw-worker.js`, invalidarla
+al desplegar este cambio para que reciba las nuevas cabeceras; no configurar reglas de CDN que
+ignoren `no-store` para el manifiesto, el worker o `env-config.js`.
+
+La primera actualización desde un cliente antiguo conserva su intervalo anterior hasta recargar;
+la comprobación cada minuto comienza una vez cargado este build. El tiempo de descarga y las
+restricciones de suspensión del navegador pueden añadir demora. Durante un rollout, todos los
+recursos de un manifiesto deben estar disponibles de forma consistente; usar imágenes identificadas
+por SHA/digest y comprobar que el manifiesto y sus chunks no se sirvan desde builds distintos.
+
 `OfflineDatabaseService` abre IndexedDB bajo demanda y no almacena estado arbitrario. `RealtimeService` construye conexiones SignalR, pero no inicia ninguna hasta que una feature futura lo solicite.
 
 ## Endpoints preparados
