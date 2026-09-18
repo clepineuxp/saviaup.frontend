@@ -11,9 +11,11 @@ import {
   effect,
 } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { StatisticsService } from '../data-access/statistics.service';
+import { OrganizationTime } from '../../../core/tenant/organization-time.service';
 import {
   ProductQuantityPoint,
   ProductValuePoint,
@@ -65,7 +67,7 @@ const COLOR_PALETTE = [
 @Component({
   selector: 'app-statistics-page',
   standalone: true,
-  imports: [CommonModule, TranslatePipe, CurrencyPipe],
+  imports: [CommonModule, FormsModule, TranslatePipe, CurrencyPipe],
   templateUrl: './statistics-page.component.html',
   styleUrl: './statistics-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -73,6 +75,7 @@ const COLOR_PALETTE = [
 export class StatisticsPageComponent implements OnInit {
   private readonly statisticsService = inject(StatisticsService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly organizationTime = inject(OrganizationTime);
 
   @ViewChild('salesCanvas') salesCanvas?: ElementRef<HTMLCanvasElement>;
   @ViewChild('productsCanvas') productsCanvas?: ElementRef<HTMLCanvasElement>;
@@ -84,11 +87,22 @@ export class StatisticsPageComponent implements OnInit {
 
   readonly isLoading = signal<boolean>(true);
   readonly period = signal<StatisticsPeriod>('current_month');
+  readonly fromDate = signal<string>('');
+  readonly toDate = signal<string>('');
   readonly includeTips = signal<boolean>(false);
   readonly productMetricMode = signal<'quantity' | 'value'>('quantity');
 
   readonly dashboardData = signal<StatisticsDashboardData | null>(null);
   readonly selectedPointDetail = signal<{ title: string; subtitle: string; sales: number; count: number } | null>(null);
+  readonly isCustomRangeValid = computed(() => {
+    const fromDate = this.fromDate();
+    const toDate = this.toDate();
+    return !!fromDate && !!toDate && fromDate <= toDate;
+  });
+  readonly balance = computed(() => {
+    const summary = this.dashboardData()?.summary;
+    return summary ? summary.totalSales - summary.totalExpenses : 0;
+  });
 
   // Sales by User Max
   readonly salesByUserMax = computed<number>(() => {
@@ -112,12 +126,26 @@ export class StatisticsPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    const today = this.organizationTime.localDate();
+    this.fromDate.set(today);
+    this.toDate.set(today);
     this.loadData();
   }
 
   setPeriod(newPeriod: StatisticsPeriod): void {
     if (this.period() === newPeriod) return;
     this.period.set(newPeriod);
+    if (newPeriod === 'custom_range' && !this.fromDate()) {
+      const today = this.organizationTime.localDate();
+      this.fromDate.set(today);
+      this.toDate.set(today);
+    }
+    this.selectedPointDetail.set(null);
+    this.loadData();
+  }
+
+  onCustomRangeChange(): void {
+    if (this.period() !== 'custom_range' || !this.isCustomRangeValid()) return;
     this.selectedPointDetail.set(null);
     this.loadData();
   }
@@ -133,9 +161,15 @@ export class StatisticsPageComponent implements OnInit {
   }
 
   loadData(): void {
+    if (this.period() === 'custom_range' && !this.isCustomRangeValid()) return;
     this.isLoading.set(true);
     this.statisticsService
-      .getDashboard(this.period(), this.includeTips())
+      .getDashboard(
+        this.period(),
+        this.includeTips(),
+        this.period() === 'custom_range' ? this.fromDate() : undefined,
+        this.period() === 'custom_range' ? this.toDate() : undefined,
+      )
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
