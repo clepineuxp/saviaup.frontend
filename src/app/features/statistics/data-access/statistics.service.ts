@@ -10,10 +10,18 @@ import { StatisticsDashboardData, StatisticsPeriod } from '../models/statistics.
 export class StatisticsService {
   private readonly api = inject(ApiClient);
 
-  getDashboard(period: StatisticsPeriod, includeTips: boolean): Observable<StatisticsDashboardData> {
-    const params = new HttpParams()
+  getDashboard(
+    period: StatisticsPeriod,
+    includeTips: boolean,
+    fromDate?: string,
+    toDate?: string,
+  ): Observable<StatisticsDashboardData> {
+    let params = new HttpParams()
       .set('period', period)
       .set('includeTips', includeTips.toString());
+
+    if (fromDate) params = params.set('fromDate', fromDate);
+    if (toDate) params = params.set('toDate', toDate);
 
     return this.api.get<StatisticsDashboardData>('/api/statistics', { params });
   }

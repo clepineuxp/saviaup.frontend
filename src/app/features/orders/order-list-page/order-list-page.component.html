@@ -15,26 +15,6 @@
     </div>
 
     <div class="header-actions">
-      <!-- Column Customizer Dropdown -->
-      <div class="column-picker-dropdown">
-        <button type="button" class="sav-btn sav-btn-outline" (click)="toggleColumnPicker()">
-          ⚙️ {{ 'orders.customizeColumns' | translate }}
-        </button>
-
-        <div class="column-picker-menu" *ngIf="showColumnPicker()">
-          <div class="picker-header">
-            <span>{{ 'orders.toggleColumnsHeader' | translate }}</span>
-            <button type="button" class="btn-close-sm" (click)="toggleColumnPicker()">✕</button>
-          </div>
-          <div class="picker-options">
-            <label *ngFor="let col of activeColumns()" class="picker-option">
-              <input type="checkbox" [checked]="col.visible" (change)="toggleColumn(col.id)" />
-              <span>{{ col.label | translate }}</span>
-            </label>
-          </div>
-        </div>
-      </div>
-
       <button type="button" class="sav-btn sav-btn-primary" (click)="loadData()">
         🔄 {{ 'orders.refresh' | translate }}
       </button>
@@ -143,6 +123,30 @@
 
   <!-- TAB 1: Orders View Table -->
   <main class="table-card-container" *ngIf="activeTab() === 'orders'">
+    <div class="table-tools" *ngIf="!loading()">
+      <div class="column-picker-dropdown">
+        <button
+          type="button"
+          class="column-picker-trigger"
+          [attr.aria-label]="'orders.customizeColumns' | translate"
+          [attr.aria-expanded]="showColumnPicker()"
+          [title]="'orders.customizeColumns' | translate"
+          (click)="toggleColumnPicker()"
+        >⚙</button>
+        <div class="column-picker-menu" *ngIf="showColumnPicker()">
+          <div class="picker-header">
+            <span>{{ 'orders.toggleColumnsHeader' | translate }}</span>
+            <button type="button" class="btn-close-sm" (click)="toggleColumnPicker()">✕</button>
+          </div>
+          <div class="picker-options">
+            <label *ngFor="let col of activeColumns()" class="picker-option">
+              <input type="checkbox" [checked]="col.visible" (change)="toggleColumn(col.id)" />
+              <span>{{ col.label | translate }}</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="loading-overlay" *ngIf="loading()">
       <span class="spinner"></span>
       <span>{{ 'common.loading' | translate }}</span>
@@ -291,7 +295,7 @@
       <!-- Discriminated Totals Summary -->
       <div class="grand-total-summary-group">
         <div class="grand-total-badge-card subtotal-card">
-          <span>Prod. Vista:</span>
+          <span>{{ 'orders.visibleProductsTotal' | translate }}:</span>
           <strong class="grand-total-val subtotal-val">{{
             ordersSubtotalProductsSum() | currency: 'COP' : 'symbol' : '1.0-0'
           }}</strong>
@@ -342,6 +346,30 @@
 
   <!-- TAB 2: Items Breakdown View Table (Paginated directly from backend endpoint) -->
   <main class="table-card-container" *ngIf="activeTab() === 'items'">
+    <div class="table-tools" *ngIf="!loading()">
+      <div class="column-picker-dropdown">
+        <button
+          type="button"
+          class="column-picker-trigger"
+          [attr.aria-label]="'orders.customizeColumns' | translate"
+          [attr.aria-expanded]="showColumnPicker()"
+          [title]="'orders.customizeColumns' | translate"
+          (click)="toggleColumnPicker()"
+        >⚙</button>
+        <div class="column-picker-menu" *ngIf="showColumnPicker()">
+          <div class="picker-header">
+            <span>{{ 'orders.toggleColumnsHeader' | translate }}</span>
+            <button type="button" class="btn-close-sm" (click)="toggleColumnPicker()">✕</button>
+          </div>
+          <div class="picker-options">
+            <label *ngFor="let col of activeColumns()" class="picker-option">
+              <input type="checkbox" [checked]="col.visible" (change)="toggleColumn(col.id)" />
+              <span>{{ col.label | translate }}</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="loading-overlay" *ngIf="loading()">
       <span class="spinner"></span>
       <span>{{ 'common.loading' | translate }}</span>

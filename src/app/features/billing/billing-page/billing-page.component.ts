@@ -75,8 +75,9 @@ export class BillingPageComponent implements OnInit {
       page: this.page(),
       pageSize: this.pageSize(),
       search: this.searchQuery().trim() || undefined,
-      fromDate: this.fromDate() ? `${this.fromDate()}T00:00:00Z` : undefined,
-      toDate: this.toDate() ? `${this.toDate()}T23:59:59Z` : undefined,
+      // The API resolves these calendar dates in the organization's IANA time zone.
+      fromDate: this.fromDate() || undefined,
+      toDate: this.toDate() || undefined,
     };
 
     if (this.activeTab() === 'receipts') {

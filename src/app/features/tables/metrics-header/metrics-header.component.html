@@ -40,5 +40,14 @@
       <span>{{ (mode() === 'day' ? 'tables.metrics.expensesDay' : 'tables.metrics.expensesShift') | translate }}</span>
       <strong>{{ expensesValue() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
     </article>
+
+    <article class="metric metric--dynamic-balance">
+      <span>{{ (mode() === 'day' ? 'tables.metrics.balanceDay' : 'tables.metrics.balanceShift') | translate }}</span>
+      <strong
+        [class.metric-value--positive]="balanceValue() > 0"
+        [class.metric-value--negative]="balanceValue() < 0"
+        [class.metric-value--neutral]="balanceValue() === 0"
+      >{{ balanceValue() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+    </article>
   }
 </section>
