@@ -1,5 +1,6 @@
 import { OrganizationTime } from '../../../core/tenant/organization-time.service';
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { ApiError } from '../../../shared/http/api-error';
 import { Expense } from '../models/expense.model';
 import {
   AnnulExpensePayload,
@@ -84,7 +85,7 @@ export class ExpenseStoreService {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(err?.error?.message || 'Error al cargar lista de gastos.');
+        this.error.set(this.getErrorMessage(err, 'Error al cargar lista de gastos.'));
         this.loading.set(false);
       },
     });
@@ -118,7 +119,7 @@ export class ExpenseStoreService {
         if (onSuccess) onSuccess();
       },
       error: (err) => {
-        this.error.set(err?.error?.message || 'Error al registrar el gasto.');
+        this.error.set(this.getErrorMessage(err, 'Error al registrar el gasto.'));
         this.loading.set(false);
       },
     });
@@ -133,7 +134,7 @@ export class ExpenseStoreService {
         if (onSuccess) onSuccess();
       },
       error: (err) => {
-        this.error.set(err?.error?.message || 'Error al actualizar el gasto.');
+        this.error.set(this.getErrorMessage(err, 'Error al actualizar el gasto.'));
         this.loading.set(false);
       },
     });
@@ -148,9 +149,13 @@ export class ExpenseStoreService {
         if (onSuccess) onSuccess();
       },
       error: (err) => {
-        this.error.set(err?.error?.message || 'Error al anular el gasto.');
+        this.error.set(this.getErrorMessage(err, 'Error al anular el gasto.'));
         this.loading.set(false);
       },
     });
+  }
+
+  private getErrorMessage(error: unknown, fallback: string): string {
+    return error instanceof ApiError ? error.message : fallback;
   }
 }
