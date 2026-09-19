@@ -292,8 +292,19 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
     if (this.isSystemRoleSelected()) return;
     this.selectedPermissions.update((current) => {
       const next = new Set(current);
-      if (checked) next.add(code);
-      else next.delete(code);
+      const digitalMenuAccess = 'digital-menu.access';
+      const digitalMenuDependents = [
+        'digital-menu.enable',
+        'digital-menu.style.manage',
+        'digital-menu.items.manage',
+      ];
+      if (checked) {
+        next.add(code);
+        if (digitalMenuDependents.includes(code)) next.add(digitalMenuAccess);
+      } else {
+        next.delete(code);
+        if (code === digitalMenuAccess) digitalMenuDependents.forEach((permission) => next.delete(permission));
+      }
       return next;
     });
   }

@@ -17,6 +17,7 @@ export type ModuleIcon =
   | 'expenses'
   | 'suppliers'
   | 'settings'
+  | 'menu'
   | 'module';
 
 export interface ModuleNavigationDefinition {
@@ -56,6 +57,7 @@ export const KNOWN_MODULE_NAVIGATION: readonly ModuleNavigationDefinition[] = [
   { code: 'expenses', path: 'expenses', icon: 'expenses' },
   { code: 'suppliers', path: 'suppliers', icon: 'suppliers' },
   { code: 'settings', path: 'settings', icon: 'settings' },
+  { code: 'digital_menu', path: 'configuration/digital-menu/manage', icon: 'menu' },
 ] as const;
 
 const definitions = new Map(
@@ -82,6 +84,7 @@ export const MODULE_ICON_GLYPHS: Readonly<Record<ModuleIcon, string>> = {
   expenses: '💳',
   suppliers: '🏢',
   settings: '⚙',
+  menu: '🍽',
   module: '◫',
 };
 

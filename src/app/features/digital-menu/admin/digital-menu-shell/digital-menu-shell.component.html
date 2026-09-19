@@ -1,0 +1,203 @@
+<section class="digital-menu-shell">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-main">
+      <span class="eyebrow">Configuración general</span>
+      <div class="title-row">
+        <h1>Administración de Menú</h1>
+        <div class="status-indicator" [class.active]="store.isEnabled()">
+          <span class="dot"></span>
+          <span>{{ store.isEnabled() ? 'Menú digital activo' : 'Menú digital inactivo' }}</span>
+        </div>
+      </div>
+      <p class="description">
+        Configura la disponibilidad, identidad pública, orden del catálogo y personalización visual de tu menú digital.
+      </p>
+    </div>
+  </header>
+
+  <!-- Feedback Alerts -->
+  @if (validationError()) {
+    <div class="alert alert-error" role="alert">
+      <span>⚠️ {{ validationError() }}</span>
+    </div>
+  }
+  @if (store.error()) {
+    <div class="alert alert-error" role="alert">
+      <span>⚠️ {{ store.error() }}</span>
+    </div>
+  }
+  @if (store.success()) {
+    <div class="alert alert-success" role="status">
+      <span>✓ {{ store.success() }}</span>
+    </div>
+  }
+
+  <!-- Superior: Top Configuration Card (Slug & Habilitar menú) -->
+  <section class="top-config-card">
+    <div class="card-header">
+      <div class="card-title-group">
+        <span class="card-badge">Ajustes principales</span>
+        <h2>Disponibilidad e Identidad del Menú</h2>
+      </div>
+      <button
+        type="button"
+        class="button-save-config"
+        [disabled]="!canEnable() || store.savingParameters() || !hasChanges()"
+        (click)="saveParameters()"
+      >
+        @if (store.savingParameters()) {
+          <span class="spinner"></span>
+          <span>Guardando…</span>
+        } @else {
+          <span class="icon">💾</span>
+          <span>Guardar configuración</span>
+        }
+      </button>
+    </div>
+
+    <div class="config-grid">
+      <!-- 1. Habilitar menú digital -->
+      <div class="config-column toggle-column">
+        <div class="setting-item">
+          <div class="setting-text">
+            <label class="setting-label" for="digital-menu-toggle">Habilitar menú digital</label>
+            <p class="setting-hint">
+              Permite a tus clientes acceder al menú desde cualquier dispositivo mediante el enlace público o código QR.
+            </p>
+          </div>
+          <div class="switch-wrapper">
+            <button
+              id="digital-menu-toggle"
+              type="button"
+              role="switch"
+              class="switch-pill"
+              [class.active]="enabled()"
+              [disabled]="!canEnable()"
+              [attr.aria-checked]="enabled()"
+              (click)="toggleEnabled()"
+            >
+              <span class="switch-handle"></span>
+            </button>
+            <span class="switch-status-text">{{ enabled() ? 'Habilitado' : 'Deshabilitado' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Nombre único organización (Slug) -->
+      <div class="config-column slug-column">
+        <div class="setting-item">
+          <div class="setting-text">
+            <div class="label-with-lock">
+              <label class="setting-label" for="digital-menu-slug">
+                Nombre único de organización (slug)
+              </label>
+              @if (isSlugLocked()) {
+                <span class="lock-badge" title="Este identificador ya fue guardado y no puede cambiarse">
+                  🔒 Identificador permanente
+                </span>
+              }
+            </div>
+            <p class="setting-hint">
+              @if (isSlugLocked()) {
+                Identificador asignado a tu organización. Por seguridad e integridad de los enlaces y códigos QR, no se puede modificar.
+              } @else {
+                Asigna un nombre único y representativo para tu restaurante. Una vez guardado, <strong>no podrá cambiarse</strong>.
+              }
+            </p>
+          </div>
+
+          <div class="slug-input-wrapper" [class.disabled]="isSlugLocked()">
+            <span class="slug-prefix">saviaup.com/m/</span>
+            <input
+              id="digital-menu-slug"
+              type="text"
+              class="slug-input notranslate"
+              translate="no"
+              [ngModel]="slug()"
+              (ngModelChange)="onSlugChange($event)"
+              [disabled]="isSlugLocked() || !canEnable()"
+              placeholder="mi-restaurante"
+              maxlength="60"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Banner de Enlace Público y Acciones -->
+    @if (store.publicMenuUrl() && store.isEnabled()) {
+      <div class="public-link-banner">
+        <div class="link-info">
+          <span class="link-label">🌐 Enlace público de tu menú digital:</span>
+          <a
+            [href]="store.publicMenuUrl()"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="link-url notranslate"
+            translate="no"
+          >
+            {{ store.publicMenuUrl() }}
+          </a>
+        </div>
+        <div class="link-actions">
+          <button
+            type="button"
+            class="btn-copy-link"
+            (click)="copyLink()"
+          >
+            @if (copied()) {
+              <span class="icon">✓</span>
+              <span>¡Copiado!</span>
+            } @else {
+              <span class="icon">📋</span>
+              <span>Copiar enlace</span>
+            }
+          </button>
+          <a
+            [href]="store.publicMenuUrl()"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-open-link"
+          >
+            <span class="icon">↗</span>
+            <span>Ver menú en vivo</span>
+          </a>
+        </div>
+      </div>
+    } @else if (!store.isEnabled()) {
+      <div class="disabled-menu-banner">
+        <span class="banner-icon">ℹ️</span>
+        <div class="banner-text">
+          <strong>El menú digital público se encuentra desactivado.</strong>
+          <span>Para ponerlo a disposición de tus clientes, ingresa el nombre único de tu organización, activa el interruptor y guarda los cambios.</span>
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- Pestañas Abajo (Bottom Navigation Tabs) -->
+  <nav class="subnav-tabs" aria-label="Secciones de administración del menú digital">
+    @if (canManageItems()) { <a
+      routerLink="products"
+      routerLinkActive="active"
+      class="tab-link"
+    >
+      <span class="tab-icon">⊞</span>
+      <span>Productos y Categorías</span>
+    </a> }
+    @if (canManageStyle()) { <a
+      routerLink="style"
+      routerLinkActive="active"
+      class="tab-link"
+    >
+      <span class="tab-icon">🎨</span>
+      <span>Estilo y Plantillas</span>
+    </a> }
+  </nav>
+
+  <!-- Contenido de la pestaña activa -->
+  <main class="shell-content">
+    <router-outlet />
+  </main>
+</section>
