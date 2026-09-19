@@ -43,7 +43,7 @@
       <button
         type="button"
         class="button-save-config"
-        [disabled]="store.savingParameters() || !hasChanges()"
+        [disabled]="!canEnable() || store.savingParameters() || !hasChanges()"
         (click)="saveParameters()"
       >
         @if (store.savingParameters()) {
@@ -73,6 +73,7 @@
               role="switch"
               class="switch-pill"
               [class.active]="enabled()"
+              [disabled]="!canEnable()"
               [attr.aria-checked]="enabled()"
               (click)="toggleEnabled()"
             >
@@ -115,7 +116,7 @@
               translate="no"
               [ngModel]="slug()"
               (ngModelChange)="onSlugChange($event)"
-              [disabled]="isSlugLocked()"
+              [disabled]="isSlugLocked() || !canEnable()"
               placeholder="mi-restaurante"
               maxlength="60"
             />
@@ -177,22 +178,22 @@
 
   <!-- Pestañas Abajo (Bottom Navigation Tabs) -->
   <nav class="subnav-tabs" aria-label="Secciones de administración del menú digital">
-    <a
+    @if (canManageItems()) { <a
       routerLink="products"
       routerLinkActive="active"
       class="tab-link"
     >
       <span class="tab-icon">⊞</span>
       <span>Productos y Categorías</span>
-    </a>
-    <a
+    </a> }
+    @if (canManageStyle()) { <a
       routerLink="style"
       routerLinkActive="active"
       class="tab-link"
     >
       <span class="tab-icon">🎨</span>
       <span>Estilo y Plantillas</span>
-    </a>
+    </a> }
   </nav>
 
   <!-- Contenido de la pestaña activa -->

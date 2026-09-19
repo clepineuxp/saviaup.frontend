@@ -68,7 +68,13 @@ export class PublicMenuComponent {
   toggleCategory(categoryId: string): void {
     if (!this.usesCollapsibleCategories()) return;
     this.activeCategoryId.set(categoryId);
-    this.expandedCategoryId.update((current) => (current === categoryId ? null : categoryId));
+    const shouldOpen = this.expandedCategoryId() !== categoryId;
+    this.expandedCategoryId.set(shouldOpen ? categoryId : null);
+    if (shouldOpen) {
+      requestAnimationFrame(() =>
+        document.getElementById(`cat-${categoryId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+      );
+    }
   }
 
   isCategoryOpen(categoryId: string): boolean {

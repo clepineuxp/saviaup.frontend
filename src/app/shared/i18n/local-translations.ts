@@ -939,6 +939,7 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'digitalMenu.style.contentDesc': 'Mensaje de bienvenida y opciones de visualización.',
     'digitalMenu.notFound': 'El menú digital no está disponible en este momento.',
     'navigation.options.digital-menu.manage': 'Administrar menú',
+    'modules.digital_menu': 'Menú digital',
   },
   en: {
     'common.continue': 'Continue',
@@ -1865,5 +1866,6 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'digitalMenu.style.contentDesc': 'Welcome message and display options.',
     'digitalMenu.notFound': 'The digital menu is not available at this moment.',
     'navigation.options.digital-menu.manage': 'Manage menu',
+    'modules.digital_menu': 'Digital menu',
   },
 };

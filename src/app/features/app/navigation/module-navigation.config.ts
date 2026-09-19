@@ -57,6 +57,7 @@ export const KNOWN_MODULE_NAVIGATION: readonly ModuleNavigationDefinition[] = [
   { code: 'expenses', path: 'expenses', icon: 'expenses' },
   { code: 'suppliers', path: 'suppliers', icon: 'suppliers' },
   { code: 'settings', path: 'settings', icon: 'settings' },
+  { code: 'digital_menu', path: 'configuration/digital-menu/manage', icon: 'menu' },
 ] as const;
 
 const definitions = new Map(
@@ -68,10 +69,6 @@ const optionDefinitions = new Map<string, ModuleNavigationDefinition>([
   [
     'cash-registers.manage',
     { code: 'cash-registers.manage', path: 'configuration/cash-registers/manage', icon: 'billing' },
-  ],
-  [
-    'digital-menu.manage',
-    { code: 'digital-menu.manage', path: 'configuration/digital-menu/manage', icon: 'menu' },
   ],
 ]);
 

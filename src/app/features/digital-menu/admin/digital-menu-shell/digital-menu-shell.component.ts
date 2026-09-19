@@ -10,6 +10,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthStore } from '../../../../core/auth/auth-store.service';
 import { DigitalMenuStore } from '../../data-access/digital-menu.store';
 
 @Component({
@@ -21,6 +22,7 @@ import { DigitalMenuStore } from '../../data-access/digital-menu.store';
 })
 export class DigitalMenuShellComponent implements OnInit {
   readonly store = inject(DigitalMenuStore);
+  private readonly auth = inject(AuthStore);
 
   readonly enabled = signal<boolean>(false);
   readonly slug = signal<string>('');
@@ -34,6 +36,13 @@ export class DigitalMenuShellComponent implements OnInit {
   });
 
   readonly isSlugLocked = computed(() => !this.store.canEditSlug());
+  readonly canEnable = computed(() => this.auth.user()?.permissions.includes('digital-menu.enable') ?? false);
+  readonly canManageItems = computed(
+    () => this.auth.user()?.permissions.includes('digital-menu.items.manage') ?? false,
+  );
+  readonly canManageStyle = computed(
+    () => this.auth.user()?.permissions.includes('digital-menu.style.manage') ?? false,
+  );
 
   constructor() {
     effect(() => {
@@ -56,6 +65,7 @@ export class DigitalMenuShellComponent implements OnInit {
   }
 
   toggleEnabled(): void {
+    if (!this.canEnable()) return;
     const nextVal = !this.enabled();
     if (nextVal && !this.slug().trim()) {
       this.validationError.set(
@@ -68,6 +78,7 @@ export class DigitalMenuShellComponent implements OnInit {
   }
 
   saveParameters(): void {
+    if (!this.canEnable()) return;
     const s = this.slug().trim();
     if (this.enabled() && !s) {
       this.validationError.set(

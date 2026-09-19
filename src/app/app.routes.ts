@@ -20,7 +20,8 @@ const knownModuleRoutes: Routes = KNOWN_MODULE_NAVIGATION.filter(
     code !== 'reports' &&
     code !== 'billing' &&
     code !== 'expenses' &&
-    code !== 'suppliers',
+    code !== 'suppliers' &&
+    code !== 'digital_menu',
 ).map(({ code, path }) => ({
   path,
   title: 'Savia Up',
