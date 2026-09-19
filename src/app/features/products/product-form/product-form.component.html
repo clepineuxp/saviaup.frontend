@@ -48,6 +48,20 @@
         type="button"
         role="tab"
         class="form-tab"
+        [class.form-tab--active]="activeTab() === 'variations'"
+        [attr.aria-selected]="activeTab() === 'variations'"
+        (click)="setTab('variations')"
+      >
+        <span class="form-tab__icon">🏷️</span>
+        <span>Variaciones</span>
+        @if (variationRows().length > 0) {
+          <span class="form-tab__badge">{{ variationRows().length }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="form-tab"
         [class.form-tab--active]="activeTab() === 'recipe'"
         [attr.aria-selected]="activeTab() === 'recipe'"
         (click)="setTab('recipe')"
@@ -165,6 +179,98 @@
             </small>
           </span>
         </label>
+      }
+
+      <!-- TAB: VARIACIONES DEL PRODUCTO -->
+      @if (activeTab() === 'variations') {
+        <div class="recipe-container wide">
+          <div class="recipe-intro">
+            <div class="recipe-intro__text">
+              <h3>Variaciones de precio y presentación</h3>
+              <p>Configura diferentes presentaciones, tamaños o medidas con precios independientes (ej. Copa, Media, Botella, Porción).</p>
+            </div>
+            <div class="recipe-intro__actions">
+              <button
+                type="button"
+                class="recipe-btn recipe-btn--primary"
+                (click)="addVariationRow()"
+              >
+                + Agregar variación
+              </button>
+            </div>
+          </div>
+
+          @if (variationRows().length === 0) {
+            <div class="recipe-empty">
+              <div class="recipe-empty__icon">🏷️</div>
+              <h4>Sin variaciones</h4>
+              <p>Este producto se vende únicamente con su precio general. Si manejas presentaciones con costos distintos (como copa y botella), agrega variaciones.</p>
+              <div class="recipe-empty__actions">
+                <button
+                  type="button"
+                  class="recipe-btn recipe-btn--primary"
+                  (click)="addVariationRow()"
+                >
+                  + Agregar primera variación
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="recipe-list">
+              @for (vRow of variationRows(); track vRow.id; let vIdx = $index) {
+                <div class="recipe-card recipe-card--variation">
+                  <div class="recipe-card__top">
+                    <div class="recipe-card__badge-wrapper">
+                      <span class="recipe-card__num">#{{ vIdx + 1 }}</span>
+                      <span class="recipe-badge-btn recipe-badge-btn--inventory">Variación</span>
+                    </div>
+                    <button
+                      type="button"
+                      class="recipe-card__delete"
+                      title="Eliminar variación"
+                      (click)="removeVariationRow(vIdx)"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div class="recipe-card__body">
+                    <div class="recipe-field recipe-field--ingredient">
+                      <label class="recipe-label">
+                        <span>Nombre de la variación</span>
+                        <input
+                          type="text"
+                          [ngModel]="vRow.name"
+                          [ngModelOptions]="{ standalone: true }"
+                          (ngModelChange)="updateVariationRow(vIdx, { name: $event })"
+                          placeholder="Ej. Copa, Media, Botella, Porción…"
+                          maxlength="120"
+                        />
+                      </label>
+                    </div>
+
+                    <div class="recipe-field recipe-field--quantity">
+                      <label class="recipe-label">
+                        <span>Precio de venta ($)</span>
+                        <div class="recipe-quantity-input-wrapper">
+                          <input
+                            type="number"
+                            min="0.01"
+                            step="any"
+                            [ngModel]="vRow.salePrice"
+                            [ngModelOptions]="{ standalone: true }"
+                            (ngModelChange)="updateVariationRow(vIdx, { salePrice: +$event })"
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
       }
 
       <!-- TAB 2: RECETA DEL PRODUCTO -->

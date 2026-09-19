@@ -5,6 +5,7 @@ import {
   ProductPage,
   ProductRecipeItem,
   ProductType,
+  ProductVariation,
 } from '../models/product.model';
 import {
   ProductCategoryDto,
@@ -13,6 +14,7 @@ import {
   ProductIngredientDto,
   ProductPageDto,
   ProductRecipeItemDto,
+  ProductVariationDto,
 } from './product.contracts';
 
 export const mapProductCategory = (
@@ -30,6 +32,14 @@ export const mapProductRecipeItem = (dto: ProductRecipeItemDto): ProductRecipeIt
   notes: dto.notes ?? null,
   order: dto.order ?? 0,
   isLinked: Boolean(dto.ingredientId),
+});
+
+export const mapProductVariation = (dto: ProductVariationDto): ProductVariation => ({
+  id: dto.id,
+  name: dto.name,
+  salePrice: dto.salePrice,
+  order: dto.order ?? 0,
+  isActive: dto.isActive ?? true,
 });
 
 export const mapProductIngredient = (dto: ProductIngredientDto): ProductIngredientLookup => {
@@ -53,6 +63,7 @@ export const mapProduct = (dto: ProductDto): Product => ({
   type: dto.type as ProductType,
   category: mapProductCategory(dto.category),
   recipe: dto.recipe?.map(mapProductRecipeItem) ?? [],
+  variations: dto.variations?.map(mapProductVariation) ?? [],
 });
 
 export const mapProductPage = (dto: ProductPageDto): ProductPage => ({

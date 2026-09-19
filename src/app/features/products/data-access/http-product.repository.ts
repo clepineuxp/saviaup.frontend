@@ -45,10 +45,10 @@ export class HttpProductRepository implements ProductRepository {
       .pipe(map(mapProductPage));
   }
 
-  listCategories(): Observable<readonly ProductCategory[]> {
+  listCategories(onlyWithProducts = false): Observable<readonly ProductCategory[]> {
     return this.api
       .get<readonly ProductCategoryLookupDto[]>(API_ENDPOINTS.categories.root, {
-        params: { includeInactive: false },
+        params: { includeInactive: false, onlyWithProducts },
       })
       .pipe(map((categories) => categories.map(mapProductCategory)));
   }

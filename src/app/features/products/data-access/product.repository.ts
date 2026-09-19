@@ -13,7 +13,7 @@ import {
 
 export interface ProductRepository {
   list(query: ProductQuery): Observable<ProductPage>;
-  listCategories(): Observable<readonly ProductCategory[]>;
+  listCategories(onlyWithProducts?: boolean): Observable<readonly ProductCategory[]>;
   listIngredients(
     search?: string,
     page?: number,

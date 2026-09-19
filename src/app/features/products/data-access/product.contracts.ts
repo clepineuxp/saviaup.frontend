@@ -38,6 +38,14 @@ export interface ProductIngredientDto {
   readonly isActive?: boolean;
 }
 
+export interface ProductVariationDto {
+  readonly id: string;
+  readonly name: string;
+  readonly salePrice: number;
+  readonly order: number;
+  readonly isActive: boolean;
+}
+
 export interface ProductDto {
   readonly id: string;
   readonly type: string;
@@ -52,6 +60,7 @@ export interface ProductDto {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly recipe?: readonly ProductRecipeItemDto[];
+  readonly variations?: readonly ProductVariationDto[];
 }
 
 export interface ProductPageDto {

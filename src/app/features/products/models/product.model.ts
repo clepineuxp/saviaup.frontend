@@ -27,6 +27,22 @@ export interface ProductRecipeItemRequest {
   readonly order?: number;
 }
 
+export interface ProductVariation {
+  readonly id: string;
+  readonly name: string;
+  readonly salePrice: number;
+  readonly order: number;
+  readonly isActive: boolean;
+}
+
+export interface ProductVariationRequest {
+  readonly id?: string;
+  readonly name: string;
+  readonly salePrice: number;
+  readonly order?: number;
+  readonly isActive?: boolean;
+}
+
 export interface ProductIngredientLookup {
   readonly id: string;
   readonly name: string;
@@ -56,6 +72,7 @@ export interface Product {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly recipe: readonly ProductRecipeItem[];
+  readonly variations: readonly ProductVariation[];
 }
 
 export interface ProductPage {
@@ -85,6 +102,7 @@ export interface CreateProductRequest {
   readonly preparationTimeMinutes: number | null;
   readonly isInventoryTracked: boolean;
   readonly recipe?: readonly ProductRecipeItemRequest[];
+  readonly variations?: readonly ProductVariationRequest[];
 }
 
 export type UpdateProductRequest = CreateProductRequest;
