@@ -102,6 +102,13 @@ export const API_ENDPOINTS = {
     detail: (expenseId: string) => `/api/expenses/${expenseId}`,
     annul: (expenseId: string) => `/api/expenses/${expenseId}/annul`,
   },
+  digitalMenu: {
+    config: '/api/digital-menu/config',
+    parameters: '/api/digital-menu/parameters',
+    items: '/api/digital-menu/items',
+    style: '/api/digital-menu/style',
+    public: (slug: string) => `/api/public/menu/${encodeURIComponent(slug)}`,
+  },
   i18n: {
     language: (language: string) => `/api/i18n/${language}`,
   },
