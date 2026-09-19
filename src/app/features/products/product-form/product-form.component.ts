@@ -29,6 +29,8 @@ import {
   ProductIngredientLookup,
   ProductRecipeItemRequest,
   ProductType,
+  ProductVariation,
+  ProductVariationRequest,
 } from '../models/product.model';
 
 export interface RecipeRowItem {
@@ -38,6 +40,12 @@ export interface RecipeRowItem {
   customIngredientName: string;
   quantity: number;
   notes: string;
+}
+
+export interface VariationRowItem {
+  readonly id: string;
+  name: string;
+  salePrice: number;
 }
 
 @Component({
@@ -66,9 +74,10 @@ export class ProductFormComponent {
   readonly cancelled = output<void>();
   readonly searchIngredients = output<string>();
 
-  readonly activeTab = signal<'general' | 'recipe'>('general');
+  readonly activeTab = signal<'general' | 'variations' | 'recipe'>('general');
   readonly previewFailed = signal(false);
   readonly recipeRows = signal<RecipeRowItem[]>([]);
+  readonly variationRows = signal<VariationRowItem[]>([]);
 
   readonly openSelectorIndex = signal<number | null>(null);
   readonly ingredientSearch = signal<string>('');
@@ -181,6 +190,18 @@ export class ProductFormComponent {
         this.recipeRows.set([]);
       }
 
+      if (product?.variations && product.variations.length > 0) {
+        this.variationRows.set(
+          product.variations.map((v) => ({
+            id: v.id,
+            name: v.name,
+            salePrice: v.salePrice,
+          })),
+        );
+      } else {
+        this.variationRows.set([]);
+      }
+
       this.activeTab.set('general');
       this.previewFailed.set(false);
       this.closeIngredientSelector();
@@ -199,8 +220,26 @@ export class ProductFormComponent {
     effect(() => this.applyServerErrors(this.error()));
   }
 
-  setTab(tab: 'general' | 'recipe'): void {
+  setTab(tab: 'general' | 'variations' | 'recipe'): void {
     this.activeTab.set(tab);
+  }
+
+  addVariationRow(): void {
+    const currentBasePrice = this.form.controls.salePrice.value || 0;
+    this.variationRows.update((rows) => [
+      ...rows,
+      { id: crypto.randomUUID(), name: '', salePrice: currentBasePrice },
+    ]);
+  }
+
+  removeVariationRow(index: number): void {
+    this.variationRows.update((rows) => rows.filter((_, idx) => idx !== index));
+  }
+
+  updateVariationRow(index: number, patch: Partial<VariationRowItem>): void {
+    this.variationRows.update((rows) =>
+      rows.map((row, idx) => (idx === index ? { ...row, ...patch } : row)),
+    );
   }
 
   addInventoryIngredient(ingredientId?: string): void {
@@ -319,11 +358,26 @@ export class ProductFormComponent {
         order: index + 1,
       }));
 
+    const variations: ProductVariationRequest[] = this.variationRows()
+      .filter((v) => v.name.trim().length > 0 && v.salePrice > 0)
+      .map((v, index) => ({
+        id: v.id.startsWith('temp-') || v.id.length !== 36 ? undefined : v.id,
+        name: v.name.trim(),
+        salePrice: Math.max(0.01, Number(v.salePrice) || 0.01),
+        order: index + 1,
+        isActive: true,
+      }));
+
+    let salePrice = value.salePrice;
+    if (variations.length > 0 && (!salePrice || salePrice <= 0)) {
+      salePrice = variations[0].salePrice;
+    }
+
     this.submitted.emit({
       type: value.type,
       categoryId: value.categoryId,
       name: value.name.trim().replace(/\s+/g, ' '),
-      salePrice: value.salePrice,
+      salePrice,
       description: this.cleanOptional(value.description),
       image: this.cleanOptional(value.image),
       preparationTimeMinutes: value.preparationTimeMinutes,
@@ -331,6 +385,7 @@ export class ProductFormComponent {
         ? value.isInventoryTracked
         : false,
       recipe,
+      variations: variations.length > 0 ? variations : undefined,
     });
   }
 

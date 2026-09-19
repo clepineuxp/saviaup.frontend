@@ -16,7 +16,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { catchError, EMPTY, of } from 'rxjs';
 import { SettingsStore } from '../../settings/data-access/settings-store.service';
 import { PRODUCT_REPOSITORY } from '../../products/data-access/product.repository';
-import { Product, ProductCategory } from '../../products/models/product.model';
+import { Product, ProductCategory, ProductVariation } from '../../products/models/product.model';
 import { ORDER_REPOSITORY } from '../../orders/data-access/order.repository';
 import {
   CreateOrderItem,
@@ -34,6 +34,7 @@ import { RestaurantTable } from '../models/table.model';
 
 export interface ConfiguredProductModalState {
   product: Product;
+  selectedVariation?: ProductVariation | null;
   quantity: number;
   notes: string;
   activeSubTab: 'notes' | 'modifiers';
@@ -229,7 +230,7 @@ export class TableOperationDialogComponent {
 
   private loadCategories(): void {
     this.productRepo
-      .listCategories()
+      .listCategories(true)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         catchError(() => of([])),
@@ -564,8 +565,11 @@ export class TableOperationDialogComponent {
 
   // Sub-modal product configuration
   openProductConfig(product: Product): void {
+    const activeVariations = product.variations?.filter((v) => v.isActive) ?? [];
+    const defaultVariation = activeVariations.length > 0 ? activeVariations[0] : null;
     this.configuredProduct.set({
       product,
+      selectedVariation: defaultVariation,
       quantity: 1,
       notes: '',
       activeSubTab: 'notes',
@@ -574,6 +578,18 @@ export class TableOperationDialogComponent {
 
   closeProductConfig(): void {
     this.configuredProduct.set(null);
+  }
+
+  selectProductVariation(variation: ProductVariation): void {
+    const curr = this.configuredProduct();
+    if (!curr) return;
+    this.configuredProduct.set({ ...curr, selectedVariation: variation });
+  }
+
+  getConfiguredUnitPrice(): number {
+    const curr = this.configuredProduct();
+    if (!curr) return 0;
+    return curr.selectedVariation ? curr.selectedVariation.salePrice : curr.product.salePrice;
   }
 
   updateProductConfigQty(delta: number): void {
@@ -586,17 +602,26 @@ export class TableOperationDialogComponent {
   confirmAddProductConfig(): void {
     const curr = this.configuredProduct();
     if (!curr) return;
+
+    const unitPrice = curr.selectedVariation
+      ? curr.selectedVariation.salePrice
+      : curr.product.salePrice;
+
+    const productName = curr.selectedVariation
+      ? `${curr.product.name} - ${curr.selectedVariation.name}`
+      : curr.product.name;
+
     const item: CreateOrderItem = {
       productId: curr.product.id,
-      productName: curr.product.name,
-      unitPrice: curr.product.salePrice,
+      productName,
+      unitPrice,
       quantity: curr.quantity,
       notes: curr.notes.trim() || null,
       isCustomSale: false,
     };
     this.draftItems.update((current) => [...current, item]);
     this.closeProductConfig();
-    this.toastService.show(`"${curr.product.name}" agregado al borrador`, 'success', 2000);
+    this.toastService.show(`"${productName}" agregado al borrador`, 'success', 2000);
   }
 
   // Custom sale sub-modal

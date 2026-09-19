@@ -159,10 +159,16 @@
                       } @else {
                         <span class="thumb-placeholder">☕</span>
                       }
+                      @if (product.variations && product.variations.length > 0) {
+                        <span class="variations-badge" title="Producto con variaciones">🏷️ {{ product.variations.length }}</span>
+                      }
                     </div>
                     <div class="product-info">
                       <strong class="product-name">{{ product.name }}</strong>
                       <span class="product-price">
+                        @if (product.variations && product.variations.length > 0) {
+                          <small class="price-from-label">Desde </small>
+                        }
                         {{ product.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
                       </span>
                     </div>
@@ -567,10 +573,33 @@
           </header>
 
           <div class="sub-modal-body">
+            @if (cfg.product.variations && cfg.product.variations.length > 0) {
+              <div class="variation-picker-section">
+                <span class="variation-picker-title">Selecciona presentación / variación:</span>
+                <div class="variation-pills-grid">
+                  @for (v of cfg.product.variations; track v.id) {
+                    @if (v.isActive) {
+                      <button
+                        type="button"
+                        class="variation-pill-card"
+                        [class.active]="cfg.selectedVariation?.id === v.id"
+                        (click)="selectProductVariation(v)"
+                      >
+                        <span class="var-name">{{ v.name }}</span>
+                        <span class="var-price">{{
+                          v.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                        }}</span>
+                      </button>
+                    }
+                  }
+                </div>
+              </div>
+            }
+
             <div class="sub-modal-price">
               <span>Precio unitario:</span>
               <strong>{{
-                cfg.product.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                getConfiguredUnitPrice() | currency: 'COP' : 'symbol-narrow' : '1.0-0'
               }}</strong>
             </div>
 
@@ -625,7 +654,7 @@
             </button>
             <button type="button" class="btn-confirm primary" (click)="confirmAddProductConfig()">
               Agregar ({{
-                cfg.product.salePrice * cfg.quantity | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                getConfiguredUnitPrice() * cfg.quantity | currency: 'COP' : 'symbol-narrow' : '1.0-0'
               }})
             </button>
           </footer>
