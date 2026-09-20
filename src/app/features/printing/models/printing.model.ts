@@ -105,7 +105,7 @@ export interface PrintJob {
   readonly printerIpAddress: string | null;
   readonly printerPort: number | null;
   readonly paperWidth: number;
-  readonly printingZoneId: string;
+  readonly printingZoneId: string | null;
   readonly zoneName: string;
   readonly sourceType: string;
   readonly sourceId: string;
