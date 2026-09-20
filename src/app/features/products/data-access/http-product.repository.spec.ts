@@ -97,7 +97,7 @@ describe('HttpProductRepository', () => {
     await firstValueFrom(repository.delete(product.id));
 
     expect(get).toHaveBeenCalledWith(API_ENDPOINTS.categories.root, {
-      params: { includeInactive: false },
+      params: { includeInactive: false, onlyWithProducts: false },
     });
     expect(get).toHaveBeenCalledWith(API_ENDPOINTS.inventory.ingredients.root, {
       params: { page: 1, pageSize: 10, includeInactive: false },

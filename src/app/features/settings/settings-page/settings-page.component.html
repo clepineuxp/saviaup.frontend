@@ -235,6 +235,28 @@
             </button>
           </div>
 
+          @if (hasPrintingModulePermission()) {
+            <div
+              class="toggle-card"
+              [class.disabled]="!store.hasPermission('settings.business.manage')"
+            >
+              <div>
+                <strong>{{ 'settings.business.enableOrderPrintZones' | translate }}</strong>
+                <small>{{ 'settings.business.enableOrderPrintZonesHint' | translate }}</small>
+              </div>
+              <button
+                type="button"
+                class="toggle-switch"
+                [class.active]="businessForm.controls.enableOrderPrintZones.value"
+                [disabled]="!store.hasPermission('settings.business.manage')"
+                (click)="toggleBusinessSetting('enableOrderPrintZones')"
+                [attr.aria-label]="'settings.business.enableOrderPrintZones' | translate"
+              >
+                <span class="switch-knob"></span>
+              </button>
+            </div>
+          }
+
           <div
             class="toggle-card"
             [class.disabled]="!store.hasPermission('settings.business.manage')"

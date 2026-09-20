@@ -32,6 +32,7 @@ export interface BusinessSettings {
   readonly showVoluntaryTip: boolean;
   readonly tipMessage: string;
   readonly suggestedTipPercentage: number;
+  readonly enableOrderPrintZones: boolean;
 }
 
 export type UpdateBusinessSettings = BusinessSettings;
