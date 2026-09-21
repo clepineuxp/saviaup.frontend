@@ -118,6 +118,10 @@ export class HttpPrintingRepository implements PrintingRepository {
     return this.api.get(API_ENDPOINTS.printing.jobs, { params: compactParams(query) });
   }
 
+  cancelJob(jobId: string): Observable<PrintJob> {
+    return this.api.post(API_ENDPOINTS.printing.cancelJob(jobId), {});
+  }
+
   retryJob(jobId: string): Observable<PrintJob> {
     return this.api.post(API_ENDPOINTS.printing.retryJob(jobId), {});
   }

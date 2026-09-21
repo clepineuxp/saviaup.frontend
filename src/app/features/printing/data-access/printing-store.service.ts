@@ -242,6 +242,10 @@ export class PrintingStore {
     );
   }
 
+  cancelJob(jobId: string): Observable<PrintJob> {
+    return this.mutate(this.repository.cancelJob(jobId)).pipe(tap((job) => this.replaceJob(job)));
+  }
+
   retryJob(jobId: string): Observable<PrintJob> {
     return this.mutate(this.repository.retryJob(jobId)).pipe(tap((job) => this.replaceJob(job)));
   }

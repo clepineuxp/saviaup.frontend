@@ -447,14 +447,91 @@ td.actions {
   color: var(--color-muted);
   font-size: 0.7rem;
 }
-.job-detail pre {
-  max-height: 24rem;
-  overflow: auto;
-  border-radius: 0.7rem;
+.ticket-preview {
+  display: grid;
+  gap: 1rem;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 0.85rem;
   padding: 1rem;
-  background: #0f172a;
-  color: #e2e8f0;
-  font-size: 0.72rem;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-savia-100) 42%, white), white 42%),
+    white;
+}
+.ticket-preview > header {
+  padding-bottom: 0.85rem;
+  border-bottom: 1px dashed var(--color-border);
+}
+.ticket-preview > header > div {
+  display: grid;
+  gap: 0.18rem;
+}
+.ticket-label,
+.ticket-meta span,
+.ticket-items h4,
+.ticket-notes strong {
+  color: var(--color-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.ticket-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+.ticket-meta div {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.ticket-meta strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.84rem;
+}
+.ticket-items {
+  border-top: 1px dashed var(--color-border);
+  padding-top: 0.85rem;
+}
+.ticket-items h4 {
+  margin: 0 0 0.55rem;
+}
+.ticket-items ul {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ticket-items li {
+  display: grid;
+  gap: 0.15rem;
+  padding-left: 0.7rem;
+  border-left: 3px solid var(--color-savia-400);
+}
+.ticket-items li span,
+.ticket-items li small,
+.ticket-notes span {
+  color: var(--color-muted);
+  font-size: 0.78rem;
+}
+.ticket-notes {
+  display: grid;
+  gap: 0.35rem;
+  border-radius: 0.65rem;
+  padding: 0.75rem;
+  background: color-mix(in srgb, var(--color-savia-100) 35%, white);
+}
+.ticket-preview footer {
+  border-top: 1px dashed var(--color-border);
+  padding-top: 0.85rem;
+  color: var(--color-savia-700);
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-align: center;
 }
 .reprint {
   width: max-content;
@@ -483,6 +560,9 @@ td.actions {
   .zone-grid {
     grid-template-columns: 1fr;
   }
+  .ticket-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 600px) {
@@ -498,6 +578,9 @@ td.actions {
     grid-template-columns: 1fr;
   }
   .discovery-form {
+    grid-template-columns: 1fr;
+  }
+  .ticket-meta {
     grid-template-columns: 1fr;
   }
   .discovered-agent-card {

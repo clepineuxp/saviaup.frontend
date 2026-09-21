@@ -127,6 +127,7 @@ export const API_ENDPOINTS = {
     zones: '/api/printing/zones',
     zone: (zoneId: string) => `/api/printing/zones/${zoneId}`,
     jobs: '/api/printing/jobs',
+    cancelJob: (jobId: string) => `/api/printing/jobs/${jobId}/cancel`,
     retryJob: (jobId: string) => `/api/printing/jobs/${jobId}/retry`,
     reprintJob: (jobId: string) => `/api/printing/jobs/${jobId}/reprint`,
   },

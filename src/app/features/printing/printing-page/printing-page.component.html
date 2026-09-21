@@ -557,6 +557,11 @@
                   <button type="button" (click)="selectedJob.set(job)">
                     {{ 'printing.actions.details' | translate }}
                   </button>
+                  @if (canCancel(job) && store.hasPermission('printing.queue.retry')) {
+                    <button type="button" class="danger" (click)="cancel(job)">
+                      {{ 'printing.actions.cancel' | translate }}
+                    </button>
+                  }
                   @if (job.status === 'FAILED' && store.hasPermission('printing.queue.retry')) {
                     <button type="button" (click)="retry(job)">
                       {{ 'printing.actions.retry' | translate }}
@@ -623,7 +628,82 @@
               <dd>{{ 'printing.status.' + job.status | translate }}</dd>
             </div>
           </dl>
-          <pre>{{ payload(job) }}</pre>
+          @if (ticket(job); as ticket) {
+            <section class="ticket-preview">
+              <header>
+                <div>
+                  <span class="ticket-label">{{ 'printing.ticket.document' | translate }}</span>
+                  <strong>{{
+                    ticket.documentType === 'TEST_PRINT'
+                      ? ('printing.ticket.testTitle' | translate)
+                      : ticket.orderNumber
+                  }}</strong>
+                </div>
+                <span class="job-status" [attr.data-status]="job.status">{{
+                  'printing.status.' + job.status | translate
+                }}</span>
+              </header>
+              <div class="ticket-meta">
+                <div>
+                  <span>{{ 'printing.queue.document' | translate }}</span>
+                  <strong>{{ ticket.orderNumber }}</strong>
+                </div>
+                <div>
+                  <span>{{ 'printing.printers.name' | translate }}</span>
+                  <strong>{{ ticket.printerName || job.printerName }}</strong>
+                </div>
+                @if (ticket.organizationName) {
+                  <div>
+                    <span>{{ 'printing.ticket.organization' | translate }}</span>
+                    <strong>{{ ticket.organizationName }}</strong>
+                  </div>
+                }
+                @if (ticket.table) {
+                  <div>
+                    <span>{{ 'printing.queue.table' | translate }}</span>
+                    <strong>{{ ticket.table }}</strong>
+                  </div>
+                }
+                @if (ticket.waiter) {
+                  <div>
+                    <span>{{ 'printing.ticket.waiter' | translate }}</span>
+                    <strong>{{ ticket.waiter }}</strong>
+                  </div>
+                }
+                <div>
+                  <span>{{ 'printing.ticket.createdAt' | translate }}</span>
+                  <strong>{{ (ticket.createdAt || job.createdAt) | organizationDate: 'short' }}</strong>
+                </div>
+              </div>
+              @if (ticket.items.length) {
+                <section class="ticket-items">
+                  <h4>{{ 'printing.ticket.items' | translate }}</h4>
+                  <ul>
+                    @for (item of ticket.items; track $index) {
+                      <li>
+                        <strong>{{ item.quantity }} × {{ item.name }}</strong>
+                        @if (item.modifiers.length) {
+                          <span>{{ item.modifiers.join(' · ') }}</span>
+                        }
+                        @if (item.notes) {
+                          <small>{{ item.notes }}</small>
+                        }
+                      </li>
+                    }
+                  </ul>
+                </section>
+              }
+              @if (ticket.notes) {
+                <aside class="ticket-notes">
+                  <strong>{{ 'printing.ticket.notes' | translate }}</strong>
+                  <span>{{ ticket.notes }}</span>
+                </aside>
+              }
+              @if (ticket.footerMessage) {
+                <footer>{{ ticket.footerMessage }}</footer>
+              }
+            </section>
+          }
         </article>
       }
     </section>

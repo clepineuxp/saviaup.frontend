@@ -41,6 +41,7 @@ export interface PrintingRepository {
   updateZone(zoneId: string, request: SavePrintingZoneRequest): Observable<PrintingZone>;
   deleteZone(zoneId: string): Observable<void>;
   jobs(query: PrintJobQuery): Observable<PrintJobPage>;
+  cancelJob(jobId: string): Observable<PrintJob>;
   retryJob(jobId: string): Observable<PrintJob>;
   reprintJob(jobId: string): Observable<PrintJob>;
 }

@@ -41,7 +41,7 @@ describe('HttpPrintingRepository', () => {
     expect(JSON.stringify(get.mock.calls)).not.toContain('tenantId');
   });
 
-  it('uses dedicated printer, retry, reprint, and test endpoints', async () => {
+  it('uses dedicated printer, queue actions, and test endpoints', async () => {
     const request: SavePrinterRequest = {
       printAgentId: 'agent-1',
       name: 'Cocina',
@@ -59,6 +59,7 @@ describe('HttpPrintingRepository', () => {
     await firstValueFrom(repository.createPrinter(request));
     await firstValueFrom(repository.updatePrinter('printer-1', request));
     await firstValueFrom(repository.testPrint('agent-1', 'printer-1'));
+    await firstValueFrom(repository.cancelJob('job-1'));
     await firstValueFrom(repository.retryJob('job-1'));
     await firstValueFrom(repository.reprintJob('job-1'));
 
@@ -69,6 +70,7 @@ describe('HttpPrintingRepository', () => {
       {},
       { params: { printerId: 'printer-1' } },
     );
+    expect(post).toHaveBeenCalledWith(API_ENDPOINTS.printing.cancelJob('job-1'), {});
     expect(post).toHaveBeenCalledWith(API_ENDPOINTS.printing.retryJob('job-1'), {});
     expect(post).toHaveBeenCalledWith(API_ENDPOINTS.printing.reprintJob('job-1'), {});
   });

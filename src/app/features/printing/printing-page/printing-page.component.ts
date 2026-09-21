@@ -17,6 +17,27 @@ import {
   PrinterConnectionType,
 } from '../models/printing.model';
 
+interface PrintTicketItem {
+  quantity: number;
+  name: string;
+  modifiers: readonly string[];
+  notes: string | null;
+}
+
+interface PrintTicketPreview {
+  documentType: string;
+  orderNumber: string;
+  table: string | null;
+  waiter: string;
+  createdAt: string | null;
+  items: readonly PrintTicketItem[];
+  notes: string | null;
+  isReprint: boolean;
+  printerName: string | null;
+  organizationName: string | null;
+  footerMessage: string | null;
+}
+
 @Component({
   selector: 'app-printing-page',
   standalone: true,
@@ -326,6 +347,10 @@ export class PrintingPageComponent implements OnInit {
     this.searchJobs();
   }
 
+  cancel(job: PrintJob): void {
+    this.store.cancelJob(job.id).subscribe();
+  }
+
   retry(job: PrintJob): void {
     this.store.retryJob(job.id).subscribe();
   }
@@ -334,28 +359,48 @@ export class PrintingPageComponent implements OnInit {
     this.store.reprintJob(job.id).subscribe();
   }
 
-  payload(job: PrintJob): string {
+  canCancel(job: PrintJob): boolean {
+    return job.status !== 'PRINTED' && job.status !== 'CANCELLED';
+  }
+
+  ticket(job: PrintJob): PrintTicketPreview {
     try {
-      return JSON.stringify(JSON.parse(job.payloadJson), null, 2);
+      const payload = JSON.parse(job.payloadJson) as Partial<PrintTicketPreview>;
+      return {
+        documentType: payload.documentType ?? job.documentType,
+        orderNumber: payload.orderNumber ?? job.sourceId,
+        table: payload.table ?? null,
+        waiter: payload.waiter ?? '',
+        createdAt: payload.createdAt ?? job.createdAt,
+        items: Array.isArray(payload.items) ? payload.items : [],
+        notes: payload.notes ?? null,
+        isReprint: payload.isReprint ?? job.isReprint,
+        printerName: payload.printerName ?? null,
+        organizationName: payload.organizationName ?? null,
+        footerMessage: payload.footerMessage ?? null,
+      };
     } catch {
-      return job.payloadJson;
+      return {
+        documentType: job.documentType,
+        orderNumber: job.sourceId,
+        table: null,
+        waiter: '',
+        createdAt: job.createdAt,
+        items: [],
+        notes: null,
+        isReprint: job.isReprint,
+        printerName: null,
+        organizationName: null,
+        footerMessage: null,
+      };
     }
   }
 
   orderNumber(job: PrintJob): string {
-    return this.payloadField(job, 'orderNumber') ?? job.sourceId;
+    return this.ticket(job).orderNumber;
   }
 
   tableName(job: PrintJob): string | null {
-    return this.payloadField(job, 'table');
-  }
-
-  private payloadField(job: PrintJob, key: string): string | null {
-    try {
-      const value = (JSON.parse(job.payloadJson) as Record<string, unknown>)[key];
-      return typeof value === 'string' && value.trim() ? value : null;
-    } catch {
-      return null;
-    }
+    return this.ticket(job).table;
   }
 }
