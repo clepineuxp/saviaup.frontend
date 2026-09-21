@@ -26,6 +26,7 @@ const product: Product = {
   createdAt: '2026-08-20T12:00:00Z',
   updatedAt: '2026-08-20T12:00:00Z',
   recipe: [],
+  variations: [],
 };
 const page = (currentPage = 1): ProductPage => ({
   items: [product],

@@ -78,7 +78,11 @@ describe('ProductFormComponent', () => {
 
     // Agregar ingrediente libre
     component.addCustomIngredient();
-    component.updateRow(0, { customIngredientName: 'Salsa especial', quantity: 2, notes: 'Casera' });
+    component.updateRow(0, {
+      customIngredientName: 'Salsa especial',
+      quantity: 2,
+      notes: 'Casera',
+    });
     TestBed.flushEffects();
 
     component.submit();

@@ -41,6 +41,7 @@ describe('HttpSettingsRepository', () => {
       deliveryEnabled: false,
       requiresOpenCashRegister: false,
       enableCustomSales: false,
+      enableOrderPrintZones: false,
       showVoluntaryTip: true,
       tipMessage: 'Servicio Voluntario',
       suggestedTipPercentage: 10,

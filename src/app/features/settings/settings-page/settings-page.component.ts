@@ -79,6 +79,7 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
     requiresOpenCashRegister: [false],
     enableCustomSales: [false],
     showVoluntaryTip: [true],
+    enableOrderPrintZones: [false],
     tipMessage: ['Servicio Voluntario', [Validators.required, Validators.maxLength(200)]],
     suggestedTipPercentage: [10, [Validators.required, Validators.min(0), Validators.max(100)]],
   });
@@ -100,6 +101,17 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
       this.store.hasPermission('cash-registers.manage') ||
       this.store.hasPermission('cash-registers.read') ||
       this.store.hasPermission('cash-registers.operate'),
+  );
+
+  readonly hasPrintingModulePermission = computed(
+    () =>
+      this.store.hasPermission('printing.agents.read') ||
+      this.store.hasPermission('printing.agents.manage') ||
+      this.store.hasPermission('printing.zones.read') ||
+      this.store.hasPermission('printing.zones.manage') ||
+      this.store.hasPermission('printing.queue.read') ||
+      this.store.hasPermission('printing.queue.retry') ||
+      this.store.hasPermission('printing.queue.reprint'),
   );
 
   ngOnInit(): void {
@@ -211,10 +223,12 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
       | 'deliveryEnabled'
       | 'requiresOpenCashRegister'
       | 'enableCustomSales'
-      | 'showVoluntaryTip',
+      | 'showVoluntaryTip'
+      | 'enableOrderPrintZones',
   ): void {
     if (!this.store.hasPermission(SETTINGS_PERMISSIONS.businessManage)) return;
     if (key === 'requiresOpenCashRegister' && !this.hasCashRegistersPermission()) return;
+    if (key === 'enableOrderPrintZones' && !this.hasPrintingModulePermission()) return;
     const control = this.businessForm.controls[key];
     control.setValue(!control.value);
   }
