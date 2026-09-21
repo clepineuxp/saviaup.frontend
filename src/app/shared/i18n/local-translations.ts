@@ -899,19 +899,26 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'expenses.annul.reasonPlaceholder': 'Escriba la razón de la anulación...',
     'expenses.annul.confirm': 'Confirmar Anulación',
     'settings.digitalMenu.title': 'Menú Digital',
-    'settings.digitalMenu.description': 'Configura la presencia pública de tu menú y tu enlace web.',
+    'settings.digitalMenu.description':
+      'Configura la presencia pública de tu menú y tu enlace web.',
     'settings.digitalMenu.enable': 'Habilitar menú digital',
-    'settings.digitalMenu.enableHint': 'Permite mostrar tus productos y categorías de forma digital al público.',
+    'settings.digitalMenu.enableHint':
+      'Permite mostrar tus productos y categorías de forma digital al público.',
     'settings.digitalMenu.slug': 'Nombre único de organización (slug)',
-    'settings.digitalMenu.slugHint': 'Identificador único para tu URL pública. Una vez guardado no se puede cambiar.',
+    'settings.digitalMenu.slugHint':
+      'Identificador único para tu URL pública. Una vez guardado no se puede cambiar.',
     'settings.digitalMenu.copyLink': 'Copiar enlace',
     'settings.digitalMenu.copied': '¡Copiado!',
-    'settings.digitalMenu.slugAlreadyExists': 'El nombre único de organización ya está en uso por otra organización.',
-    'settings.digitalMenu.slugImmutable': 'El nombre único de organización no puede ser modificado una vez establecido.',
-    'settings.digitalMenu.slugRequired': 'Se requiere un nombre único para habilitar el menú digital.',
+    'settings.digitalMenu.slugAlreadyExists':
+      'El nombre único de organización ya está en uso por otra organización.',
+    'settings.digitalMenu.slugImmutable':
+      'El nombre único de organización no puede ser modificado una vez establecido.',
+    'settings.digitalMenu.slugRequired':
+      'Se requiere un nombre único para habilitar el menú digital.',
     'digitalMenu.eyebrow': 'Menú Digital Personalizable',
     'digitalMenu.title': 'Configuración del Menú Digital',
-    'digitalMenu.description': 'Administra qué productos y categorías se muestran a tus clientes y personaliza la plantilla visual para web y móvil.',
+    'digitalMenu.description':
+      'Administra qué productos y categorías se muestran a tus clientes y personaliza la plantilla visual para web y móvil.',
     'digitalMenu.status.active': 'Menú Activo',
     'digitalMenu.status.inactive': 'Menú Inactivo',
     'digitalMenu.status.visible': 'Visible',
@@ -931,9 +938,11 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'digitalMenu.column.price': 'Precio',
     'digitalMenu.column.status': 'Visible',
     'digitalMenu.style.presetsTitle': 'Paletas Predefinidas',
-    'digitalMenu.style.presetsDesc': 'Elige una combinación de colores y plantilla lista para usar.',
+    'digitalMenu.style.presetsDesc':
+      'Elige una combinación de colores y plantilla lista para usar.',
     'digitalMenu.style.templatesTitle': 'Plantilla Base',
-    'digitalMenu.style.templatesDesc': 'Selecciona la estructura visual que mejor represente a tu negocio.',
+    'digitalMenu.style.templatesDesc':
+      'Selecciona la estructura visual que mejor represente a tu negocio.',
     'digitalMenu.style.colorsTitle': 'Colores Personalizados',
     'digitalMenu.style.colorsDesc': 'Ajusta los tonos principales de tu marca.',
     'digitalMenu.style.typographyTitle': 'Tipografía',
@@ -973,6 +982,7 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'printing.agents.discoverEmpty':
       'No encontramos un agente disponible. Verifica que el servicio esté instalado y en ejecución en la misma red.',
     'printing.agents.link': 'Vincular equipo',
+    'printing.agents.reactivate': 'Reactivar agente',
     'printing.agents.agentNameHelp': 'Opcional: si lo dejas vacío se usará el nombre del equipo.',
     'printing.agents.version': 'Versión',
     'printing.agents.ip': 'IP local',
@@ -1965,17 +1975,23 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'settings.digitalMenu.title': 'Digital Menu',
     'settings.digitalMenu.description': 'Configure public web presence for your product menu.',
     'settings.digitalMenu.enable': 'Enable digital menu',
-    'settings.digitalMenu.enableHint': 'Allow customers to view your products and categories digitally on the web.',
+    'settings.digitalMenu.enableHint':
+      'Allow customers to view your products and categories digitally on the web.',
     'settings.digitalMenu.slug': 'Unique organization name (slug)',
-    'settings.digitalMenu.slugHint': 'Unique identifier for your public URL. Once saved, it cannot be changed.',
+    'settings.digitalMenu.slugHint':
+      'Unique identifier for your public URL. Once saved, it cannot be changed.',
     'settings.digitalMenu.copyLink': 'Copy link',
     'settings.digitalMenu.copied': 'Copied!',
-    'settings.digitalMenu.slugAlreadyExists': 'The unique organization name is already taken by another organization.',
-    'settings.digitalMenu.slugImmutable': 'The unique organization name cannot be changed once set.',
-    'settings.digitalMenu.slugRequired': 'A unique organization name is required to enable the digital menu.',
+    'settings.digitalMenu.slugAlreadyExists':
+      'The unique organization name is already taken by another organization.',
+    'settings.digitalMenu.slugImmutable':
+      'The unique organization name cannot be changed once set.',
+    'settings.digitalMenu.slugRequired':
+      'A unique organization name is required to enable the digital menu.',
     'digitalMenu.eyebrow': 'Customizable Digital Menu',
     'digitalMenu.title': 'Digital Menu Configuration',
-    'digitalMenu.description': 'Manage which products and categories appear on your digital menu and customize visual templates for web and mobile.',
+    'digitalMenu.description':
+      'Manage which products and categories appear on your digital menu and customize visual templates for web and mobile.',
     'digitalMenu.status.active': 'Active Menu',
     'digitalMenu.status.inactive': 'Inactive Menu',
     'digitalMenu.status.visible': 'Visible',
@@ -1997,7 +2013,8 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'digitalMenu.style.presetsTitle': 'Preset Palettes',
     'digitalMenu.style.presetsDesc': 'Choose a ready-to-use color palette and template.',
     'digitalMenu.style.templatesTitle': 'Base Template',
-    'digitalMenu.style.templatesDesc': 'Select the visual structure that best represents your brand.',
+    'digitalMenu.style.templatesDesc':
+      'Select the visual structure that best represents your brand.',
     'digitalMenu.style.colorsTitle': 'Custom Colors',
     'digitalMenu.style.colorsDesc': 'Fine-tune your brand colors.',
     'digitalMenu.style.typographyTitle': 'Typography',
@@ -2037,6 +2054,7 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'printing.agents.discoverEmpty':
       'No agent is available. Check that the service is installed and running on the same network.',
     'printing.agents.link': 'Link computer',
+    'printing.agents.reactivate': 'Reactivate agent',
     'printing.agents.agentNameHelp': 'Optional: leave blank to use the computer name.',
     'printing.agents.version': 'Version',
     'printing.agents.ip': 'Local IP',

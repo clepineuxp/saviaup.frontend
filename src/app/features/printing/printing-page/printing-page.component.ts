@@ -4,6 +4,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UiAlertComponent } from '../../../shared/components/ui-alert/ui-alert.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { OrganizationDatePipe } from '../../../shared/pipes/organization-date.pipe';
+import { ToastService } from '../../../shared/services/toast.service';
+import { ApiError } from '../../../shared/http/api-error';
 import { PrintingStore } from '../data-access/printing-store.service';
 import {
   AvailablePrinter,
@@ -54,6 +56,7 @@ interface PrintTicketPreview {
 })
 export class PrintingPageComponent implements OnInit {
   readonly store = inject(PrintingStore);
+  private readonly toast = inject(ToastService);
   private readonly fb = inject(FormBuilder);
 
   readonly activeTab = signal<PrintingTab>('agents');
@@ -190,7 +193,9 @@ export class PrintingPageComponent implements OnInit {
   }
 
   toggleAgent(agent: PrintAgent): void {
-    this.store.updateAgent(agent.id, agent.name, !agent.enabled).subscribe();
+    this.store.updateAgent(agent.id, agent.name, !agent.enabled).subscribe({
+      error: (error: unknown) => this.showOperationError(error),
+    });
   }
 
   deleteAgent(agent: PrintAgent): void {
@@ -251,15 +256,26 @@ export class PrintingPageComponent implements OnInit {
         paperWidth: Number(value.paperWidth),
         enabled: value.enabled,
       })
-      .subscribe(() => this.cancelPrinterEdit());
+      .subscribe({
+        next: () => this.cancelPrinterEdit(),
+        error: (error: unknown) => this.showOperationError(error),
+      });
   }
 
   deletePrinter(printer: Printer): void {
-    this.store.deletePrinter(printer.id).subscribe();
+    this.store.deletePrinter(printer.id).subscribe({
+      error: (error: unknown) => this.showOperationError(error),
+    });
   }
 
   testPrinter(printer: Printer): void {
     this.store.testPrint(printer.printAgentId, printer.id).subscribe();
+  }
+
+  private showOperationError(error: unknown): void {
+    const message =
+      error instanceof ApiError ? error.message : 'No pudimos completar la operación de impresión.';
+    this.toast.show(message, 'error', 5000);
   }
 
   printersForAgent(agentId: string): readonly Printer[] {

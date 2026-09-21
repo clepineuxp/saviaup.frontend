@@ -112,7 +112,10 @@
                   [disabled]="store.mutating()"
                   (click)="linkDiscoveredAgent(agent.discoveryId)"
                 >
-                  {{ 'printing.agents.link' | translate }}
+                  {{
+                    (agent.isReactivation ? 'printing.agents.reactivate' : 'printing.agents.link')
+                      | translate
+                  }}
                 </button>
               </article>
             } @empty {
@@ -672,7 +675,9 @@
                 }
                 <div>
                   <span>{{ 'printing.ticket.createdAt' | translate }}</span>
-                  <strong>{{ (ticket.createdAt || job.createdAt) | organizationDate: 'short' }}</strong>
+                  <strong>{{
+                    ticket.createdAt || job.createdAt | organizationDate: 'short'
+                  }}</strong>
                 </div>
               </div>
               @if (ticket.items.length) {
