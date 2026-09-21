@@ -85,6 +85,10 @@ button:disabled {
 .setup-card {
   padding: 1.1rem 1.25rem;
 }
+.setup-title {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
 .setup-icon,
 .agent-symbol,
 .zone-symbol {
