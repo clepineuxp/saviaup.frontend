@@ -42,46 +42,29 @@ describe('PublicDigitalMenuService in the public app', () => {
     request.flush({});
   });
 
-  it('resolves lightweight API image paths against the configured API host', async () => {
-    const response = firstValueFrom(service.getPublicMenu('demo'));
-    const request = http.expectOne('https://public-api.test/api/public/menu/demo');
+  it('requests one progressive image batch for a category', async () => {
+    const response = firstValueFrom(service.getCategoryImages('café central', 'category-1'));
+    const request = http.expectOne(
+      'https://public-api.test/api/public/menu/caf%C3%A9%20central/categories/category-1/images',
+    );
     request.flush({
-      tenantId: 'tenant-1',
-      organizationName: 'Demo',
-      hasLogo: true,
-      logo: '/api/public/menu/demo/logo?v=1',
-      logoVersion: 1,
-      style: {},
-      categories: [
+      categoryId: 'category-1',
+      categoryImage: 'data:image/webp;base64,CATEGORY',
+      products: [
         {
-          id: 'category-1',
-          name: 'Platos',
-          sortOrder: 1,
-          image: '/api/public/menu/demo/images/category-image',
-          products: [
-            {
-              id: 'product-1',
-              name: 'Especial',
-              salePrice: 15000,
-              sortOrder: 1,
-              image: '/api/public/menu/demo/images/product-image',
-              variations: [],
-            },
-          ],
+          productId: 'product-1',
+          image: 'data:image/webp;base64,PRODUCT',
         },
       ],
     });
 
     await expect(response).resolves.toMatchObject({
-      logo: 'https://public-api.test/api/public/menu/demo/logo?v=1',
-      categories: [
+      categoryId: 'category-1',
+      categoryImage: 'data:image/webp;base64,CATEGORY',
+      products: [
         {
-          image: 'https://public-api.test/api/public/menu/demo/images/category-image',
-          products: [
-            {
-              image: 'https://public-api.test/api/public/menu/demo/images/product-image',
-            },
-          ],
+          productId: 'product-1',
+          image: 'data:image/webp;base64,PRODUCT',
         },
       ],
     });

@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterOutlet } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { interval } from 'rxjs';
+import { catchError, concatMap, EMPTY, from, interval, Subject, takeUntil } from 'rxjs';
 import { PublicDigitalMenuService } from '../../features/digital-menu/data-access/public-digital-menu.service';
 import { PublicDigitalMenu } from '../../features/digital-menu/models/digital-menu.model';
 
@@ -35,6 +35,7 @@ export class DigitalMenuLayoutComponent implements OnInit {
   private readonly service = inject(PublicDigitalMenuService);
   private readonly title = inject(Title);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly imageLoadReset = new Subject<void>();
 
   readonly menu = signal<PublicDigitalMenu | null>(null);
   readonly loading = signal<boolean>(true);
@@ -68,6 +69,7 @@ export class DigitalMenuLayoutComponent implements OnInit {
   }
 
   private loadMenu(slug: string): void {
+    this.imageLoadReset.next();
     this.loading.set(true);
     this.loaderStepIndex.set(0);
     this.error.set(null);
@@ -80,6 +82,7 @@ export class DigitalMenuLayoutComponent implements OnInit {
           this.menu.set(data);
           this.title.setTitle(`${data.organizationName} · Menú Digital`);
           this.loading.set(false);
+          if (data.style.showImages) this.loadCategoryImages(slug, data);
         },
         error: () => {
           this.error.set(
@@ -87,6 +90,42 @@ export class DigitalMenuLayoutComponent implements OnInit {
           );
           this.loading.set(false);
         },
+      });
+  }
+
+  private loadCategoryImages(slug: string, menu: PublicDigitalMenu): void {
+    from(menu.categories)
+      .pipe(
+        concatMap((category) =>
+          this.service.getCategoryImages(slug, category.id).pipe(catchError(() => EMPTY)),
+        ),
+        takeUntil(this.imageLoadReset),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((images) => {
+        const productImages = new Map(
+          images.products.map((product) => [product.productId, product.image] as const),
+        );
+
+        this.menu.update((current) =>
+          current
+            ? {
+                ...current,
+                categories: current.categories.map((category) =>
+                  category.id === images.categoryId
+                    ? {
+                        ...category,
+                        image: images.categoryImage,
+                        products: category.products.map((product) => ({
+                          ...product,
+                          image: productImages.get(product.id) ?? null,
+                        })),
+                      }
+                    : category,
+                ),
+              }
+            : current,
+        );
       });
   }
 }
