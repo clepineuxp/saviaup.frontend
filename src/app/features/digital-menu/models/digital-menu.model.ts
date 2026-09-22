@@ -66,6 +66,14 @@ export interface PublicProduct {
   imageRef?: string | null;
   image?: string | null;
   sortOrder: number;
+  variations: readonly PublicProductVariation[];
+}
+
+export interface PublicProductVariation {
+  id: string;
+  name: string;
+  salePrice: number;
+  sortOrder: number;
 }
 
 export interface PublicCategory {
