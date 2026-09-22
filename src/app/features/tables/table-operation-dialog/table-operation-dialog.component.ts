@@ -199,13 +199,6 @@ export class TableOperationDialogComponent {
       }
     });
 
-    this.catalog
-      .prepare()
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        catchError(() => EMPTY),
-      )
-      .subscribe();
     this.catalog.invalidations$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.loadCategories();
       this.loadCatalog(this.catalogPage());

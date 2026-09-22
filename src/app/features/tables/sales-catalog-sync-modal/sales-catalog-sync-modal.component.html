@@ -1,0 +1,18 @@
+@if (catalog.syncing()) {
+  <div class="sync-backdrop">
+    <section
+      class="sync-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sales-catalog-sync-title"
+      aria-describedby="sales-catalog-sync-description"
+    >
+      <span class="sync-spinner" aria-hidden="true"></span>
+      <div>
+        <p class="sync-eyebrow">{{ 'tables.sync.eyebrow' | translate }}</p>
+        <h2 id="sales-catalog-sync-title">{{ 'tables.sync.title' | translate }}</h2>
+        <p id="sales-catalog-sync-description">{{ 'tables.sync.description' | translate }}</p>
+      </div>
+    </section>
+  </div>
+}

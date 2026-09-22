@@ -541,6 +541,13 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'tables.emptyArea': 'Esta sala todavía no tiene mesas.',
     'tables.empty': 'Configura una sala y su primera mesa para iniciar la operación.',
     'tables.loading': 'Cargando el estado de las mesas…',
+    'tables.sync.eyebrow': 'Catálogo de venta',
+    'tables.sync.title': 'Sincronizando productos, categorías y mesas',
+    'tables.sync.description':
+      'Estamos preparando la información local para que puedas vender con mayor rapidez.',
+    'tables.sync.error':
+      'No fue posible actualizar el catálogo local. Puedes continuar con la última versión disponible.',
+    'tables.sync.retry': 'Reintentar',
     'tables.readOnly': 'Puedes consultar las mesas, pero necesitas tables.operate para operarlas.',
     'tables.cashGate.title': 'Turno de caja cerrado',
     'tables.cashGate.description':
@@ -1632,6 +1639,12 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'tables.emptyArea': 'This dining area does not have any tables yet.',
     'tables.empty': 'Configure a dining area and its first table to begin operations.',
     'tables.loading': 'Loading table status…',
+    'tables.sync.eyebrow': 'Sales catalog',
+    'tables.sync.title': 'Synchronizing products, categories, and tables',
+    'tables.sync.description': 'We are preparing local data so you can take orders faster.',
+    'tables.sync.error':
+      'The local catalog could not be updated. You can continue with the latest available version.',
+    'tables.sync.retry': 'Retry',
     'tables.readOnly': 'You can view tables, but you need tables.operate to operate them.',
     'tables.cashGate.title': 'Cash register shift closed',
     'tables.cashGate.description':

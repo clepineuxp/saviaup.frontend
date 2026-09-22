@@ -21,16 +21,17 @@ import { CanvasRoomViewComponent } from '../canvas-room-view/canvas-room-view.co
 import { TableStore } from '../data-access/table-store.service';
 import { MetricsHeaderComponent } from '../metrics-header/metrics-header.component';
 import { RestaurantTable, TableViewMode } from '../models/table.model';
-import { TableCardComponent } from '../table-card/table-card.component';
 import { TableOperationDialogComponent } from '../table-operation-dialog/table-operation-dialog.component';
+import { TableSalesCatalogCache } from '../data-access/table-sales-catalog-cache.service';
+import { SalesCatalogSyncModalComponent } from '../sales-catalog-sync-modal/sales-catalog-sync-modal.component';
 
 @Component({
   selector: 'app-table-operation-page',
   imports: [
     CanvasRoomViewComponent,
     MetricsHeaderComponent,
-    TableCardComponent,
     TableOperationDialogComponent,
+    SalesCatalogSyncModalComponent,
     TranslatePipe,
     CurrencyPipe,
     FormsModule,
@@ -43,6 +44,7 @@ export class TableOperationPageComponent implements OnInit, OnDestroy {
   readonly store = inject(TableStore);
   readonly shellState = inject(AppShellState);
   readonly authContextStore = inject(AuthenticatedContextStore);
+  readonly salesCatalog = inject(TableSalesCatalogCache);
   readonly selectedTable = signal<RestaurantTable | null>(null);
   readonly tableSearchQuery = signal<string>('');
   private readonly router = inject(Router);
@@ -51,6 +53,13 @@ export class TableOperationPageComponent implements OnInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
+    this.salesCatalog
+      .validateAndSynchronize()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => EMPTY),
+      )
+      .subscribe();
     this.store
       .initializeOperation()
       .pipe(takeUntilDestroyed(this.destroyRef))
