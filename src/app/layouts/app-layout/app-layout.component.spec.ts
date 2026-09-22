@@ -133,6 +133,14 @@ describe('AppLayoutComponent', () => {
     expect(operationGroup.query(By.css('.navigation-popover'))).toBeNull();
     expect(fixture.nativeElement.textContent).not.toContain('Ventas del backend');
     expect(fixture.nativeElement.textContent).not.toContain('Configuración');
+    const accountMenuTrigger = fixture.debugElement.query(By.css('.account-menu__trigger'));
+    expect(accountMenuTrigger.attributes['aria-expanded']).toBe('false');
+
+    accountMenuTrigger.nativeElement.click();
+    fixture.detectChanges();
+
+    const accountMenu = fixture.debugElement.query(By.css('.account-menu__panel'));
+    expect(accountMenu.attributes['role']).toBe('group');
     expect(fixture.nativeElement.textContent).toContain('Ana Prueba');
     expect(fixture.nativeElement.textContent).toContain('Secret Garden · Owner');
   });
@@ -163,6 +171,17 @@ describe('AppLayoutComponent', () => {
 
     expect(trigger.attributes['aria-expanded']).toBe('false');
     expect(operationGroup.query(By.css('.navigation-popover'))).toBeNull();
+  });
+
+  it('closes the account menu when clicking outside it', () => {
+    const accountMenuTrigger = fixture.debugElement.query(By.css('.account-menu__trigger'));
+    accountMenuTrigger.nativeElement.click();
+    fixture.detectChanges();
+
+    fixture.debugElement.query(By.css('.app-content')).nativeElement.click();
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('.account-menu__panel'))).toBeNull();
   });
 
   it('closes an expanded section with Escape', () => {

@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  ElementRef,
+  HostListener,
+  inject,
+  OnInit,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { AuthStore } from '../../core/auth/auth-store.service';
 import { AuthenticatedContextStore } from '../../core/context/authenticated-context.store';
@@ -35,6 +45,8 @@ export class AppLayoutComponent implements OnInit {
   readonly tenantContext = inject(TenantContext);
   readonly shellState = inject(AppShellState);
   readonly authenticatedContext = inject(AuthenticatedContextStore);
+  readonly accountMenuOpen = signal(false);
+  @ViewChild('accountMenu') private readonly accountMenu?: ElementRef<HTMLElement>;
   readonly navigation = computed(() =>
     createSectionNavigation(this.authenticatedContext.sections()),
   );
@@ -54,19 +66,40 @@ export class AppLayoutComponent implements OnInit {
   }
 
   reloadContext(): void {
+    this.closeAccountMenu();
     this.authenticatedContext.load().subscribe({ error: () => undefined });
   }
 
   changeTenant(): void {
+    this.closeAccountMenu();
     this.authenticatedContext.clear();
     this.tenantContext.clear();
     void this.router.navigate(['/select-tenant']);
   }
 
   logout(): void {
+    this.closeAccountMenu();
     this.authStore.logout().subscribe({
       next: () => void this.router.navigate(['/login']),
       error: () => void this.router.navigate(['/login']),
     });
+  }
+
+  toggleAccountMenu(): void {
+    this.accountMenuOpen.update((open) => !open);
+  }
+
+  closeAccountMenu(): void {
+    this.accountMenuOpen.set(false);
+  }
+
+  @HostListener('document:click', ['$event'])
+  closeAccountMenuOnOutsideClick(event: MouseEvent): void {
+    if (!this.accountMenu?.nativeElement.contains(event.target as Node)) this.closeAccountMenu();
+  }
+
+  @HostListener('document:keydown.escape')
+  closeAccountMenuOnEscape(): void {
+    this.closeAccountMenu();
   }
 }
