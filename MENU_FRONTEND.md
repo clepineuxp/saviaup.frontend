@@ -16,7 +16,7 @@ GET /api/public/menu/{slug}
 GET /api/public/menu/{slug}/categories/{categoryId}/images
 ```
 
-La primera entrega de inmediato el layout, estilos, categorías, productos, variaciones y precios. La segunda entrega las imágenes WebP optimizadas dentro del JSON y se consume secuencialmente por categoría, de modo que el menú permanece usable mientras aparecen las imágenes. No se requieren rutas públicas de archivos en el ingress.
+La primera entrega de inmediato el layout, estilos, categorías, productos, variaciones y precios. La segunda entrega las imágenes WebP comprimidas dentro del JSON y se consume secuencialmente por categoría, de modo que el menú permanece usable mientras aparecen las imágenes. El backend limita inicialmente cada imagen a 640 px y aplica compresión adaptativa hasta un objetivo de 64 KB, reduciendo calidad y dimensiones únicamente cuando continúa pesada. No se requieren rutas públicas de archivos en el ingress.
 
 El backend expone ambos endpoints con `AllowAnonymous`. Un error al cargar el layout se muestra como “Menú no disponible”; el fallo aislado de imágenes de una categoría no bloquea las demás ni redirige a login o intenta renovar una sesión.
 
