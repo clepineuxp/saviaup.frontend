@@ -86,6 +86,96 @@
           }
         }
       }
+    },
+    "saviaup.frontend-menu": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "projects/saviaup.frontend-menu",
+      "sourceRoot": "projects/saviaup.frontend-menu/src",
+      "prefix": "menu",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "projects/saviaup.frontend-menu/src/main.ts",
+            "tsConfig": "projects/saviaup.frontend-menu/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "outputPath": "dist/saviaup.frontend-menu",
+            "assets": [
+              {
+                "glob": "env-config.js",
+                "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "public/logo",
+                "output": "logo"
+              }
+            ],
+            "styles": ["projects/saviaup.frontend-menu/src/styles.css"]
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/saviaup.frontend-menu/src/environments/environment.ts",
+                  "with": "projects/saviaup.frontend-menu/src/environments/environment.production.ts"
+                }
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "40kB",
+                  "maximumError": "80kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "saviaup.frontend-menu:build:production"
+            },
+            "development": {
+              "buildTarget": "saviaup.frontend-menu:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/saviaup.frontend-menu/tsconfig.spec.json"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/saviaup.frontend-menu/src/**/*.ts",
+              "projects/saviaup.frontend-menu/src/**/*.html"
+            ]
+          }
+        }
+      }
     }
   }
 }

@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { routes } from './app.routes';
 
 describe('application routes', () => {
+  it('does not expose the public menu route from the authenticated application', () => {
+    expect(routes.some((route) => route.path === 'm/:slug')).toBe(false);
+  });
+
   it('registers categories as a top-level lazy app route', () => {
     const appRoute = routes.find((route) => route.path === 'app');
     const categoryRoute = appRoute?.children?.find((route) => route.path === 'categories');

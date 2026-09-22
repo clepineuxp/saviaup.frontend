@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { catchError, finalize, of, tap } from 'rxjs';
 import { ApiError } from '../../../shared/http/api-error';
+import { APP_ENVIRONMENT } from '../../../core/config/app-environment';
 import { DigitalMenuService } from './digital-menu.service';
 import {
   DigitalMenuConfig,
@@ -12,6 +13,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class DigitalMenuStore {
   private readonly service = inject(DigitalMenuService);
+  private readonly environment = inject(APP_ENVIRONMENT);
 
   private readonly configState = signal<DigitalMenuConfig | null>(null);
   private readonly categoriesState = signal<DigitalMenuItemSummary[]>([]);
@@ -51,13 +53,14 @@ export class DigitalMenuStore {
   readonly slug = computed(() => this.configState()?.slug ?? null);
   readonly canEditSlug = computed(() => this.configState()?.canEditSlug ?? true);
 
+  readonly publicMenuBaseUrl = computed(() =>
+    this.environment.menuFrontendUrl.replace(/\/$/, ''),
+  );
+
   readonly publicMenuUrl = computed(() => {
     const s = this.slug();
     if (!s) return null;
-    if (typeof window !== 'undefined') {
-      return `${window.location.origin}/m/${s}`;
-    }
-    return `https://saviaup.com/m/${s}`;
+    return `${this.publicMenuBaseUrl()}/m/${s}`;
   });
 
   load(): void {

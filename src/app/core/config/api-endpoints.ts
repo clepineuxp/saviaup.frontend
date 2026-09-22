@@ -113,7 +113,6 @@ export const API_ENDPOINTS = {
     parameters: '/api/digital-menu/parameters',
     items: '/api/digital-menu/items',
     style: '/api/digital-menu/style',
-    public: (slug: string) => `/api/public/menu/${encodeURIComponent(slug)}`,
   },
   printing: {
     configuration: '/api/printing/configuration',

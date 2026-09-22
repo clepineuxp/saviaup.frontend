@@ -5,7 +5,6 @@ import { ApiClient } from '../../../shared/api/api-client.service';
 import {
   DigitalMenuConfig,
   DigitalMenuStyle,
-  PublicDigitalMenu,
   SaveDigitalMenuItemsRequest,
   UpdateDigitalMenuParametersRequest,
 } from '../models/digital-menu.model';
@@ -31,9 +30,5 @@ export class DigitalMenuService {
 
   updateStyle(request: DigitalMenuStyle): Observable<void> {
     return this.api.put<void, DigitalMenuStyle>(API_ENDPOINTS.digitalMenu.style, request);
-  }
-
-  getPublicMenu(slug: string): Observable<PublicDigitalMenu> {
-    return this.api.get<PublicDigitalMenu>(API_ENDPOINTS.digitalMenu.public(slug));
   }
 }
