@@ -164,6 +164,7 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'app.placeholder.description':
       'Tu espacio está preparado. Los módulos de operación llegarán en la siguiente fase.',
     'app.placeholder.changeTenant': 'Cambiar organización',
+    'app.accountMenu.open': 'Abrir menú de cuenta',
     'app.context.loadingTitle': 'Preparando tu espacio',
     'app.context.loadingDescription': 'Estamos cargando tu perfil y los módulos disponibles.',
     'app.context.errorTitle': 'No pudimos cargar tu espacio',
@@ -512,6 +513,7 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'tables.metrics.expensesShift': 'Gastos de caja',
     'tables.metrics.balanceDay': 'Balance del día',
     'tables.metrics.balanceShift': 'Balance de caja',
+    'tables.metrics.goToSummary': 'Ir a resumen',
     'tables.areas.label': 'Salas disponibles',
     'tables.view.label': 'Modo de visualización',
     'tables.view.room': 'Vista sala',
@@ -1254,6 +1256,7 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'app.placeholder.description':
       'Your workspace is ready. Operation modules will arrive in the next phase.',
     'app.placeholder.changeTenant': 'Switch organization',
+    'app.accountMenu.open': 'Open account menu',
     'app.context.loadingTitle': 'Preparing your workspace',
     'app.context.loadingDescription': 'We are loading your profile and available modules.',
     'app.context.errorTitle': 'We could not load your workspace',
@@ -1597,6 +1600,7 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'tables.metrics.expensesShift': 'Shift expenses',
     'tables.metrics.balanceDay': 'Day balance',
     'tables.metrics.balanceShift': 'Shift balance',
+    'tables.metrics.goToSummary': 'Go to summary',
     'tables.areas.label': 'Available dining areas',
     'tables.view.label': 'Display mode',
     'tables.view.room': 'Room view',

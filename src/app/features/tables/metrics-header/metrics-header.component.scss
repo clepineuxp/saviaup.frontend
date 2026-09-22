@@ -4,7 +4,7 @@
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 0.55rem;
   align-items: stretch;
 }
@@ -15,10 +15,11 @@
   position: relative;
   display: flex;
   min-width: 0;
-  min-height: 3.55rem;
-  align-items: center;
+  min-height: 4.5rem;
+  flex-direction: column;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.25rem;
   border: 1px solid var(--color-border, #e2e8f0);
   border-radius: 0.8rem;
   padding: 0.65rem 0.85rem;
@@ -27,12 +28,7 @@
 }
 
 .metric::before {
-  width: 0.45rem;
-  height: 0.45rem;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: #56a6e8;
-  content: '';
+  display: none;
 }
 
 /* ── Color dots ── */
@@ -82,7 +78,11 @@
 }
 
 .metric--toggle-group {
-  justify-content: center;
+  order: -1;
+  min-height: auto;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
   padding: 0.4rem 0.5rem;
 }
 
@@ -109,7 +109,9 @@
   cursor: pointer;
   background: transparent;
   color: var(--color-muted, #64748b);
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
   white-space: nowrap;
 }
 
@@ -123,27 +125,94 @@
 }
 
 /* ── Labels ── */
-.metric span {
-  min-width: 0;
-  margin-right: auto;
-  overflow: hidden;
-  color: var(--color-muted, #64748b);
+.metric > span:not(.summary-navigation-hint) {
+  align-self: stretch;
+  width: auto;
+  margin: -0.65rem -0.85rem 0;
+  padding: 0.42rem 0.75rem 0.38rem;
+  border-radius: 0.8rem 0.8rem 0.55rem 0;
+  background: linear-gradient(
+    110deg,
+    var(--metric-label-bg) 0%,
+    var(--metric-label-bg) 72%,
+    transparent 100%
+  );
+  color: var(--metric-label-color, #1d4ed8);
   font-size: 0.68rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.15;
 }
 
 .metric strong {
   flex: 0 0 auto;
+  max-width: 100%;
+  align-self: flex-end;
   color: var(--color-ink, #0f172a);
   font-size: 0.95rem;
   letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+  text-align: right;
 }
 
 .metric strong small {
   font-size: 0.7rem;
   font-weight: 500;
   color: var(--color-muted, #64748b);
+}
+
+.metric--summary-link {
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.metric--summary-link:hover,
+.metric--navigation-pending {
+  border-color: var(--color-savia-300, #83bf94);
+  box-shadow: 0 0 0 3px rgb(59 135 88 / 10%);
+}
+
+.metric--summary-link:hover {
+  transform: translateY(-1px);
+}
+
+.metric--summary-link:focus-visible {
+  outline: 3px solid rgb(59 135 88 / 30%);
+  outline-offset: 2px;
+}
+
+.summary-navigation-hint {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+  background: linear-gradient(
+    110deg,
+    color-mix(in srgb, var(--metric-label-bg) 92%, white) 0%,
+    color-mix(in srgb, var(--metric-label-bg) 72%, transparent) 72%,
+    transparent 100%
+  );
+  color: var(--metric-label-color, #1d4ed8);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-align: center;
+  text-shadow: 0 1px rgb(255 255 255 / 75%);
+  animation: summary-navigation-reveal 180ms ease-out both;
+}
+
+@keyframes summary-navigation-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
 }
 
 .metric-value--positive {
@@ -163,38 +232,11 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .metric:not(.metric--toggle-group) {
-    min-height: 4.5rem;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.25rem;
-
-    &::before {
-      display: none;
-    }
-
-    span {
-      align-self: stretch;
-      width: auto;
-      margin: -0.65rem -0.85rem 0;
-      padding: 0.42rem 0.75rem 0.38rem;
-      border-radius: 0.8rem 0.8rem 0.55rem 0;
-      background: linear-gradient(110deg, var(--metric-label-bg) 0%, var(--metric-label-bg) 72%, transparent 100%);
-      color: var(--metric-label-color, #1d4ed8);
-      overflow: visible;
-      text-overflow: clip;
-      white-space: normal;
-      line-height: 1.15;
-    }
-
-    strong {
-      align-self: flex-end;
-    }
-  }
-
   .metric--toggle-group {
     grid-column: 1 / -1;
-    order: -1;
+  }
+
+  .metric--dynamic-balance {
+    grid-column: 1 / -1;
   }
 }
