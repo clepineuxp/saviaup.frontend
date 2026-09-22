@@ -13,6 +13,9 @@ const category: Category = {
   isActive: true,
   createdAt: '2026-08-20T18:00:00Z',
   updatedAt: '2026-08-20T18:00:00Z',
+  productCount: 3,
+  variationCount: 4,
+  ingredientCount: 2,
 };
 
 describe('CategoryCardComponent', () => {
@@ -63,5 +66,20 @@ describe('CategoryCardComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.category-card__actions')).toBeNull();
+  });
+
+  it('shows the product, variation, and ingredient counts', () => {
+    fixture.componentRef.setInput('category', category);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.category-card__metrics').textContent).toContain(
+      '3',
+    );
+    expect(fixture.nativeElement.querySelector('.category-card__metrics').textContent).toContain(
+      '4',
+    );
+    expect(fixture.nativeElement.querySelector('.category-card__metrics').textContent).toContain(
+      '2',
+    );
   });
 });

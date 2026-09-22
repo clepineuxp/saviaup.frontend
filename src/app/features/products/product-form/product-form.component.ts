@@ -15,7 +15,10 @@ import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angu
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { UiAlertComponent } from '../../../shared/components/ui-alert/ui-alert.component';
 import { UiButtonComponent } from '../../../shared/components/ui-button/ui-button.component';
-import { ImageSelectorComponent, ImageSelectionResult } from '../../../shared/components/image-selector/image-selector.component';
+import {
+  ImageSelectorComponent,
+  ImageSelectionResult,
+} from '../../../shared/components/image-selector/image-selector.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import {
   imageUrlValidator,
@@ -72,6 +75,8 @@ export class ProductFormComponent {
   readonly error = input<ProductFeatureError | null>(null);
   readonly submitted = output<CreateProductRequest>();
   readonly cancelled = output<void>();
+  readonly statusRequested = output<Product>();
+  readonly deleteRequested = output<Product>();
   readonly searchIngredients = output<string>();
 
   readonly activeTab = signal<'general' | 'variations' | 'recipe'>('general');

@@ -140,6 +140,19 @@ tbody tr:last-child td {
   border-bottom: 0;
 }
 
+.product-row--editable {
+  cursor: pointer;
+}
+
+.product-row--editable:hover td {
+  background: var(--color-savia-50);
+}
+
+.product-row--editable:focus-visible {
+  outline: 3px solid rgb(59 135 88 / 30%);
+  outline-offset: -3px;
+}
+
 tr.inactive {
   opacity: 0.62;
 }
@@ -216,6 +229,12 @@ tr.inactive {
   opacity: 0.45;
 }
 
+.products-results-summary {
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
 .state {
   display: grid;
   min-height: 14rem;
@@ -259,7 +278,18 @@ tr.inactive {
   }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 900px) and (max-width: 1299px) {
+  .filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end;
+  }
+
+  .filters app-ui-button {
+    justify-self: start;
+  }
+}
+
+@media (min-width: 1300px) {
   .filters {
     grid-template-columns: minmax(13rem, 1fr) minmax(10rem, 0.7fr) minmax(9rem, 0.5fr) auto auto;
     align-items: end;

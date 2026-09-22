@@ -7,4 +7,7 @@ export interface CategoryDto {
   readonly isActive: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly productCount?: number;
+  readonly variationCount?: number;
+  readonly ingredientCount?: number;
 }
