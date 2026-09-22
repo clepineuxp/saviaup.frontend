@@ -42,6 +42,51 @@ describe('PublicDigitalMenuService in the public app', () => {
     request.flush({});
   });
 
+  it('resolves lightweight API image paths against the configured API host', async () => {
+    const response = firstValueFrom(service.getPublicMenu('demo'));
+    const request = http.expectOne('https://public-api.test/api/public/menu/demo');
+    request.flush({
+      tenantId: 'tenant-1',
+      organizationName: 'Demo',
+      hasLogo: true,
+      logo: '/api/public/menu/demo/logo?v=1',
+      logoVersion: 1,
+      style: {},
+      categories: [
+        {
+          id: 'category-1',
+          name: 'Platos',
+          sortOrder: 1,
+          image: '/api/public/menu/demo/images/category-image',
+          products: [
+            {
+              id: 'product-1',
+              name: 'Especial',
+              salePrice: 15000,
+              sortOrder: 1,
+              image: '/api/public/menu/demo/images/product-image',
+              variations: [],
+            },
+          ],
+        },
+      ],
+    });
+
+    await expect(response).resolves.toMatchObject({
+      logo: 'https://public-api.test/api/public/menu/demo/logo?v=1',
+      categories: [
+        {
+          image: 'https://public-api.test/api/public/menu/demo/images/category-image',
+          products: [
+            {
+              image: 'https://public-api.test/api/public/menu/demo/images/product-image',
+            },
+          ],
+        },
+      ],
+    });
+  });
+
   it.each([
     { status: 401, statusText: 'Unauthorized', kind: 'unauthenticated' },
     { status: 403, statusText: 'Forbidden', kind: 'unauthorized' },

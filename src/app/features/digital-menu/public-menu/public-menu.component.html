@@ -48,10 +48,9 @@
               @for (product of category.products; track product.id) {
                 <button type="button" class="product-card" (click)="openProduct(product)" [attr.aria-label]="'Ver ' + product.name">
                   @if (menu()?.style?.showImages && product.image) {
-                    <span class="product-image-wrap"><img [src]="product.image" [alt]="product.name" loading="lazy" class="product-image" /></span>
+                    <span class="product-image-wrap"><img [src]="product.image" [alt]="product.name" loading="lazy" decoding="async" fetchpriority="low" class="product-image" /></span>
                   }
                   <span class="product-body">
-                    @if (menu()?.style?.showImages && product.image) { <img class="product-blur-image" [src]="product.image" alt="" aria-hidden="true" /> }
                     <span class="product-content">
                       <span class="product-header-line">
                         <strong class="product-name notranslate" translate="no">{{ product.name }}</strong>
@@ -83,7 +82,7 @@
   <div class="product-modal-backdrop" (click)="closeProduct()" (keyup)="onBackdropKeyup($event)" role="presentation">
     <section class="product-modal" role="dialog" aria-modal="true" tabindex="-1" [attr.aria-label]="product.name" (click)="$event.stopPropagation()" (keyup)="$event.stopPropagation()">
       <button type="button" class="modal-close" (click)="closeProduct()" aria-label="Cerrar detalle">×</button>
-      @if (product.image) { <img class="modal-product-image" [src]="product.image" [alt]="product.name" /> }
+      @if (product.image) { <img class="modal-product-image" [src]="product.image" [alt]="product.name" decoding="async" /> }
       <div class="modal-product-content">
         <h2 class="notranslate" translate="no">{{ product.name }}</h2>
         @if (product.description) { <p>{{ product.description }}</p> }
