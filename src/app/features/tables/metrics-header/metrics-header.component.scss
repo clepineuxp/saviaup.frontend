@@ -125,7 +125,7 @@
 }
 
 /* ── Labels ── */
-.metric > span {
+.metric > span:not(.summary-navigation-hint) {
   align-self: stretch;
   width: auto;
   margin: -0.65rem -0.85rem 0;
@@ -157,6 +157,62 @@
   font-size: 0.7rem;
   font-weight: 500;
   color: var(--color-muted, #64748b);
+}
+
+.metric--summary-link {
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.metric--summary-link:hover,
+.metric--navigation-pending {
+  border-color: var(--color-savia-300, #83bf94);
+  box-shadow: 0 0 0 3px rgb(59 135 88 / 10%);
+}
+
+.metric--summary-link:hover {
+  transform: translateY(-1px);
+}
+
+.metric--summary-link:focus-visible {
+  outline: 3px solid rgb(59 135 88 / 30%);
+  outline-offset: 2px;
+}
+
+.summary-navigation-hint {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+  background: linear-gradient(
+    110deg,
+    color-mix(in srgb, var(--metric-label-bg) 92%, white) 0%,
+    color-mix(in srgb, var(--metric-label-bg) 72%, transparent) 72%,
+    transparent 100%
+  );
+  color: var(--metric-label-color, #1d4ed8);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-align: center;
+  text-shadow: 0 1px rgb(255 255 255 / 75%);
+  animation: summary-navigation-reveal 180ms ease-out both;
+}
+
+@keyframes summary-navigation-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
 }
 
 .metric-value--positive {
