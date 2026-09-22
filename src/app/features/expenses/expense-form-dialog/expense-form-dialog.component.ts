@@ -45,7 +45,7 @@ export class ExpenseFormDialogComponent implements OnInit {
   readonly submitting = input(false);
   readonly errorMessage = input<string | null>(null);
 
-  readonly customPaymentMethods = signal<ConfiguredPaymentMethod[]>([]);
+  readonly paymentMethods = signal<ConfiguredPaymentMethod[]>([]);
 
   readonly submitted = output<CreateExpensePayload | UpdateExpensePayload>();
   readonly cancelled = output<void>();
@@ -59,37 +59,38 @@ export class ExpenseFormDialogComponent implements OnInit {
     description: ['', [Validators.maxLength(1000)]],
     amount: [0, [Validators.required, Validators.min(0.01)]],
     isCashOut: [true, [Validators.required]],
-    paymentMethod: ['Efectivo', [nonBlankRequiredValidator()]],
+    paymentMethod: ['', [nonBlankRequiredValidator()]],
     supplierId: [''],
     expenseDate: [this.getTodayDateString(), [Validators.required]],
   });
 
   ngOnInit(): void {
     this.supplierStore.loadLookup();
+    const exp = this.expense();
+    if (exp) {
+      const dateVal = exp.expenseDate
+        ? (exp.businessDate ?? this.organizationTime.localDate(exp.expenseDate))
+        : this.getTodayDateString();
+
+      this.form.reset({
+        name: exp.name,
+        description: exp.description ?? '',
+        amount: exp.amount,
+        isCashOut: exp.isCashOut,
+        paymentMethod: exp.paymentMethod,
+        supplierId: exp.supplier?.id ?? '',
+        expenseDate: dateVal,
+      });
+    }
+
     this.api
       .get<ConfiguredPaymentMethod[]>(API_ENDPOINTS.settings.paymentMethods)
       .pipe(catchError(() => of([])))
-      .subscribe((methods) => this.customPaymentMethods.set(methods.filter((m) => m.isActive)));
-
-    setTimeout(() => {
-      const exp = this.expense();
-      if (exp) {
-        let dateVal = this.getTodayDateString();
-        if (exp.expenseDate) {
-          dateVal = exp.businessDate ?? this.organizationTime.localDate(exp.expenseDate);
-        }
-
-        this.form.reset({
-          name: exp.name,
-          description: exp.description ?? '',
-          amount: exp.amount,
-          isCashOut: exp.isCashOut,
-          paymentMethod: exp.paymentMethod,
-          supplierId: exp.supplier?.id ?? '',
-          expenseDate: dateVal,
-        });
-      }
-    });
+      .subscribe((methods) => {
+        const activeMethods = methods.filter((method) => method.isActive);
+        this.paymentMethods.set(activeMethods);
+        if (!exp) this.form.controls.paymentMethod.setValue(activeMethods[0]?.name ?? '');
+      });
   }
 
   submit(): void {
