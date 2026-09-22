@@ -53,8 +53,20 @@
                   <span class="product-body">
                     @if (menu()?.style?.showImages && product.image) { <img class="product-blur-image" [src]="product.image" alt="" aria-hidden="true" /> }
                     <span class="product-content">
-                      <span class="product-header-line"><strong class="product-name notranslate" translate="no">{{ product.name }}</strong><span class="product-price">${{ product.salePrice | number:'1.0-0' }}</span></span>
-                      @if (product.description) { <span class="product-description">{{ product.description }}</span> }
+                      <span class="product-header-line">
+                        <strong class="product-name notranslate" translate="no">{{ product.name }}</strong>
+                        @if (product.variations.length === 0) {
+                          <span class="product-price">${{ product.salePrice | number:'1.0-0' }}</span>
+                        }
+                      </span>
+                      @if (product.variations.length > 0) {
+                        <span class="product-variations" aria-label="Variaciones disponibles">
+                          @for (variation of product.variations; track variation.id) {
+                            <span class="product-variation"><span class="notranslate" translate="no">{{ variation.name }}</span><strong>${{ variation.salePrice | number:'1.0-0' }}</strong></span>
+                          }
+                        </span>
+                      }
+                      @if (product.description) { <span class="product-description" [class.product-description--with-variations]="product.variations.length > 0">{{ product.description }}</span> }
                     </span>
                   </span>
                 </button>
@@ -74,8 +86,19 @@
       @if (product.image) { <img class="modal-product-image" [src]="product.image" [alt]="product.name" /> }
       <div class="modal-product-content">
         <h2 class="notranslate" translate="no">{{ product.name }}</h2>
-        <strong class="modal-product-price">${{ product.salePrice | number:'1.0-0' }}</strong>
         @if (product.description) { <p>{{ product.description }}</p> }
+        @if (product.variations.length > 0) {
+          <section class="modal-variations" aria-label="Variaciones disponibles">
+            <h3>Presentaciones disponibles</h3>
+            <div class="modal-variations-list">
+              @for (variation of product.variations; track variation.id) {
+                <div class="modal-variation"><span class="notranslate" translate="no">{{ variation.name }}</span><strong>${{ variation.salePrice | number:'1.0-0' }}</strong></div>
+              }
+            </div>
+          </section>
+        } @else {
+          <strong class="modal-product-price">${{ product.salePrice | number:'1.0-0' }}</strong>
+        }
       </div>
     </section>
   </div>
