@@ -30,6 +30,10 @@ export const API_ENDPOINTS = {
     operation: '/api/tables/operation',
     salesContext: '/api/tables/sales-context',
     salesLogo: '/api/tables/sales-logo',
+    salesCatalog: {
+      version: '/api/tables/sales-catalog/version',
+      sync: '/api/tables/sales-catalog/sync',
+    },
     operationState: (tableId: string) => `/api/tables/${tableId}/operation`,
     order: (tableId: string) => `/api/tables/${tableId}/order`,
     areas: {
@@ -109,7 +113,6 @@ export const API_ENDPOINTS = {
     parameters: '/api/digital-menu/parameters',
     items: '/api/digital-menu/items',
     style: '/api/digital-menu/style',
-    public: (slug: string) => `/api/public/menu/${encodeURIComponent(slug)}`,
   },
   printing: {
     configuration: '/api/printing/configuration',

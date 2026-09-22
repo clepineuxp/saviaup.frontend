@@ -1,0 +1,75 @@
+:host {
+  display: contents;
+}
+
+.sync-backdrop {
+  position: fixed;
+  z-index: 180;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(18 34 25 / 42%);
+  backdrop-filter: blur(3px);
+}
+
+.sync-dialog {
+  display: flex;
+  width: min(92vw, 30rem);
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1.2rem;
+  padding: 1.25rem;
+  background: var(--color-surface);
+  box-shadow: 0 24px 70px rgb(18 34 25 / 24%);
+}
+
+.sync-spinner {
+  width: 2.8rem;
+  height: 2.8rem;
+  flex: 0 0 auto;
+  border: 0.28rem solid var(--color-savia-100);
+  border-top-color: var(--color-savia-600);
+  border-radius: 50%;
+  animation: sync-spin 0.85s linear infinite;
+}
+
+.sync-eyebrow,
+.sync-dialog h2,
+.sync-dialog p {
+  margin: 0;
+}
+
+.sync-eyebrow {
+  color: var(--color-savia-700);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sync-dialog h2 {
+  margin-top: 0.18rem;
+  color: var(--color-ink);
+  font-size: 1rem;
+}
+
+.sync-dialog p:last-child {
+  margin-top: 0.35rem;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+@keyframes sync-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sync-spinner {
+    animation-duration: 1.8s;
+  }
+}

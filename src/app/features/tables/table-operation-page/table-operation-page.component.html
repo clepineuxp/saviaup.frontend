@@ -36,6 +36,15 @@
     <div class="error-banner" role="alert">{{ error.message }}</div>
   }
 
+  @if (salesCatalog.syncError()) {
+    <div class="error-banner sync-error" role="alert">
+      <span>{{ 'tables.sync.error' | translate }}</span>
+      <button type="button" (click)="salesCatalog.retrySynchronization()">
+        {{ 'tables.sync.retry' | translate }}
+      </button>
+    </div>
+  }
+
   <app-metrics-header [metrics]="store.metrics()" />
 
   @if (store.loading()) {
@@ -69,7 +78,9 @@
                 (ngModelChange)="tableSearchQuery.set($event)"
               />
               @if (tableSearchQuery()) {
-                <button type="button" class="clear-search-btn" (click)="tableSearchQuery.set('')">✕</button>
+                <button type="button" class="clear-search-btn" (click)="tableSearchQuery.set('')">
+                  ✕
+                </button>
               }
             </div>
           }
@@ -112,7 +123,11 @@
                 </div>
                 <div class="table-list-item-right">
                   <span class="table-total-amount">
-                    {{ (table.activeOrderTotal && table.activeOrderTotal > 0) ? (table.activeOrderTotal | currency: 'COP' : 'symbol-narrow' : '1.0-0') : '$0' }}
+                    {{
+                      table.activeOrderTotal && table.activeOrderTotal > 0
+                        ? (table.activeOrderTotal | currency: 'COP' : 'symbol-narrow' : '1.0-0')
+                        : '$0'
+                    }}
                   </span>
                   <span class="table-status-pill">
                     {{ 'tables.status.' + table.status.toLowerCase() | translate }}
@@ -129,6 +144,8 @@
     </section>
   }
 </section>
+
+<app-sales-catalog-sync-modal />
 
 @if (selectedTable(); as table) {
   <app-table-operation-dialog

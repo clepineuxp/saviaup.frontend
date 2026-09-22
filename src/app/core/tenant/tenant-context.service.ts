@@ -1,5 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+import { OfflineDatabaseService } from '../../shared/offline/offline-database.service';
 
 export interface ActiveTenant {
   readonly timeZoneId?: string;
@@ -12,16 +13,21 @@ const TENANT_KEY = 'saviaup.active-tenant';
 @Injectable({ providedIn: 'root' })
 export class TenantContext {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly offlineDatabase = inject(OfflineDatabaseService);
   private readonly activeTenantState = signal<ActiveTenant | null>(this.load());
 
   readonly activeTenant = this.activeTenantState.asReadonly();
 
   select(tenant: ActiveTenant): void {
+    const previousTenantId = this.activeTenantState()?.id;
+    if (previousTenantId && previousTenantId !== tenant.id)
+      void this.offlineDatabase.clearSalesCatalog();
     this.activeTenantState.set(tenant);
     if (this.isBrowser) localStorage.setItem(TENANT_KEY, JSON.stringify(tenant));
   }
 
   clear(): void {
+    if (this.activeTenantState()) void this.offlineDatabase.clearSalesCatalog();
     this.activeTenantState.set(null);
     if (this.isBrowser) localStorage.removeItem(TENANT_KEY);
   }

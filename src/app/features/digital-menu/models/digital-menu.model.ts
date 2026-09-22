@@ -98,3 +98,14 @@ export interface PublicDigitalMenu {
   style: DigitalMenuStyle;
   categories: readonly PublicCategory[];
 }
+
+export interface PublicProductImage {
+  readonly productId: string;
+  readonly image?: string | null;
+}
+
+export interface PublicCategoryImages {
+  readonly categoryId: string;
+  readonly categoryImage?: string | null;
+  readonly products: readonly PublicProductImage[];
+}

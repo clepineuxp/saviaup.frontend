@@ -4,7 +4,9 @@
   flex-direction: column;
   background-color: var(--menu-bg, #ffffff);
   color: var(--menu-text, #0f172a);
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
 }
 
 .menu-loader-container,
@@ -19,12 +21,47 @@
 }
 
 .pulse-loader {
-  width: 50px;
-  height: 50px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
-  background: var(--menu-primary, #0f766e);
-  animation: pulse 1.5s infinite ease-in-out;
-  margin-bottom: 1.5rem;
+  background: linear-gradient(145deg, #5ad6ae, var(--menu-primary, #0f9f75));
+  box-shadow: 0 12px 32px rgba(15, 159, 117, 0.24);
+  animation: pulse 1.8s infinite ease-in-out;
+  margin-bottom: 1.35rem;
+
+  &::before {
+    position: absolute;
+    inset: -9px;
+    border: 1px solid color-mix(in srgb, var(--menu-primary, #0f9f75) 28%, transparent);
+    border-radius: inherit;
+    content: '';
+    animation: loader-ring 1.8s infinite ease-out;
+  }
+}
+
+.loader-icon {
+  font-size: 2rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.12));
+  animation: loader-icon-in 0.35s ease-out;
+}
+
+.loader-message {
+  min-height: 1.5rem;
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  animation: loader-message-in 0.35s ease-out;
+}
+
+.loader-subtitle {
+  margin-top: 0.45rem;
+  color: color-mix(in srgb, var(--menu-text, #0f172a) 58%, transparent);
+  font-size: 0.82rem;
 }
 
 @keyframes pulse {
@@ -39,6 +76,48 @@
   100% {
     transform: scale(0.85);
     opacity: 0.6;
+  }
+}
+
+@keyframes loader-ring {
+  from {
+    transform: scale(0.82);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+
+@keyframes loader-icon-in {
+  from {
+    transform: translateY(5px) scale(0.82);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes loader-message-in {
+  from {
+    transform: translateY(4px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-loader,
+  .pulse-loader::before,
+  .loader-icon,
+  .loader-message {
+    animation: none;
   }
 }
 
@@ -202,11 +281,28 @@
     box-shadow: none;
   }
 
-  .brand-details { display: flex; flex-direction: column; gap: 0.25rem; }
-  .restaurant-name { margin: 0; font-size: 1.35rem; font-weight: 800; }
-  .restaurant-welcome { margin: 0.25rem 0 0.5rem; }
-  .meta-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .meta-chip { color: inherit; text-decoration: none; }
+  .brand-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .restaurant-name {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 800;
+  }
+  .restaurant-welcome {
+    margin: 0.25rem 0 0.5rem;
+  }
+  .meta-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .meta-chip {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
 // ---------------------------
@@ -233,7 +329,11 @@
 
 [data-template='gourmet-hero'] {
   .public-restaurant-header {
-    background: linear-gradient(180deg, color-mix(in srgb, var(--menu-primary) 13%, transparent), transparent 100%);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--menu-primary) 13%, transparent),
+      transparent 100%
+    );
     border-bottom-color: rgba(255, 255, 255, 0.1);
   }
 
@@ -246,23 +346,38 @@
   .public-restaurant-header {
     background: linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0%, transparent 100%);
     padding-bottom: 2.5rem;
-
   }
 }
 
 [data-header-alignment='center'] {
-  .brand-block { align-items: center; text-align: center; }
-  .brand-details { align-items: center; }
-  .meta-chips { justify-content: center; }
+  .brand-block {
+    align-items: center;
+    text-align: center;
+  }
+  .brand-details {
+    align-items: center;
+  }
+  .meta-chips {
+    justify-content: center;
+  }
 }
 
 [data-header-alignment='left'],
 [data-header-alignment='right'] {
-  .brand-block { flex-direction: column; }
+  .brand-block {
+    flex-direction: column;
+  }
 }
 
 [data-header-alignment='right'] {
-  .brand-block { align-items: flex-end; text-align: right; }
-  .brand-details { align-items: flex-end; }
-  .meta-chips { justify-content: flex-end; }
+  .brand-block {
+    align-items: flex-end;
+    text-align: right;
+  }
+  .brand-details {
+    align-items: flex-end;
+  }
+  .meta-chips {
+    justify-content: flex-end;
+  }
 }

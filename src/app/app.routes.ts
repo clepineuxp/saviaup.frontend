@@ -43,22 +43,6 @@ export const routes: Routes = [
       import('./features/tenant/tenant.routes').then((routesFile) => routesFile.TENANT_ROUTES),
   },
   {
-    path: 'm/:slug',
-    loadComponent: () =>
-      import('./layouts/digital-menu-layout/digital-menu-layout.component').then(
-        (component) => component.DigitalMenuLayoutComponent,
-      ),
-    children: [
-      {
-        path: '',
-        loadComponent: () =>
-          import('./features/digital-menu/public-menu/public-menu.component').then(
-            (component) => component.PublicMenuComponent,
-          ),
-      },
-    ],
-  },
-  {
     path: 'app',
     canActivate: [authGuard, tenantGuard],
     loadComponent: () =>

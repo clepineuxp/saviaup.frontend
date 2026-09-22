@@ -108,7 +108,7 @@
           </div>
 
           <div class="slug-input-wrapper" [class.disabled]="isSlugLocked()">
-            <span class="slug-prefix">saviaup.com/m/</span>
+            <span class="slug-prefix">{{ store.publicMenuBaseUrl() }}/m/</span>
             <input
               id="digital-menu-slug"
               type="text"
