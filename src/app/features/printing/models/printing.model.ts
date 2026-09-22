@@ -41,6 +41,7 @@ export interface DiscoveredPrintAgent {
   readonly version: string;
   readonly localIpAddress: string | null;
   readonly connectedAt: string;
+  readonly isReactivation: boolean;
 }
 
 export interface Printer {
