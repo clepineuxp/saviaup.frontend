@@ -28,6 +28,8 @@ export const API_ENDPOINTS = {
     root: '/api/tables',
     detail: (tableId: string) => `/api/tables/${tableId}`,
     operation: '/api/tables/operation',
+    salesContext: '/api/tables/sales-context',
+    salesLogo: '/api/tables/sales-logo',
     operationState: (tableId: string) => `/api/tables/${tableId}/operation`,
     order: (tableId: string) => `/api/tables/${tableId}/order`,
     areas: {

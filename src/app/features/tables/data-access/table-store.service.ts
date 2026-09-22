@@ -14,7 +14,6 @@ import {
   tap,
   throwError,
 } from 'rxjs';
-import { AuthStore } from '../../../core/auth/auth-store.service';
 import { TenantContext } from '../../../core/tenant/tenant-context.service';
 import { ApiError } from '../../../shared/http/api-error';
 import { RequestStatus } from '../../../shared/models/request-state.model';
@@ -35,6 +34,7 @@ import {
 } from '../models/table.model';
 import { TablePermission } from '../table-permissions';
 import { TableRealtimeClient } from './table-realtime.client';
+import { TableSalesContextStore } from './table-sales-context.store';
 import { TABLE_REPOSITORY } from './table.repository';
 
 export interface TableFeatureError {
@@ -49,7 +49,7 @@ const EMPTY_METRICS: TableMetrics = { available: 0, occupied: 0, activeSalesTota
 export class TableStore {
   private readonly repository = inject(TABLE_REPOSITORY);
   private readonly realtime = inject(TableRealtimeClient);
-  private readonly auth = inject(AuthStore);
+  private readonly salesContext = inject(TableSalesContextStore);
   private readonly tenant = inject(TenantContext);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -120,7 +120,13 @@ export class TableStore {
     this.realtime.orderUpdates$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((event) => this.applyOrderEvent(event));
-    this.destroyRef.onDestroy(() => void this.realtime.disconnect());
+    this.realtime.salesDataInvalidations$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((event) => {
+        if (event.resources.includes('tables') && this.scopedTenantId) {
+          this.loadOperation().subscribe({ error: () => undefined });
+        }
+      });
   }
 
   hasPermission(permission: TablePermission): boolean {
@@ -133,8 +139,14 @@ export class TableStore {
     if (this.permissionsRequest) return this.permissionsRequest;
     if (this.permissionsState().size > 0) return of([...this.permissionsState()]);
     const version = this.scopeVersion;
-    const request = this.auth.loadCurrentUser().pipe(
-      map((user) => user.permissions),
+    const request = this.salesContext.ensureLoaded().pipe(
+      map((context) => {
+        const permissions: string[] = [];
+        if (context.capabilities.canRead) permissions.push('tables.read');
+        if (context.capabilities.canOperate) permissions.push('tables.operate');
+        if (context.capabilities.canManage) permissions.push('tables.manage');
+        return permissions;
+      }),
       tap((permissions) => {
         if (this.isCurrent(tenantId, version)) this.permissionsState.set(new Set(permissions));
       }),

@@ -14,8 +14,6 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { catchError, EMPTY, of } from 'rxjs';
-import { SettingsStore } from '../../settings/data-access/settings-store.service';
-import { PRODUCT_REPOSITORY } from '../../products/data-access/product.repository';
 import { Product, ProductCategory, ProductVariation } from '../../products/models/product.model';
 import { ORDER_REPOSITORY } from '../../orders/data-access/order.repository';
 import {
@@ -30,6 +28,8 @@ import {
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { ToastService } from '../../../shared/services/toast.service';
 import { TableStore } from '../data-access/table-store.service';
+import { TableSalesCatalogCache } from '../data-access/table-sales-catalog-cache.service';
+import { TableSalesContextStore } from '../data-access/table-sales-context.store';
 import { RestaurantTable } from '../models/table.model';
 
 export interface ConfiguredProductModalState {
@@ -104,8 +104,8 @@ export class TableOperationDialogComponent {
   readonly orderUpdated = output<void>();
 
   private readonly orderRepo = inject(ORDER_REPOSITORY);
-  private readonly productRepo = inject(PRODUCT_REPOSITORY);
-  readonly settingsStore = inject(SettingsStore);
+  private readonly catalog = inject(TableSalesCatalogCache);
+  readonly salesContext = inject(TableSalesContextStore);
   readonly tableStore = inject(TableStore);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
@@ -191,7 +191,7 @@ export class TableOperationDialogComponent {
     });
 
     effect(() => {
-      const org = this.settingsStore.organization();
+      const org = this.salesContext.organization();
       if (org?.hasLogo) {
         this.loadLogoUrl();
       } else {
@@ -199,19 +199,23 @@ export class TableOperationDialogComponent {
       }
     });
 
-    this.loadCategories();
-    this.loadCatalog(1);
-    this.settingsStore
-      .load()
+    this.catalog
+      .prepare()
       .pipe(
-        takeUntilDestroyed(),
+        takeUntilDestroyed(this.destroyRef),
         catchError(() => EMPTY),
       )
       .subscribe();
+    this.catalog.invalidations$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.loadCategories();
+      this.loadCatalog(this.catalogPage());
+    });
+    this.loadCategories();
+    this.loadCatalog(1);
   }
 
   private loadLogoUrl(): void {
-    this.settingsStore
+    this.salesContext
       .getLogo()
       .pipe(
         takeUntilDestroyed(this.destroyRef),
@@ -229,8 +233,8 @@ export class TableOperationDialogComponent {
   }
 
   private loadCategories(): void {
-    this.productRepo
-      .listCategories(true)
+    this.catalog
+      .listCategories()
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         catchError(() => of([])),
@@ -241,8 +245,8 @@ export class TableOperationDialogComponent {
   loadCatalog(page = 1): void {
     this.loadingCatalog.set(true);
     const q = this.searchQuery().trim();
-    this.productRepo
-      .list({
+    this.catalog
+      .listProducts({
         page,
         pageSize: 100,
         search: q ? q : null,
@@ -327,7 +331,7 @@ export class TableOperationDialogComponent {
       pendingItems.length > 0 ? pendingItems : order.items.filter((i) => i.status !== 'CANCELLED');
     const subtotal = itemsToSummarize.reduce((sum, item) => sum + item.subtotal, 0);
 
-    const business = this.settingsStore.business();
+    const business = this.salesContext.business();
     const showTip = business?.showVoluntaryTip ?? true;
     const tipPct = business?.suggestedTipPercentage ?? 10;
     const suggestedTip = showTip ? Math.round(subtotal * (tipPct / 100)) : 0;
@@ -870,12 +874,12 @@ export class TableOperationDialogComponent {
 
   private launchCheckoutModal(isPartial: boolean, itemsToPay: SelectedItemToPay[]): void {
     const subtotalToPay = itemsToPay.reduce((acc, i) => acc + i.subtotalToPay, 0);
-    const business = this.settingsStore.business();
+    const business = this.salesContext.business();
     const showTip = business?.showVoluntaryTip ?? false;
     const tipPct = business?.suggestedTipPercentage ?? 10;
     const tipAmount = showTip ? Math.round(subtotalToPay * (tipPct / 100)) : 0;
 
-    const methods = this.settingsStore.paymentMethods().filter((pm) => pm.isActive);
+    const methods = this.salesContext.paymentMethods();
     const defaultMethod = methods.length > 0 ? (methods[0]?.name ?? 'Efectivo') : 'Efectivo';
 
     this.checkoutState.set({
@@ -898,7 +902,7 @@ export class TableOperationDialogComponent {
     if (!curr) return;
     const nextMixed = !curr.isMixed;
     const targetTotal = curr.subtotalToPay + curr.tipAmount;
-    const methods = this.settingsStore.paymentMethods().filter((pm) => pm.isActive);
+    const methods = this.salesContext.paymentMethods();
     const defaultMethod = methods.length > 0 ? (methods[0]?.name ?? 'Efectivo') : 'Efectivo';
 
     this.checkoutState.set({
@@ -971,7 +975,7 @@ export class TableOperationDialogComponent {
   addPaymentSplit(): void {
     const curr = this.checkoutState();
     if (!curr) return;
-    const methods = this.settingsStore.paymentMethods().filter((pm) => pm.isActive);
+    const methods = this.salesContext.paymentMethods();
     const defaultMethod = methods[0]?.name ?? 'Efectivo';
 
     const currentSplitsTotal = curr.splits.reduce((acc, s) => acc + s.amount, 0);

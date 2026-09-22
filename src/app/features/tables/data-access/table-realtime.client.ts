@@ -6,16 +6,23 @@ import { TableOrderUpdatedEvent, TableStatusChangedEvent } from '../models/table
 
 export type TableRealtimeState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting';
 
-@Injectable()
+export interface TableSalesDataInvalidatedEvent {
+  readonly resources: readonly ('products' | 'categories' | 'tables')[];
+  readonly occurredAt: string;
+}
+
+@Injectable({ providedIn: 'root' })
 export class TableRealtimeClient {
   private readonly realtime = inject(RealtimeService);
   private connection: HubConnection | null = null;
   private readonly statusChangesSubject = new Subject<TableStatusChangedEvent>();
   private readonly orderUpdatesSubject = new Subject<TableOrderUpdatedEvent>();
+  private readonly salesDataInvalidationsSubject = new Subject<TableSalesDataInvalidatedEvent>();
   private readonly stateSignal = signal<TableRealtimeState>('disconnected');
 
   readonly statusChanges$ = this.statusChangesSubject.asObservable();
   readonly orderUpdates$ = this.orderUpdatesSubject.asObservable();
+  readonly salesDataInvalidations$ = this.salesDataInvalidationsSubject.asObservable();
   readonly state = this.stateSignal.asReadonly();
 
   async connect(): Promise<void> {
@@ -27,6 +34,9 @@ export class TableRealtimeClient {
     );
     connection.on('OnTableOrderUpdated', (event: TableOrderUpdatedEvent) =>
       this.orderUpdatesSubject.next(event),
+    );
+    connection.on('OnTableSalesDataInvalidated', (event: TableSalesDataInvalidatedEvent) =>
+      this.salesDataInvalidationsSubject.next(event),
     );
     connection.onreconnecting(() => this.stateSignal.set('reconnecting'));
     connection.onreconnected(() => this.stateSignal.set('connected'));
