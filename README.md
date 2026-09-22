@@ -238,7 +238,7 @@ restricciones de suspensión del navegador pueden añadir demora. Durante un rol
 recursos de un manifiesto deben estar disponibles de forma consistente; usar imágenes identificadas
 por SHA/digest y comprobar que el manifiesto y sus chunks no se sirvan desde builds distintos.
 
-`OfflineDatabaseService` abre IndexedDB bajo demanda y no almacena estado arbitrario. `RealtimeService` construye conexiones SignalR, pero no inicia ninguna hasta que una feature futura lo solicite.
+`OfflineDatabaseService` abre IndexedDB bajo demanda. La operación de mesas guarda allí una única instantánea versionada del catálogo de venta para el tenant activo (categorías, productos, variaciones y salas/mesas), junto con la última sincronización; cambiar de organización o cerrar sesión elimina esa instantánea. `RealtimeService` construye las conexiones SignalR únicamente cuando una feature las necesita.
 
 ## Endpoints preparados
 
@@ -261,6 +261,8 @@ Todos viven en `core/config/api-endpoints.ts`:
 - `PUT /api/products/{productId}`
 - `PATCH /api/products/{productId}/status`
 - `DELETE /api/products/{productId}`
+- `GET /api/tables/sales-catalog/version`
+- `GET /api/tables/sales-catalog/sync`
 - `GET /api/inventory`
 - `GET/POST /api/inventory/ingredients`
 - `PUT/DELETE /api/inventory/ingredients/{ingredientId}`
@@ -329,7 +331,9 @@ El archivo de Figma “Savia Up · Web App” fue creado como espacio de diseño
 
 ## Gestión y operación de mesas
 
-- `/app/sell/tables` carga el snapshot por REST y concentra el área útil en la sala seleccionada. El encabezado de la sala permite cambiarla y alternar entre plano e iconos; sus KPIs son compactos y la barra lateral de escritorio puede ocultarse y recuperarse durante la operación.
+- `/app/sell/tables` consulta por REST el snapshot operativo de las mesas, pero categorías y productos se leen desde el catálogo local de IndexedDB. Cada entrada compara la versión local con `/api/tables/sales-catalog/version`; solo descarga `/api/tables/sales-catalog/sync` cuando difieren. La primera sincronización bloquea la interacción con un modal de progreso y reduce las imágenes de guía a WebP (máximo 360 px) antes de persistirlas.
+- `OnTableSalesDataInvalidated` solicita una nueva comprobación de versión tras cambios de categorías, productos, variaciones, salas o configuración de mesas. Las invalidaciones recibidas mientras otra validación está en curso se agrupan y se procesan al terminar, evitando descargas duplicadas.
+- El área útil se concentra en la sala seleccionada. El encabezado de la sala permite cambiarla y alternar entre plano e iconos; sus KPIs son compactos y la barra lateral de escritorio puede ocultarse y recuperarse durante la operación.
 - **Rediseño de métricas con toggle Día / Turno**: el encabezado agrupa las ventas (Día/Turno) y egresos (Día/Turno) en una sola métrica dinámica conmutada por botón, muestra las mesas disponibles en formato "X de Y" y enlaza con los totales de turnos de caja en tiempo real.
 - `/app/configuration/tables/manage` administra salas y mesas, reordena salas y edita capacidad, flags, estado y forma (`SQUARE`, `ROUND`, `RECTANGLE_HORIZONTAL`, `RECTANGLE_VERTICAL`). La posición se define arrastrando la misma tarjeta y con las mismas dimensiones que usa la operación (`100×100`, `150×100` o `100×150`); doble clic abre la edición y el modal permite eliminar con confirmación. El estado se comunica por color y su etiqueta aparece solo con `hover`/foco.
 - `TableRealtimeClient` conecta únicamente durante el ciclo de vida de la feature, envía el JWT vigente y aplica reconexión automática para `OnTableStatusChanged` y `OnTableOrderUpdated`.

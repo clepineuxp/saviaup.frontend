@@ -118,6 +118,23 @@
   font-size: 0.75rem;
 }
 
+.sync-error {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.sync-error button {
+  min-height: 2rem;
+  border: 1px solid currentColor;
+  border-radius: 0.55rem;
+  padding: 0.3rem 0.65rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
 .error-banner {
   border-color: #efc9c5;
   background: #fff4f2;
@@ -200,7 +217,9 @@
   border-radius: 0.75rem;
   background: var(--color-surface, #ffffff);
   width: min(220px, 45vw);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:focus-within {
     border-color: var(--color-savia-600);
@@ -407,9 +426,10 @@
         opacity: 0;
         visibility: hidden;
         transform: scale(0.92);
-        transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-                    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-                    visibility 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        transition:
+          opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+          transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+          visibility 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
       .table-arrow {
