@@ -35,6 +35,20 @@
     <p class="category-description">
       {{ category().description || ('categories.description.empty' | translate) }}
     </p>
+    <dl class="category-card__metrics">
+      <div>
+        <dt>{{ 'categories.metrics.products' | translate }}</dt>
+        <dd>{{ category().productCount }}</dd>
+      </div>
+      <div>
+        <dt>{{ 'categories.metrics.variations' | translate }}</dt>
+        <dd>{{ category().variationCount }}</dd>
+      </div>
+      <div>
+        <dt>{{ 'categories.metrics.ingredients' | translate }}</dt>
+        <dd>{{ category().ingredientCount }}</dd>
+      </div>
+    </dl>
   </div>
   @if (canManage()) {
     <footer class="category-card__actions">

@@ -1,0 +1,716 @@
+<section class="printing-page">
+  <header class="hero">
+    <div>
+      <span class="eyebrow">{{ 'printing.badge' | translate }}</span>
+      <h1>{{ 'printing.title' | translate }}</h1>
+      <p>{{ 'printing.description' | translate }}</p>
+    </div>
+    @if (store.configuration()?.agentDownloadUrl; as downloadUrl) {
+      <a class="button primary" [href]="downloadUrl" target="_blank" rel="noopener">
+        ↓ {{ 'printing.downloadAgent' | translate }}
+      </a>
+    }
+  </header>
+
+  @if (store.error(); as error) {
+    <app-ui-alert [message]="error" />
+  }
+
+  <article class="setup-card">
+    <div class="setup-title">
+      <span class="setup-icon">⚡</span>
+      <div>
+        <h2>{{ 'printing.setup.title' | translate }}</h2>
+        <p>{{ 'printing.setup.description' | translate }}</p>
+      </div>
+    </div>
+    <ol class="steps">
+      <li><span>1</span>{{ 'printing.setup.step1' | translate }}</li>
+      <li><span>2</span>{{ 'printing.setup.step2' | translate }}</li>
+      <li><span>3</span>{{ 'printing.setup.step3' | translate }}</li>
+      <li><span>4</span>{{ 'printing.setup.step4' | translate }}</li>
+      <li><span>5</span>{{ 'printing.setup.step5' | translate }}</li>
+    </ol>
+  </article>
+
+  <nav class="tabs" [attr.aria-label]="'printing.tabs.label' | translate">
+    @if (canShowAgents()) {
+      <button type="button" [class.active]="activeTab() === 'agents'" (click)="setTab('agents')">
+        ◉ {{ 'printing.tabs.agents' | translate }}
+      </button>
+    }
+    @if (canShowZones()) {
+      <button type="button" [class.active]="activeTab() === 'zones'" (click)="setTab('zones')">
+        ◫ {{ 'printing.tabs.zones' | translate }}
+      </button>
+    }
+    @if (store.hasPermission('printing.queue.read')) {
+      <button type="button" [class.active]="activeTab() === 'queue'" (click)="setTab('queue')">
+        ≡ {{ 'printing.tabs.queue' | translate }}
+      </button>
+    }
+  </nav>
+
+  @if (store.loading()) {
+    <div class="loading-card">{{ 'printing.loading' | translate }}</div>
+  } @else if (activeTab() === 'agents' && canShowAgents()) {
+    <section class="tab-panel">
+      <div class="section-heading">
+        <div>
+          <h2>{{ 'printing.agents.title' | translate }}</h2>
+          <p>{{ 'printing.agents.description' | translate }}</p>
+        </div>
+      </div>
+
+      @if (canManageAgents()) {
+        <article class="form-card discovery-card">
+          <div class="section-heading compact">
+            <div>
+              <h2>{{ 'printing.agents.discoverTitle' | translate }}</h2>
+              <p>{{ 'printing.agents.discoverDescription' | translate }}</p>
+            </div>
+            <button
+              class="button secondary"
+              type="button"
+              [disabled]="store.mutating()"
+              (click)="store.refreshDiscoveredAgents().subscribe()"
+            >
+              ↻ {{ 'printing.actions.refresh' | translate }}
+            </button>
+          </div>
+          <form class="inline-form discovery-form" [formGroup]="pairingForm">
+            <label>
+              <span>{{ 'printing.location' | translate }}</span>
+              <select formControlName="locationId">
+                @for (location of store.locations(); track location.id) {
+                  <option [value]="location.id">{{ location.name }}</option>
+                }
+              </select>
+            </label>
+            <label>
+              <span>{{ 'printing.agents.agentName' | translate }}</span>
+              <input
+                type="text"
+                formControlName="agentName"
+                [placeholder]="'printing.agents.agentNamePlaceholder' | translate"
+              />
+              <small>{{ 'printing.agents.agentNameHelp' | translate }}</small>
+            </label>
+          </form>
+          <div class="discovered-agent-grid">
+            @for (agent of store.discoveredAgents(); track agent.discoveryId) {
+              <article class="discovered-agent-card">
+                <div class="agent-symbol">⌁</div>
+                <div>
+                  <strong>{{ agent.hostname }}</strong>
+                  <p>{{ agent.operatingSystem }} · v{{ agent.version }}</p>
+                  <small>{{ agent.localIpAddress || '—' }}</small>
+                </div>
+                <button
+                  class="button primary"
+                  type="button"
+                  [disabled]="store.mutating()"
+                  (click)="linkDiscoveredAgent(agent.discoveryId)"
+                >
+                  {{
+                    (agent.isReactivation ? 'printing.agents.reactivate' : 'printing.agents.link')
+                      | translate
+                  }}
+                </button>
+              </article>
+            } @empty {
+              <p class="discovery-empty">{{ 'printing.agents.discoverEmpty' | translate }}</p>
+            }
+          </div>
+        </article>
+      }
+
+      <div class="agent-grid">
+        @for (agent of store.agents(); track agent.id) {
+          <article class="agent-card" [class.disabled]="!agent.enabled">
+            <header>
+              <div class="agent-symbol">▣</div>
+              <div class="agent-copy">
+                <h3>{{ agent.name }}</h3>
+                <p>{{ agent.locationName }} · {{ agent.hostname }}</p>
+              </div>
+              <span class="status" [class.online]="agent.status === 'ONLINE'">
+                {{ 'printing.status.' + agent.status | translate }}
+              </span>
+            </header>
+            <dl>
+              <div>
+                <dt>{{ 'printing.agents.version' | translate }}</dt>
+                <dd>{{ agent.version }}</dd>
+              </div>
+              <div>
+                <dt>{{ 'printing.agents.ip' | translate }}</dt>
+                <dd>{{ agent.localIpAddress || '—' }}</dd>
+              </div>
+              <div>
+                <dt>{{ 'printing.agents.lastSeen' | translate }}</dt>
+                <dd>
+                  {{ agent.lastSeenAt ? (agent.lastSeenAt | organizationDate: 'short') : '—' }}
+                </dd>
+              </div>
+              <div>
+                <dt>{{ 'printing.agents.printers' | translate }}</dt>
+                <dd>{{ agent.printerCount }}</dd>
+              </div>
+            </dl>
+            <footer>
+              <button class="link-button" type="button" (click)="selectAgent(agent)">
+                {{ 'printing.actions.viewConfigure' | translate }}
+              </button>
+              @if (canManageAgents()) {
+                <button class="link-button" type="button" (click)="toggleAgent(agent)">
+                  {{
+                    (agent.enabled ? 'printing.actions.disable' : 'printing.actions.enable')
+                      | translate
+                  }}
+                </button>
+                <button class="link-button danger" type="button" (click)="deleteAgent(agent)">
+                  {{ 'printing.actions.delete' | translate }}
+                </button>
+              }
+            </footer>
+          </article>
+        } @empty {
+          <div class="empty-state">
+            <strong>{{ 'printing.agents.emptyTitle' | translate }}</strong>
+            <p>{{ 'printing.agents.emptyDescription' | translate }}</p>
+          </div>
+        }
+      </div>
+
+      @if (canManageAgents()) {
+        <article class="form-card">
+          <div class="section-heading compact">
+            <div>
+              <h2>
+                {{
+                  (editingPrinter() ? 'printing.printers.editTitle' : 'printing.printers.addTitle')
+                    | translate
+                }}
+              </h2>
+              <p>{{ 'printing.printers.description' | translate }}</p>
+            </div>
+          </div>
+          <form class="grid-form" [formGroup]="printerForm" (ngSubmit)="savePrinter()">
+            <label
+              ><span>{{ 'printing.printers.agent' | translate }}</span
+              ><select formControlName="printAgentId" (change)="onPrinterAgentChange()">
+                @for (agent of store.agents(); track agent.id) {
+                  <option [value]="agent.id">{{ agent.name }}</option>
+                }
+              </select></label
+            >
+            <label
+              ><span>{{ 'printing.printers.name' | translate }}</span
+              ><input type="text" formControlName="name"
+            /></label>
+            <label
+              ><span>{{ 'printing.printers.connection' | translate }}</span
+              ><select formControlName="connectionType">
+                <option value="WINDOWS_SPOOLER">
+                  {{ 'printing.printers.windows' | translate }}
+                </option>
+                <option value="ESC_POS_NETWORK">
+                  {{ 'printing.printers.network' | translate }}
+                </option>
+              </select></label
+            >
+            @if (printerForm.controls.connectionType.value === 'WINDOWS_SPOOLER') {
+              <div class="discovery-field">
+                <label
+                  ><span>{{ 'printing.printers.localName' | translate }}</span
+                  ><select formControlName="localPrinterName" (change)="selectAvailablePrinter()">
+                    <option value="">{{ 'printing.printers.selectAvailable' | translate }}</option>
+                    @if (currentPrinterIsMissingFromDiscovery()) {
+                      <option [value]="editingPrinter()?.localPrinterName">
+                        {{ editingPrinter()?.localPrinterName }}
+                      </option>
+                    }
+                    @for (printer of availableWindowsPrinters(); track printer.id) {
+                      <option [value]="printer.name">
+                        {{ printer.name }}
+                        @if (printer.isDefault) {
+                          · {{ 'printing.printers.default' | translate }}
+                        }
+                      </option>
+                    }
+                  </select></label
+                >
+                <button
+                  class="button secondary"
+                  type="button"
+                  [disabled]="!printerForm.controls.printAgentId.value || store.mutating()"
+                  (click)="discoverPrinters()"
+                >
+                  {{ 'printing.printers.discover' | translate }}
+                </button>
+                <small>{{ 'printing.printers.discoveryHelp' | translate }}</small>
+              </div>
+            } @else {
+              <label
+                ><span>{{ 'printing.printers.ipAddress' | translate }}</span
+                ><input type="text" formControlName="ipAddress"
+              /></label>
+              <label
+                ><span>{{ 'printing.printers.port' | translate }}</span
+                ><input type="number" formControlName="port"
+              /></label>
+            }
+            <label
+              ><span>{{ 'printing.printers.paper' | translate }}</span
+              ><select formControlName="paperWidth">
+                <option [ngValue]="58">58 mm</option>
+                <option [ngValue]="80">80 mm</option>
+              </select></label
+            >
+            <label class="checkbox"
+              ><input type="checkbox" formControlName="enabled" />
+              {{ 'printing.actions.enabled' | translate }}</label
+            >
+            <div class="form-actions">
+              <button class="button secondary" type="button" (click)="cancelPrinterEdit()">
+                {{ 'printing.actions.cancel' | translate }}</button
+              ><button class="button primary" type="submit" [disabled]="store.mutating()">
+                {{ 'printing.actions.save' | translate }}
+              </button>
+            </div>
+          </form>
+        </article>
+      }
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>{{ 'printing.printers.name' | translate }}</th>
+              <th>{{ 'printing.printers.agent' | translate }}</th>
+              <th>{{ 'printing.printers.connection' | translate }}</th>
+              <th>{{ 'printing.printers.paper' | translate }}</th>
+              <th>{{ 'printing.table.actions' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (printer of store.printers(); track printer.id) {
+              <tr>
+                <td>
+                  <strong>{{ printer.name }}</strong
+                  ><small>{{ printer.localPrinterName || printer.ipAddress || '—' }}</small>
+                </td>
+                <td>{{ agentName(printer.printAgentId) }}</td>
+                <td>{{ 'printing.connection.' + printer.connectionType | translate }}</td>
+                <td>{{ printer.paperWidth }} mm</td>
+                <td class="actions">
+                  <button type="button" (click)="testPrinter(printer)">
+                    {{ 'printing.actions.test' | translate }}
+                  </button>
+                  @if (canManageAgents()) {
+                    <button type="button" (click)="editPrinter(printer)">
+                      {{ 'printing.actions.edit' | translate }}</button
+                    ><button class="danger" type="button" (click)="deletePrinter(printer)">
+                      {{ 'printing.actions.delete' | translate }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="empty-cell">{{ 'printing.printers.empty' | translate }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  } @else if (activeTab() === 'zones' && canShowZones()) {
+    <section class="tab-panel">
+      <div class="section-heading">
+        <div>
+          <h2>{{ 'printing.zones.title' | translate }}</h2>
+          <p>{{ 'printing.zones.description' | translate }}</p>
+        </div>
+      </div>
+      @if (canManageZones()) {
+        <article class="form-card">
+          <h3>
+            {{
+              (editingZone() ? 'printing.zones.editTitle' : 'printing.zones.addTitle') | translate
+            }}
+          </h3>
+          <form class="grid-form" [formGroup]="zoneForm" (ngSubmit)="saveZone()">
+            <label
+              ><span>{{ 'printing.zones.name' | translate }}</span
+              ><input type="text" formControlName="name"
+            /></label>
+            <label
+              ><span>{{ 'printing.location' | translate }}</span
+              ><select formControlName="locationId">
+                @for (location of store.locations(); track location.id) {
+                  <option [value]="location.id">{{ location.name }}</option>
+                }
+              </select></label
+            >
+            <label
+              ><span>{{ 'printing.printers.agent' | translate }}</span
+              ><select formControlName="printAgentId">
+                @for (agent of store.agents(); track agent.id) {
+                  <option [value]="agent.id">{{ agent.name }}</option>
+                }
+              </select></label
+            >
+            <label
+              ><span>{{ 'printing.zones.printers' | translate }}</span
+              ><select multiple formControlName="printerIds">
+                @for (
+                  printer of printersForAgent(zoneForm.controls.printAgentId.value);
+                  track printer.id
+                ) {
+                  <option [value]="printer.id">{{ printer.name }}</option>
+                }
+              </select></label
+            >
+            <label
+              ><span>{{ 'printing.zones.categories' | translate }}</span
+              ><select multiple formControlName="categoryIds">
+                @for (category of store.routing().categories; track category.id) {
+                  <option [value]="category.id">{{ category.name }}</option>
+                }
+              </select></label
+            >
+            <label
+              ><span>{{ 'printing.zones.products' | translate }}</span
+              ><select multiple formControlName="productIds">
+                @for (product of store.routing().products; track product.id) {
+                  <option [value]="product.id">{{ product.name }}</option>
+                }</select
+              ><small>{{ 'printing.zones.overrideHint' | translate }}</small></label
+            >
+            <label class="checkbox"
+              ><input type="checkbox" formControlName="enabled" />
+              {{ 'printing.actions.enabled' | translate }}</label
+            >
+            <div class="form-actions">
+              <button class="button secondary" type="button" (click)="cancelZoneEdit()">
+                {{ 'printing.actions.cancel' | translate }}</button
+              ><button class="button primary" type="submit" [disabled]="store.mutating()">
+                {{ 'printing.actions.save' | translate }}
+              </button>
+            </div>
+          </form>
+        </article>
+      }
+      <div class="zone-grid">
+        @for (zone of store.zones(); track zone.id) {
+          <article class="zone-card">
+            <header>
+              <div>
+                <span class="zone-symbol">♨</span>
+                <h3>{{ zone.name }}</h3>
+              </div>
+              <span class="status" [class.online]="zone.enabled">{{
+                (zone.enabled ? 'printing.status.ACTIVE' : 'printing.status.DISABLED') | translate
+              }}</span>
+            </header>
+            <p>
+              <strong>{{ 'printing.zones.agent' | translate }}:</strong> {{ zone.agentName }}
+            </p>
+            <p>
+              <strong>{{ 'printing.zones.printers' | translate }}:</strong>
+              {{ printerNames(zone.printerIds) || '—' }}
+            </p>
+            <p>
+              <strong>{{ 'printing.zones.categories' | translate }}:</strong>
+              {{ optionNames(zone.categoryIds, 'categories') || '—' }}
+            </p>
+            <p>
+              <strong>{{ 'printing.zones.products' | translate }}:</strong>
+              {{ optionNames(zone.productIds, 'products') || '—' }}
+            </p>
+            @if (canManageZones()) {
+              <footer>
+                <button class="link-button" type="button" (click)="editZone(zone)">
+                  {{ 'printing.actions.edit' | translate }}</button
+                ><button class="link-button danger" type="button" (click)="deleteZone(zone)">
+                  {{ 'printing.actions.delete' | translate }}
+                </button>
+              </footer>
+            }
+          </article>
+        } @empty {
+          <div class="empty-state">
+            <strong>{{ 'printing.zones.emptyTitle' | translate }}</strong>
+            <p>{{ 'printing.zones.emptyDescription' | translate }}</p>
+          </div>
+        }
+      </div>
+    </section>
+  } @else if (activeTab() === 'queue' && store.hasPermission('printing.queue.read')) {
+    <section class="tab-panel">
+      <div class="section-heading">
+        <div>
+          <h2>{{ 'printing.queue.title' | translate }}</h2>
+          <p>{{ 'printing.queue.description' | translate }}</p>
+        </div>
+        <button class="button secondary" type="button" (click)="searchJobs()">
+          ↻ {{ 'printing.actions.refresh' | translate }}
+        </button>
+      </div>
+      <form class="filters" [formGroup]="filterForm" (ngSubmit)="searchJobs()">
+        <label
+          ><span>{{ 'printing.queue.search' | translate }}</span
+          ><input type="search" formControlName="search"
+        /></label>
+        <label
+          ><span>{{ 'printing.queue.status' | translate }}</span
+          ><select formControlName="status">
+            <option value="">{{ 'printing.filters.all' | translate }}</option>
+            <option value="PENDING">{{ 'printing.status.PENDING' | translate }}</option>
+            <option value="PROCESSING">{{ 'printing.status.PROCESSING' | translate }}</option>
+            <option value="PRINTED">{{ 'printing.status.PRINTED' | translate }}</option>
+            <option value="FAILED">{{ 'printing.status.FAILED' | translate }}</option>
+          </select></label
+        >
+        <label
+          ><span>{{ 'printing.zones.title' | translate }}</span
+          ><select formControlName="zoneId">
+            <option value="">{{ 'printing.filters.all' | translate }}</option>
+            @for (zone of store.zones(); track zone.id) {
+              <option [value]="zone.id">{{ zone.name }}</option>
+            }
+          </select></label
+        >
+        <label
+          ><span>{{ 'printing.queue.agent' | translate }}</span
+          ><select formControlName="agentId">
+            <option value="">{{ 'printing.filters.all' | translate }}</option>
+            @for (agent of store.agents(); track agent.id) {
+              <option [value]="agent.id">{{ agent.name }}</option>
+            }
+          </select></label
+        >
+        <label
+          ><span>{{ 'printing.printers.name' | translate }}</span
+          ><select formControlName="printerId">
+            <option value="">{{ 'printing.filters.all' | translate }}</option>
+            @for (printer of store.printers(); track printer.id) {
+              <option [value]="printer.id">{{ printer.name }}</option>
+            }
+          </select></label
+        >
+        <label
+          ><span>{{ 'printing.queue.from' | translate }}</span
+          ><input type="date" formControlName="fromDate"
+        /></label>
+        <label
+          ><span>{{ 'printing.queue.to' | translate }}</span
+          ><input type="date" formControlName="toDate"
+        /></label>
+        <div class="form-actions">
+          <button class="button secondary" type="button" (click)="clearJobFilters()">
+            {{ 'printing.actions.clear' | translate }}</button
+          ><button class="button primary" type="submit">
+            {{ 'printing.actions.filter' | translate }}
+          </button>
+        </div>
+      </form>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>{{ 'printing.queue.created' | translate }}</th>
+              <th>{{ 'printing.queue.document' | translate }}</th>
+              <th>{{ 'printing.zones.title' | translate }}</th>
+              <th>{{ 'printing.queue.agent' | translate }}</th>
+              <th>{{ 'printing.printers.name' | translate }}</th>
+              <th>{{ 'printing.queue.status' | translate }}</th>
+              <th>{{ 'printing.queue.attempts' | translate }}</th>
+              <th>{{ 'printing.table.actions' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (job of store.jobs().items; track job.id) {
+              <tr>
+                <td>{{ job.createdAt | organizationDate: 'short' }}</td>
+                <td>
+                  <strong>{{ orderNumber(job) }}</strong>
+                  @if (job.isReprint) {
+                    <small class="reprint">{{ 'printing.queue.reprintLabel' | translate }}</small>
+                  }
+                  @if (tableName(job); as table) {
+                    <small>{{ 'printing.queue.table' | translate }}: {{ table }}</small>
+                  }
+                </td>
+                <td>{{ job.zoneName }}</td>
+                <td>{{ job.agentName }}</td>
+                <td>{{ job.printerName }}</td>
+                <td>
+                  <span class="job-status" [attr.data-status]="job.status">{{
+                    'printing.status.' + job.status | translate
+                  }}</span>
+                  @if (job.lastError) {
+                    <small class="error-text">{{ job.lastError }}</small>
+                  }
+                </td>
+                <td>{{ job.attempts }}</td>
+                <td class="actions">
+                  <button type="button" (click)="selectedJob.set(job)">
+                    {{ 'printing.actions.details' | translate }}
+                  </button>
+                  @if (canCancel(job) && store.hasPermission('printing.queue.retry')) {
+                    <button type="button" class="danger" (click)="cancel(job)">
+                      {{ 'printing.actions.cancel' | translate }}
+                    </button>
+                  }
+                  @if (job.status === 'FAILED' && store.hasPermission('printing.queue.retry')) {
+                    <button type="button" (click)="retry(job)">
+                      {{ 'printing.actions.retry' | translate }}
+                    </button>
+                  }
+                  @if (store.hasPermission('printing.queue.reprint')) {
+                    <button type="button" (click)="reprint(job)">
+                      {{ 'printing.actions.reprint' | translate }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="8" class="empty-cell">{{ 'printing.queue.empty' | translate }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button
+          type="button"
+          [disabled]="store.jobs().page <= 1"
+          (click)="searchJobs(store.jobs().page - 1)"
+        >
+          ← {{ 'printing.actions.previous' | translate }}</button
+        ><span
+          >{{ 'printing.queue.page' | translate }} {{ store.jobs().page }} /
+          {{ store.jobs().totalPages || 1 }} · {{ store.jobs().totalCount }}
+          {{ 'printing.queue.records' | translate }}</span
+        ><button
+          type="button"
+          [disabled]="store.jobs().page >= store.jobs().totalPages"
+          (click)="searchJobs(store.jobs().page + 1)"
+        >
+          {{ 'printing.actions.next' | translate }} →
+        </button>
+      </div>
+      @if (selectedJob(); as job) {
+        <article class="job-detail">
+          <header>
+            <div>
+              <h3>{{ 'printing.queue.detailTitle' | translate }}</h3>
+              <p>{{ job.id }}</p>
+            </div>
+            <button type="button" (click)="selectedJob.set(null)">✕</button>
+          </header>
+          <dl>
+            <div>
+              <dt>{{ 'printing.queue.agent' | translate }}</dt>
+              <dd>{{ job.agentName }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'printing.printers.name' | translate }}</dt>
+              <dd>{{ job.printerName }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'printing.zones.title' | translate }}</dt>
+              <dd>{{ job.zoneName }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'printing.queue.status' | translate }}</dt>
+              <dd>{{ 'printing.status.' + job.status | translate }}</dd>
+            </div>
+          </dl>
+          @if (ticket(job); as ticket) {
+            <section class="ticket-preview">
+              <header>
+                <div>
+                  <span class="ticket-label">{{ 'printing.ticket.document' | translate }}</span>
+                  <strong>{{
+                    ticket.documentType === 'TEST_PRINT'
+                      ? ('printing.ticket.testTitle' | translate)
+                      : ticket.orderNumber
+                  }}</strong>
+                </div>
+                <span class="job-status" [attr.data-status]="job.status">{{
+                  'printing.status.' + job.status | translate
+                }}</span>
+              </header>
+              <div class="ticket-meta">
+                <div>
+                  <span>{{ 'printing.queue.document' | translate }}</span>
+                  <strong>{{ ticket.orderNumber }}</strong>
+                </div>
+                <div>
+                  <span>{{ 'printing.printers.name' | translate }}</span>
+                  <strong>{{ ticket.printerName || job.printerName }}</strong>
+                </div>
+                @if (ticket.organizationName) {
+                  <div>
+                    <span>{{ 'printing.ticket.organization' | translate }}</span>
+                    <strong>{{ ticket.organizationName }}</strong>
+                  </div>
+                }
+                @if (ticket.table) {
+                  <div>
+                    <span>{{ 'printing.queue.table' | translate }}</span>
+                    <strong>{{ ticket.table }}</strong>
+                  </div>
+                }
+                @if (ticket.waiter) {
+                  <div>
+                    <span>{{ 'printing.ticket.waiter' | translate }}</span>
+                    <strong>{{ ticket.waiter }}</strong>
+                  </div>
+                }
+                <div>
+                  <span>{{ 'printing.ticket.createdAt' | translate }}</span>
+                  <strong>{{
+                    ticket.createdAt || job.createdAt | organizationDate: 'short'
+                  }}</strong>
+                </div>
+              </div>
+              @if (ticket.items.length) {
+                <section class="ticket-items">
+                  <h4>{{ 'printing.ticket.items' | translate }}</h4>
+                  <ul>
+                    @for (item of ticket.items; track $index) {
+                      <li>
+                        <strong>{{ item.quantity }} × {{ item.name }}</strong>
+                        @if (item.modifiers.length) {
+                          <span>{{ item.modifiers.join(' · ') }}</span>
+                        }
+                        @if (item.notes) {
+                          <small>{{ item.notes }}</small>
+                        }
+                      </li>
+                    }
+                  </ul>
+                </section>
+              }
+              @if (ticket.notes) {
+                <aside class="ticket-notes">
+                  <strong>{{ 'printing.ticket.notes' | translate }}</strong>
+                  <span>{{ ticket.notes }}</span>
+                </aside>
+              }
+              @if (ticket.footerMessage) {
+                <footer>{{ ticket.footerMessage }}</footer>
+              }
+            </section>
+          }
+        </article>
+      }
+    </section>
+  }
+</section>

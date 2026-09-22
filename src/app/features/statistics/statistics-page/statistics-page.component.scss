@@ -217,7 +217,7 @@
 /* KPI Summary Cards Grid */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1rem;
   width: 100%;
 }
@@ -231,7 +231,9 @@
   border: 1px solid var(--color-border, #e2e8f0);
   border-radius: 1rem;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);
@@ -252,6 +254,7 @@
 
   .kpi-content {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     gap: 0.2rem;
     min-width: 0;
@@ -266,17 +269,17 @@
   }
 
   .kpi-value {
-    font-size: 1.35rem;
+    font-size: clamp(1.05rem, 1vw + 0.75rem, 1.35rem);
     font-weight: 800;
     color: var(--color-ink, #0f172a);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
   }
 
   .kpi-subtext {
     font-size: 0.72rem;
     color: var(--color-muted, #64748b);
+    overflow-wrap: anywhere;
   }
 
   &--primary {
@@ -316,25 +319,39 @@
 
   &--balance-positive {
     border-color: var(--color-savia-300, #83bf94);
-    background: linear-gradient(135deg, var(--color-surface, #ffffff) 0%, var(--color-savia-50, #edf7f0) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--color-surface, #ffffff) 0%,
+      var(--color-savia-50, #edf7f0) 100%
+    );
 
-    .kpi-icon { background: var(--color-savia-100, #d7ebdc); }
-    .kpi-value { color: var(--color-savia-700, #245d3b); }
+    .kpi-icon {
+      background: var(--color-savia-100, #d7ebdc);
+    }
+    .kpi-value {
+      color: var(--color-savia-700, #245d3b);
+    }
   }
 
   &--balance-negative {
     border-color: #fca5a5;
     background: linear-gradient(135deg, var(--color-surface, #ffffff) 0%, #fef2f2 100%);
 
-    .kpi-icon { background: #fee2e2; }
-    .kpi-value { color: #b91c1c; }
+    .kpi-icon {
+      background: #fee2e2;
+    }
+    .kpi-value {
+      color: #b91c1c;
+    }
   }
 
   &--balance-neutral {
     border-color: var(--color-border-strong, #d3d9d2);
     background: var(--color-canvas, #f6f7f3);
 
-    .kpi-icon { background: var(--color-border, #e3e7e1); }
+    .kpi-icon {
+      background: var(--color-border, #e3e7e1);
+    }
   }
 }
 

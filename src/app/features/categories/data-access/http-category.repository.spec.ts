@@ -16,6 +16,9 @@ const dto: CategoryDto = {
   isActive: true,
   createdAt: '2026-08-20T18:00:00Z',
   updatedAt: '2026-08-20T18:00:00Z',
+  productCount: 3,
+  variationCount: 4,
+  ingredientCount: 2,
 };
 
 describe('HttpCategoryRepository', () => {

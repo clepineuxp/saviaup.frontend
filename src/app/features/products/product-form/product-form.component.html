@@ -89,7 +89,9 @@
           <span>{{ 'products.form.category' | translate }}</span>
           <select
             formControlName="categoryId"
-            [attr.aria-invalid]="form.controls.categoryId.invalid && form.controls.categoryId.touched"
+            [attr.aria-invalid]="
+              form.controls.categoryId.invalid && form.controls.categoryId.touched
+            "
           >
             <option value="">{{ 'products.form.selectCategory' | translate }}</option>
             @for (category of categories(); track category.id) {
@@ -165,7 +167,10 @@
           ></app-image-selector>
         </div>
 
-        <label class="inventory-switch wide" [class.inventory-switch--disabled]="inventoryDisabled()">
+        <label
+          class="inventory-switch wide"
+          [class.inventory-switch--disabled]="inventoryDisabled()"
+        >
           <input type="checkbox" formControlName="isInventoryTracked" />
           <span>
             <strong>{{ 'products.form.inventoryTracked' | translate }}</strong>
@@ -187,7 +192,10 @@
           <div class="recipe-intro">
             <div class="recipe-intro__text">
               <h3>Variaciones de precio y presentación</h3>
-              <p>Configura diferentes presentaciones, tamaños o medidas con precios independientes (ej. Copa, Media, Botella, Porción).</p>
+              <p>
+                Configura diferentes presentaciones, tamaños o medidas con precios independientes
+                (ej. Copa, Media, Botella, Porción).
+              </p>
             </div>
             <div class="recipe-intro__actions">
               <button
@@ -204,7 +212,10 @@
             <div class="recipe-empty">
               <div class="recipe-empty__icon">🏷️</div>
               <h4>Sin variaciones</h4>
-              <p>Este producto se vende únicamente con su precio general. Si manejas presentaciones con costos distintos (como copa y botella), agrega variaciones.</p>
+              <p>
+                Este producto se vende únicamente con su precio general. Si manejas presentaciones
+                con costos distintos (como copa y botella), agrega variaciones.
+              </p>
               <div class="recipe-empty__actions">
                 <button
                   type="button"
@@ -333,10 +344,20 @@
                         class="recipe-badge-btn"
                         [class.recipe-badge-btn--inventory]="!row.isCustom"
                         [class.recipe-badge-btn--custom]="row.isCustom"
-                        [title]="(row.isCustom ? 'products.recipe.typeToggleToInventory' : 'products.recipe.typeToggleToFree') | translate"
+                        [title]="
+                          (row.isCustom
+                            ? 'products.recipe.typeToggleToInventory'
+                            : 'products.recipe.typeToggleToFree'
+                          ) | translate
+                        "
                         (click)="toggleRowCustom(idx)"
                       >
-                        {{ (row.isCustom ? 'products.recipe.freeBadge' : 'products.recipe.inventoryBadge') | translate }}
+                        {{
+                          (row.isCustom
+                            ? 'products.recipe.freeBadge'
+                            : 'products.recipe.inventoryBadge'
+                          ) | translate
+                        }}
                         <span class="recipe-badge-btn__icon">⇄</span>
                       </button>
                     </div>
@@ -366,22 +387,34 @@
                             >
                               @if (getSelectedIngredient(row.ingredientId); as selectedIng) {
                                 <div class="recipe-select-trigger__info">
-                                  <span class="recipe-select-trigger__name">{{ selectedIng.name }}</span>
+                                  <span class="recipe-select-trigger__name">{{
+                                    selectedIng.name
+                                  }}</span>
                                   @if (selectedIng.categoryName) {
-                                    <span class="recipe-category-pill">{{ selectedIng.categoryName }}</span>
+                                    <span class="recipe-category-pill">{{
+                                      selectedIng.categoryName
+                                    }}</span>
                                   }
                                 </div>
                                 <span class="recipe-select-trigger__unit">
-                                  {{ selectedIng.measurementUnit.code || selectedIng.measurementUnit.name }}
+                                  {{
+                                    selectedIng.measurementUnit.code ||
+                                      selectedIng.measurementUnit.name
+                                  }}
                                 </span>
                               } @else {
-                                <span class="recipe-select-trigger__placeholder">{{ 'products.recipe.selectIngredient' | translate }}</span>
+                                <span class="recipe-select-trigger__placeholder">{{
+                                  'products.recipe.selectIngredient' | translate
+                                }}</span>
                               }
                               <span class="recipe-select-trigger__arrow">▾</span>
                             </button>
 
                             @if (openSelectorIndex() === idx) {
-                              <div class="recipe-dropdown-backdrop" (click)="closeIngredientSelector()"></div>
+                              <div
+                                class="recipe-dropdown-backdrop"
+                                (click)="closeIngredientSelector()"
+                              ></div>
                               <div class="recipe-dropdown">
                                 <div class="recipe-dropdown__header">
                                   <span class="recipe-dropdown__search-icon">🔍</span>
@@ -409,13 +442,19 @@
                                     <button
                                       type="button"
                                       class="recipe-dropdown__item"
-                                      [class.recipe-dropdown__item--selected]="ing.id === row.ingredientId"
+                                      [class.recipe-dropdown__item--selected]="
+                                        ing.id === row.ingredientId
+                                      "
                                       (click)="selectIngredient(idx, ing.id)"
                                     >
                                       <div class="recipe-dropdown__item-info">
-                                        <span class="recipe-dropdown__item-name">{{ ing.name }}</span>
+                                        <span class="recipe-dropdown__item-name">{{
+                                          ing.name
+                                        }}</span>
                                         @if (ing.categoryName) {
-                                          <span class="recipe-category-pill">{{ ing.categoryName }}</span>
+                                          <span class="recipe-category-pill">{{
+                                            ing.categoryName
+                                          }}</span>
                                         }
                                       </div>
                                       <span class="recipe-dropdown__item-unit">
@@ -487,17 +526,42 @@
       }
 
       <footer class="wide">
-        <app-ui-button
-          type="button"
-          variant="secondary"
-          [disabled]="submitting()"
-          (click)="close()"
-        >
-          {{ 'common.cancel' | translate }}
-        </app-ui-button>
-        <app-ui-button type="submit" [loading]="submitting()">
-          {{ (product() ? 'products.action.save' : 'products.action.create') | translate }}
-        </app-ui-button>
+        @if (product(); as editingProduct) {
+          <div class="form-danger-actions">
+            <button
+              type="button"
+              class="form-status-action"
+              [disabled]="submitting()"
+              (click)="statusRequested.emit(editingProduct)"
+            >
+              {{
+                (editingProduct.isActive ? 'products.action.disable' : 'products.action.enable')
+                  | translate
+              }}
+            </button>
+            <button
+              type="button"
+              class="form-delete-action"
+              [disabled]="submitting()"
+              (click)="deleteRequested.emit(editingProduct)"
+            >
+              {{ 'products.action.delete' | translate }}
+            </button>
+          </div>
+        }
+        <div class="form-submit-actions">
+          <app-ui-button
+            type="button"
+            variant="secondary"
+            [disabled]="submitting()"
+            (click)="close()"
+          >
+            {{ 'common.cancel' | translate }}
+          </app-ui-button>
+          <app-ui-button type="submit" [loading]="submitting()">
+            {{ (product() ? 'products.action.save' : 'products.action.create') | translate }}
+          </app-ui-button>
+        </div>
       </footer>
     </form>
   </section>

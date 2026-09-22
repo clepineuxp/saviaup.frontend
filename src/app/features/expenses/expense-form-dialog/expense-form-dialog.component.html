@@ -11,7 +11,9 @@
     <header class="expense-modal__header">
       <div>
         <p class="eyebrow">{{ 'expenses.eyebrow' | translate }}</p>
-        <h2>{{ (expense() ? 'expenses.modal.editTitle' : 'expenses.modal.createTitle') | translate }}</h2>
+        <h2>
+          {{ (expense() ? 'expenses.modal.editTitle' : 'expenses.modal.createTitle') | translate }}
+        </h2>
       </div>
       <button
         class="modal-close"
@@ -63,11 +65,7 @@
 
         <label class="field">
           <span class="field__label">{{ 'expenses.modal.dateLabel' | translate }}</span>
-          <input
-            class="field__input"
-            type="date"
-            formControlName="expenseDate"
-          />
+          <input class="field__input" type="date" formControlName="expenseDate" />
         </label>
       </div>
 
@@ -75,12 +73,10 @@
         <label class="field">
           <span class="field__label">{{ 'expenses.modal.paymentMethodLabel' | translate }}</span>
           <select class="field__input" formControlName="paymentMethod">
-            <option value="Efectivo">Efectivo</option>
-            <option value="Transferencia">Transferencia</option>
-            <option value="Tarjeta Débito">Tarjeta Débito</option>
-            <option value="Tarjeta Crédito">Tarjeta Crédito</option>
-            @for (method of customPaymentMethods(); track method.id) {
-              @if (method.name !== 'Efectivo' && method.name !== 'Transferencia' && method.name !== 'Tarjeta Débito' && method.name !== 'Tarjeta Crédito') {
+            @if (paymentMethods().length === 0) {
+              <option value="" disabled>No hay medios de pago configurados</option>
+            } @else {
+              @for (method of paymentMethods(); track method.id) {
                 <option [value]="method.name">{{ method.name }}</option>
               }
             }

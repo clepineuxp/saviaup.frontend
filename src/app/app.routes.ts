@@ -21,6 +21,7 @@ const knownModuleRoutes: Routes = KNOWN_MODULE_NAVIGATION.filter(
     code !== 'billing' &&
     code !== 'expenses' &&
     code !== 'suppliers' &&
+    code !== 'printing' &&
     code !== 'digital_menu',
 ).map(({ code, path }) => ({
   path,
@@ -129,9 +130,9 @@ export const routes: Routes = [
             ),
         ],
         loadComponent: () =>
-          import(
-            './features/cash-registers/cash-register-page/cash-register-page.component'
-          ).then((m) => m.CashRegisterPageComponent),
+          import('./features/cash-registers/cash-register-page/cash-register-page.component').then(
+            (m) => m.CashRegisterPageComponent,
+          ),
       },
       {
         path: 'products',
@@ -189,6 +190,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/billing/billing-page/billing-page.component').then(
             (c) => c.BillingPageComponent,
+          ),
+      },
+      {
+        path: 'printing',
+        title: 'Impresión automática · Savia Up',
+        loadChildren: () =>
+          import('./features/printing/printing.routes').then(
+            (routesFile) => routesFile.PRINTING_ROUTES,
           ),
       },
       {

@@ -1,11 +1,17 @@
 :host {
   display: block;
-  min-height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
 }
 .app-shell {
-  min-height: 100vh;
+  display: grid;
+  height: 100%;
+  min-height: 0;
   width: 100%;
   max-width: 100%;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
   overflow-x: hidden;
   box-sizing: border-box;
   background: var(--color-canvas);
@@ -25,16 +31,7 @@
   max-width: 100%;
   box-sizing: border-box;
 }
-.user-summary {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  min-width: 0;
-  margin-left: 0.35rem;
-  border-left: 1px solid var(--color-border);
-  padding-left: 1rem;
-}
-.user-summary__avatar {
+.account-menu__avatar {
   display: grid;
   width: 2.25rem;
   height: 2.25rem;
@@ -46,51 +43,131 @@
   font-size: 0.72rem;
   font-weight: 800;
 }
-.user-summary__copy {
+.app-header__actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+.account-menu__trigger {
+  display: flex;
+  min-height: 2.65rem;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.85rem;
+  padding: 0.18rem 0.38rem;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+.account-menu__trigger:hover,
+.account-menu__trigger[aria-expanded='true'] {
+  border-color: var(--color-savia-300);
+  box-shadow: 0 0 0 3px rgb(59 135 88 / 10%);
+}
+.account-menu__chevron {
+  padding-right: 0.12rem;
+  color: var(--color-savia-700);
+  font-size: 1rem;
+  font-weight: 800;
+  transition: transform 150ms ease;
+}
+.account-menu__trigger[aria-expanded='true'] .account-menu__chevron {
+  transform: rotate(180deg);
+}
+.account-menu__trigger-copy {
   display: none;
   min-width: 0;
+  text-align: left;
 }
-.user-summary__copy strong,
-.user-summary__copy small {
+.account-menu__trigger-copy strong,
+.account-menu__trigger-copy small {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.user-summary__copy strong {
+.account-menu__panel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.7rem);
+  right: 0;
+  display: grid;
+  width: min(21rem, calc(100vw - 2rem));
+  gap: 0.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  padding: 0.7rem;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+.account-menu__identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.35rem;
+}
+.account-menu__identity > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 0.15rem;
+}
+.account-menu__identity strong,
+.account-menu__identity small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.account-menu__identity strong {
   color: var(--color-ink);
-  font-size: 0.82rem;
+  font-size: 0.86rem;
 }
-.user-summary__copy small {
+.account-menu__identity small {
   color: var(--color-muted);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
 }
-.app-header__actions {
+.account-menu__language {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  margin-left: auto;
-}
-.header-action {
-  display: flex;
-  width: 2.5rem;
-  min-height: 2.5rem;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 0.7rem;
-  padding: 0 0.75rem;
-  background: transparent;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem;
   color: var(--color-muted);
   font-size: 0.78rem;
-  font-weight: 650;
+  font-weight: 700;
+}
+.account-menu__divider {
+  height: 1px;
+  margin: 0.2rem 0;
+  background: var(--color-border);
+}
+.account-menu__item {
+  display: flex;
+  width: 100%;
+  min-height: 2.65rem;
+  align-items: center;
+  gap: 0.7rem;
+  border: 0;
+  border-radius: 0.7rem;
+  padding: 0 0.7rem;
+  background: transparent;
+  color: var(--color-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-align: left;
   cursor: pointer;
 }
-.header-action__long {
-  display: none;
-}
-.header-action:hover {
+.account-menu__item:hover {
   background: var(--color-savia-50);
   color: var(--color-savia-700);
+}
+.account-menu__item--danger:hover {
+  background: #fff3f2;
+  color: #a44037;
 }
 .context-state {
   display: grid;
@@ -147,24 +224,32 @@
   width: 58%;
 }
 .app-workspace {
-  min-height: calc(100vh - 4.8rem);
+  display: flex;
+  min-height: 0;
+  height: 100%;
   width: 100%;
   max-width: 100%;
+  flex-direction: column;
   min-width: 0;
   box-sizing: border-box;
 }
 .app-sidebar {
+  flex: 0 0 auto;
   border-bottom: 1px solid var(--color-border);
   padding: 0.85rem 1rem;
   background: rgb(255 255 255 / 72%);
 }
 .app-content {
   display: grid;
+  min-height: 0;
+  flex: 1 1 auto;
   min-width: 0;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  min-height: calc(100vh - 10rem);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
   align-content: start;
   align-items: start;
   justify-items: center;
@@ -181,19 +266,21 @@
   }
 }
 @media (min-width: 768px) {
-  .user-summary__copy {
+  .account-menu__trigger {
+    max-width: min(22rem, 40vw);
+    padding-right: 0.5rem;
+  }
+  .account-menu__trigger-copy {
     display: grid;
-    max-width: 15rem;
-    gap: 0.15rem;
+    gap: 0.12rem;
   }
-  .header-action {
-    width: auto;
+  .account-menu__trigger-copy strong {
+    color: var(--color-ink);
+    font-size: 0.8rem;
   }
-  .header-action__long {
-    display: inline;
-  }
-  .header-action__short {
-    display: none;
+  .account-menu__trigger-copy small {
+    color: var(--color-muted);
+    font-size: 0.7rem;
   }
   .app-workspace {
     display: grid;
@@ -215,8 +302,7 @@
   .app-sidebar {
     position: relative;
     z-index: 5;
-    height: 100%;
-    min-height: calc(100vh - 4.8rem);
+    min-height: 0;
     align-self: stretch;
     overflow: hidden;
     border-right: 1px solid var(--color-border);
@@ -228,11 +314,14 @@
     box-sizing: border-box;
   }
   .app-content {
-    min-height: calc(100vh - 4.8rem);
+    min-height: 0;
     padding: 1.5rem;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
     justify-items: stretch;
+    scrollbar-color: var(--color-border-strong) transparent;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
   }
 }

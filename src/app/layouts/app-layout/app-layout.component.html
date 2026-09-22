@@ -1,35 +1,60 @@
 <div class="app-shell">
   <header class="app-header">
     <app-brand-logo />
-    @if (authenticatedContext.ready() && authenticatedContext.userInfo(); as userInfo) {
-      <div class="user-summary">
-        <span class="user-summary__avatar" aria-hidden="true">{{ userInitials() }}</span>
-        <span class="user-summary__copy">
-          <strong>{{ authenticatedContext.displayName() }}</strong>
-          <small>{{ userInfo.organization.name }} · {{ userInfo.role.name }}</small>
-        </span>
-      </div>
-    }
-    <div class="app-header__actions">
-      <app-language-selector (languageChanged)="reloadContext()" />
+    <div #accountMenu class="app-header__actions">
       <button
-        class="header-action"
+        class="account-menu__trigger"
         type="button"
-        (click)="changeTenant()"
-        [attr.aria-label]="'app.placeholder.changeTenant' | translate"
+        [attr.aria-expanded]="accountMenuOpen()"
+        [attr.aria-label]="'app.accountMenu.open' | translate"
+        (click)="toggleAccountMenu()"
       >
-        <span class="header-action__long">{{ 'app.placeholder.changeTenant' | translate }}</span>
-        <span class="header-action__short" aria-hidden="true">↔</span>
+        <span class="account-menu__avatar" aria-hidden="true">{{ userInitials() || 'SU' }}</span>
+        @if (authenticatedContext.userInfo(); as userInfo) {
+          <span class="account-menu__trigger-copy">
+            <strong>{{ authenticatedContext.displayName() }}</strong>
+            <small>{{ userInfo.organization.name }} · {{ userInfo.role.name }}</small>
+          </span>
+        }
+        <span class="account-menu__chevron" aria-hidden="true">⌄</span>
       </button>
-      <button
-        class="header-action"
-        type="button"
-        (click)="logout()"
-        [attr.aria-label]="'common.logout' | translate"
-      >
-        <span class="header-action__long">{{ 'common.logout' | translate }}</span>
-        <span class="header-action__short" aria-hidden="true">↗</span>
-      </button>
+
+      @if (accountMenuOpen()) {
+        <section
+          class="account-menu__panel"
+          role="group"
+          [attr.aria-label]="'app.accountMenu.open' | translate"
+        >
+          @if (authenticatedContext.userInfo(); as userInfo) {
+            <div class="account-menu__identity">
+              <span class="account-menu__avatar" aria-hidden="true">{{ userInitials() }}</span>
+              <span>
+                <strong>{{ authenticatedContext.displayName() }}</strong>
+                <small>{{ userInfo.organization.name }} · {{ userInfo.role.name }}</small>
+              </span>
+            </div>
+          }
+
+          <div class="account-menu__language">
+            <span>{{ 'common.language' | translate }}</span>
+            <app-language-selector (languageChanged)="reloadContext()" />
+          </div>
+          <div class="account-menu__divider" aria-hidden="true"></div>
+
+          <button class="account-menu__item" type="button" (click)="changeTenant()">
+            <span aria-hidden="true">↔</span>
+            {{ 'app.placeholder.changeTenant' | translate }}
+          </button>
+          <button
+            class="account-menu__item account-menu__item--danger"
+            type="button"
+            (click)="logout()"
+          >
+            <span aria-hidden="true">↗</span>
+            {{ 'common.logout' | translate }}
+          </button>
+        </section>
+      }
     </div>
   </header>
 

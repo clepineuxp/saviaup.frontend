@@ -63,6 +63,25 @@ describe('module navigation configuration', () => {
     });
   });
 
+  it('maps the printing module to its lazy feature route', () => {
+    const [section] = createSectionNavigation([
+      {
+        code: 'operation',
+        name: 'Operación',
+        order: 1,
+        isGrouped: false,
+        modules: [{ id: 'printing', code: 'printing', name: 'Impresión', order: 1 }],
+        options: [],
+      },
+    ]);
+
+    expect(section.items[0]).toMatchObject({
+      code: 'printing',
+      route: '/app/printing',
+      icon: 'printing',
+    });
+  });
+
   it('renders future options and resolves their route and icon through moduleCode', () => {
     const [section] = createSectionNavigation([
       {
