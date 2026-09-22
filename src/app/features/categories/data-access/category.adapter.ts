@@ -10,4 +10,7 @@ export const mapCategoryDto = (dto: CategoryDto): Category => ({
   isActive: dto.isActive,
   createdAt: dto.createdAt,
   updatedAt: dto.updatedAt,
+  productCount: dto.productCount ?? 0,
+  variationCount: dto.variationCount ?? 0,
+  ingredientCount: dto.ingredientCount ?? 0,
 });

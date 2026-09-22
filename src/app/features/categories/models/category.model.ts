@@ -7,6 +7,9 @@ export interface Category {
   readonly isActive: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly productCount: number;
+  readonly variationCount: number;
+  readonly ingredientCount: number;
 }
 
 export interface CreateCategoryRequest {

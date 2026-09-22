@@ -88,6 +88,12 @@
       <p>{{ 'products.empty.description' | translate }}</p>
     </div>
   } @else {
+    <div class="products-results-summary" aria-live="polite">
+      {{
+        'products.results.filtered'
+          | translate: { visible: store.page().items.length, total: store.page().totalCount }
+      }}
+    </div>
     <div class="table-wrap">
       <table>
         <thead>
@@ -106,7 +112,15 @@
         </thead>
         <tbody>
           @for (product of store.page().items; track product.id) {
-            <tr [class.inactive]="!product.isActive">
+            <tr
+              [class.inactive]="!product.isActive"
+              [class.product-row--editable]="canUseForm()"
+              [attr.role]="canUseForm() ? 'button' : null"
+              [attr.tabindex]="canUseForm() ? 0 : null"
+              (click)="openEdit(product)"
+              (keydown.enter)="openEditFromRow(product, $event)"
+              (keydown.space)="openEditFromRow(product, $event)"
+            >
               <td>
                 <div class="product-cell">
                   <div class="thumbnail">
@@ -171,13 +185,17 @@
               </td>
               @if (canManage()) {
                 <td class="actions">
-                  <button type="button" [disabled]="!canUseForm()" (click)="openEdit(product)">
+                  <button
+                    type="button"
+                    [disabled]="!canUseForm()"
+                    (click)="$event.stopPropagation(); openEdit(product)"
+                  >
                     {{ 'products.action.edit' | translate }}
                   </button>
                   <button
                     type="button"
                     [disabled]="store.mutating()"
-                    (click)="toggleStatus(product)"
+                    (click)="$event.stopPropagation(); toggleStatus(product)"
                   >
                     {{
                       (product.isActive ? 'products.action.disable' : 'products.action.enable')
@@ -188,7 +206,7 @@
                     class="danger"
                     type="button"
                     [disabled]="store.mutating()"
-                    (click)="requestDelete(product)"
+                    (click)="$event.stopPropagation(); requestDelete(product)"
                   >
                     {{ 'products.action.delete' | translate }}
                   </button>
@@ -218,6 +236,8 @@
     (submitted)="save($event)"
     (cancelled)="closeForm()"
     (searchIngredients)="searchIngredients($event)"
+    (statusRequested)="toggleStatusFromForm($event)"
+    (deleteRequested)="requestDeleteFromForm($event)"
   />
 }
 

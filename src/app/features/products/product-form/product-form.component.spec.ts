@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LocalizationService } from '../../../shared/i18n/localization.service';
 import { ImageService } from '../../../shared/services/image.service';
-import { ProductCategory } from '../models/product.model';
+import { Product, ProductCategory } from '../models/product.model';
 import { ProductFormComponent } from './product-form.component';
 
 const inventoryCategory: ProductCategory = {
@@ -14,6 +14,22 @@ const serviceCategory: ProductCategory = {
   id: 'category-service',
   name: 'Servicios',
   isInventoryTracked: false,
+};
+const product: Product = {
+  id: 'product-1',
+  type: 'NORMAL',
+  name: 'Limonada',
+  description: null,
+  image: null,
+  category: inventoryCategory,
+  salePrice: 8000,
+  preparationTimeMinutes: null,
+  isInventoryTracked: true,
+  isActive: true,
+  createdAt: '2026-09-20T00:00:00Z',
+  updatedAt: '2026-09-20T00:00:00Z',
+  recipe: [],
+  variations: [],
 };
 
 describe('ProductFormComponent', () => {
@@ -108,5 +124,21 @@ describe('ProductFormComponent', () => {
         ],
       },
     ]);
+  });
+
+  it('exposes deactivation and deletion actions while editing a product', () => {
+    const statusRequested: Product[] = [];
+    const deleteRequested: Product[] = [];
+    component.statusRequested.subscribe((value) => statusRequested.push(value));
+    component.deleteRequested.subscribe((value) => deleteRequested.push(value));
+    fixture.componentRef.setInput('product', product);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    (fixture.nativeElement.querySelector('.form-status-action') as HTMLButtonElement).click();
+    (fixture.nativeElement.querySelector('.form-delete-action') as HTMLButtonElement).click();
+
+    expect(statusRequested).toEqual([product]);
+    expect(deleteRequested).toEqual([product]);
   });
 });

@@ -140,6 +140,19 @@ tbody tr:last-child td {
   border-bottom: 0;
 }
 
+.product-row--editable {
+  cursor: pointer;
+}
+
+.product-row--editable:hover td {
+  background: var(--color-savia-50);
+}
+
+.product-row--editable:focus-visible {
+  outline: 3px solid rgb(59 135 88 / 30%);
+  outline-offset: -3px;
+}
+
 tr.inactive {
   opacity: 0.62;
 }
@@ -214,6 +227,12 @@ tr.inactive {
 .actions button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
+}
+
+.products-results-summary {
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 650;
 }
 
 .state {

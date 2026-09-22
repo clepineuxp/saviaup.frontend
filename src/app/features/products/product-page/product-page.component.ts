@@ -121,6 +121,11 @@ export class ProductPageComponent implements OnInit {
     this.formOpen.set(true);
   }
 
+  openEditFromRow(product: Product, event: Event): void {
+    event.preventDefault();
+    this.openEdit(product);
+  }
+
   searchIngredients(search: string): void {
     this.store
       .loadIngredients(search, 1, 10)
@@ -163,10 +168,35 @@ export class ProductPageComponent implements OnInit {
       });
   }
 
+  toggleStatusFromForm(product: Product): void {
+    if (!this.canManage() || this.store.mutating()) return;
+    this.successKey.set(null);
+    this.store
+      .setStatus(product.id, { isActive: !product.isActive })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.formOpen.set(false);
+          this.editingProduct.set(null);
+          this.successKey.set(
+            product.isActive ? 'products.success.disabled' : 'products.success.enabled',
+          );
+        },
+        error: () => undefined,
+      });
+  }
+
   requestDelete(product: Product): void {
     if (!this.canManage()) return;
     this.store.clearOperationError();
     this.deleteTarget.set(product);
+  }
+
+  requestDeleteFromForm(product: Product): void {
+    if (!this.canManage() || this.store.mutating()) return;
+    this.formOpen.set(false);
+    this.editingProduct.set(null);
+    this.requestDelete(product);
   }
 
   cancelDelete(): void {

@@ -16,6 +16,9 @@ const category: Category = {
   isActive: true,
   createdAt: '2026-08-20T18:00:00Z',
   updatedAt: '2026-08-20T18:00:00Z',
+  productCount: 0,
+  variationCount: 0,
+  ingredientCount: 0,
 };
 
 describe('CategoryPageComponent', () => {
