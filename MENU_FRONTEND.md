@@ -9,13 +9,16 @@ El workspace contiene dos aplicaciones Angular con ciclos de compilación y desp
 
 `saviaup.frontend-menu` tiene su propio `main.ts`, configuración, router, environments e `index.html`. Su configuración registra únicamente Router, `HttpClient` y el environment público. No importa ni registra almacenamiento de tokens, repositorios de autenticación, contexto de organización, refresh coordinators, guards, interceptores o navegación administrativa.
 
-La única consulta de negocio pública es:
+El cliente público usa dos consultas anónimas:
 
 ```text
 GET /api/public/menu/{slug}
+GET /api/public/menu/{slug}/categories/{categoryId}/images
 ```
 
-El backend expone este endpoint con `AllowAnonymous`. Un `401`, `403`, `404` o error de red se muestra como “Menú no disponible”; la aplicación nunca redirige a login ni intenta renovar una sesión.
+La primera entrega de inmediato el layout, estilos, categorías, productos, variaciones y precios. La segunda entrega las imágenes WebP optimizadas dentro del JSON y se consume secuencialmente por categoría, de modo que el menú permanece usable mientras aparecen las imágenes. No se requieren rutas públicas de archivos en el ingress.
+
+El backend expone ambos endpoints con `AllowAnonymous`. Un error al cargar el layout se muestra como “Menú no disponible”; el fallo aislado de imágenes de una categoría no bloquea las demás ni redirige a login o intenta renovar una sesión.
 
 El componente visual del menú y sus contratos se reutilizan como código compartido del workspace. El cliente público está separado en `PublicDigitalMenuService`; las operaciones administrativas permanecen en `DigitalMenuService` y no forman parte del bundle público.
 
