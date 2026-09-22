@@ -8,7 +8,8 @@ TARGET_FILE="/usr/share/nginx/html/env-config.js"
 RUNTIME_CONFIG=$(jq -cn --ascii-output \
   --arg apiUrl "${API_URL:-}" \
   --arg signalRUrl "${SIGNALR_URL:-}" \
-  '{apiUrl: $apiUrl, signalRUrl: $signalRUrl}')
+  --arg menuFrontendUrl "${MENU_FRONTEND_URL:-}" \
+  '{apiUrl: $apiUrl, signalRUrl: $signalRUrl, menuFrontendUrl: $menuFrontendUrl}')
 
 TEMP_FILE=$(mktemp "${TARGET_FILE}.XXXXXX")
 trap 'rm -f "$TEMP_FILE"' EXIT HUP INT TERM

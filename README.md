@@ -26,11 +26,18 @@ npm start
 
 La aplicación queda disponible en `http://localhost:4200`.
 
+El menú digital público es una segunda aplicación del mismo workspace. Se ejecuta en
+`http://localhost:4201/m/{slug}` con `npm run start:menu`; consulta únicamente el endpoint público
+y no carga autenticación, sesión ni navegación administrativa. Consulta [MENU_FRONTEND.md](MENU_FRONTEND.md)
+para su arquitectura y despliegue.
+
 Comandos adicionales:
 
 ```bash
 npm run build          # build de producción
+npm run build:menu     # build independiente del menú público
 npm test -- --watch=false
+npm run test:menu -- --watch=false
 npm run test:watch
 npm run lint
 npm run format:check
@@ -80,6 +87,9 @@ El build de producción reemplaza automáticamente el environment por `environme
 | `/app/configuration/cash-registers/manage` | `cash-registers.manage`      | Configuración de cajas registradoras   |
 | `/app/{módulo}`                            | Autenticado + tenant         | Módulo habilitado conocido             |
 | `/app/modules/:code`                       | Autenticado + tenant         | Fallback seguro para código nuevo      |
+
+La ruta `/m/:slug` pertenece exclusivamente a `saviaup.frontend-menu`; el ingress redirige los
+enlaces históricos del dominio administrativo al dominio público correspondiente.
 
 Todas las pantallas de feature se cargan de forma lazy.
 
@@ -192,7 +202,7 @@ en `/ngsw/state` desde el navegador afectado.
 
 La misma imagen sirve para todos los ambientes. Al iniciar el contenedor,
 `docker-entrypoint.d/40-env-config.sh` genera `/usr/share/nginx/html/env-config.js` usando únicamente
-`API_URL` y `SIGNALR_URL` del entorno del proceso. Kubernetes puede suministrarlas mediante
+`API_URL`, `SIGNALR_URL` y `MENU_FRONTEND_URL` del entorno del proceso. Kubernetes puede suministrarlas mediante
 `env`, `envFrom`, `configMapKeyRef` o `secretKeyRef`; no es necesario reconstruir la imagen.
 Por ejemplo, dentro del contenedor del Deployment (ajustar nombres y claves a los manifiestos existentes):
 
@@ -208,9 +218,14 @@ env:
       secretKeyRef:
         name: frontend-public-endpoints
         key: SIGNALR_URL
+  - name: MENU_FRONTEND_URL
+    valueFrom:
+      configMapKeyRef:
+        name: frontend-config
+        key: MENU_FRONTEND_URL
 ```
 
-Ambas variables son **URLs públicas visibles en el navegador**, aunque su origen sea un Secret.
+Las tres variables son **URLs públicas visibles en el navegador**, aunque su origen sea un Secret.
 Nunca mapear contraseñas, claves JWT, credenciales de base de datos u otros secretos del servidor
 a estas variables. El generador no exporta otras variables del contenedor y no registra sus valores.
 Usa `jq` para serializar JSON y reemplaza el archivo de forma atómica, sin interpolar valores sin

@@ -10,10 +10,12 @@ describe('Production runtime configuration', () => {
       __env: {
         apiUrl: 'https://configured-api.example.test/v2',
         signalRUrl: 'https://configured-realtime.example.test/hubs',
+        menuFrontendUrl: 'https://configured-menu.example.test',
       },
     });
     expect(environment.apiUrl).toBe('https://configured-api.example.test/v2');
     expect(environment.signalRUrl).toBe('https://configured-realtime.example.test/hubs');
+    expect(environment.menuFrontendUrl).toBe('https://configured-menu.example.test');
   });
 
   it('derives the hub from the injected API URL when no hub is provided', () => {
@@ -31,5 +33,6 @@ describe('Production runtime configuration', () => {
     });
     expect(environment.apiUrl).toBe('http://localhost:5000');
     expect(environment.signalRUrl).toBe('http://localhost:5000/hubs');
+    expect(environment.menuFrontendUrl).toBe('http://localhost:4201');
   });
 });

@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterOutlet } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DigitalMenuService } from '../../features/digital-menu/data-access/digital-menu.service';
+import { PublicDigitalMenuService } from '../../features/digital-menu/data-access/public-digital-menu.service';
 import { PublicDigitalMenu } from '../../features/digital-menu/models/digital-menu.model';
 
 @Component({
@@ -22,7 +22,7 @@ import { PublicDigitalMenu } from '../../features/digital-menu/models/digital-me
 })
 export class DigitalMenuLayoutComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
-  private readonly service = inject(DigitalMenuService);
+  private readonly service = inject(PublicDigitalMenuService);
   private readonly title = inject(Title);
   private readonly destroyRef = inject(DestroyRef);
 

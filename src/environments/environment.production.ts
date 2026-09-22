@@ -25,6 +25,26 @@ const getSignalRUrl = (): string => {
   return `${getApiUrl()}/hubs`;
 };
 
+const getMenuFrontendUrl = (): string => {
+  if (typeof window !== 'undefined') {
+    const custom = (window as unknown as { __env?: { menuFrontendUrl?: string } }).__env
+      ?.menuFrontendUrl;
+    if (custom?.trim() && !custom.startsWith('${')) return custom;
+
+    const hostname = window.location?.hostname ?? '';
+    if (hostname.startsWith('dev-') || hostname.startsWith('dev.')) {
+      return 'https://dev-menu.saviaup.com';
+    }
+    if (hostname.startsWith('qa-') || hostname.startsWith('qa.')) {
+      return 'https://qa-menu.saviaup.com';
+    }
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:4201';
+    }
+  }
+  return 'https://menu.saviaup.com';
+};
+
 export const environment = {
   production: true,
   useMockApi: false,
@@ -33,5 +53,8 @@ export const environment = {
   },
   get signalRUrl(): string {
     return getSignalRUrl();
+  },
+  get menuFrontendUrl(): string {
+    return getMenuFrontendUrl();
   },
 };

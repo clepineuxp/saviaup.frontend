@@ -28,6 +28,12 @@
     },
     {
       "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/saviaup.frontend-menu/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/saviaup.frontend-menu/tsconfig.spec.json"
     }
   ]
 }
