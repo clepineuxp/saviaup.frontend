@@ -113,7 +113,7 @@
                 />
               </div>
 
-              @if (settingsStore.business()?.enableCustomSales) {
+              @if (salesContext.business()?.enableCustomSales) {
                 <button type="button" class="custom-sale-btn" (click)="openCustomSaleModal()">
                   ✨ Venta Libre +
                 </button>
@@ -160,7 +160,9 @@
                         <span class="thumb-placeholder">☕</span>
                       }
                       @if (product.variations && product.variations.length > 0) {
-                        <span class="variations-badge" title="Producto con variaciones">🏷️ {{ product.variations.length }}</span>
+                        <span class="variations-badge" title="Producto con variaciones"
+                          >🏷️ {{ product.variations.length }}</span
+                        >
                       }
                     </div>
                     <div class="product-info">
@@ -654,7 +656,8 @@
             </button>
             <button type="button" class="btn-confirm primary" (click)="confirmAddProductConfig()">
               Agregar ({{
-                getConfiguredUnitPrice() * cfg.quantity | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                getConfiguredUnitPrice() * cfg.quantity
+                  | currency: 'COP' : 'symbol-narrow' : '1.0-0'
               }})
             </button>
           </footer>
@@ -1022,10 +1025,8 @@
                       [ngModel]="co.splits[0].method"
                       (ngModelChange)="co.splits[0].method = $event"
                     >
-                      @for (pm of settingsStore.paymentMethods(); track pm.id) {
-                        @if (pm.isActive) {
-                          <option [value]="pm.name">{{ pm.name }}</option>
-                        }
+                      @for (pm of salesContext.paymentMethods(); track pm.id) {
+                        <option [value]="pm.name">{{ pm.name }}</option>
                       }
                     </select>
                   </label>
@@ -1095,10 +1096,8 @@
                           [ngModel]="split.method"
                           (ngModelChange)="split.method = $event"
                         >
-                          @for (pm of settingsStore.paymentMethods(); track pm.id) {
-                            @if (pm.isActive) {
-                              <option [value]="pm.name">{{ pm.name }}</option>
-                            }
+                          @for (pm of salesContext.paymentMethods(); track pm.id) {
+                            <option [value]="pm.name">{{ pm.name }}</option>
                           }
                         </select>
 
