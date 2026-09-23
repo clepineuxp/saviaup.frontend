@@ -257,6 +257,8 @@ El formulario de productos integra:
 - El configurador de venta valida cada grupo, recalcula el precio visible y envía solo ids/cantidades; el backend conserva la autoridad sobre configuración y precio.
 
 `ExpenseStore` y `SupplierStore` administran egresos y proveedores con Signals, asociando gastos a turnos de caja y filtrando por rangos de fechas. El listado de gastos pagina en servidor con tamaños de 10, 25, 50 o 100 registros. El formulario consume el lookup activo mediante un combobox accesible, presenta un resumen de confirmación antes de crear y, al editar, bloquea valor, fecha y salida de caja; `UpdateExpensePayload` nunca envía esos campos inmutables.
+
+El historial de `/app/cash-registers` muestra el fondo inicial de cada turno y consume `totalInCashAmount` del backend para representar recaudo de ventas + inicial - gastos tanto en el listado como en el detalle.
 `BillingStore` y `StatisticsStore` proveen consultas de comprobantes para impresión y analíticas con Chart.js respectivamente.
 
 `InventoryStore` es el propietario de las páginas, filtros y catálogos auxiliares de inventario. Conserva por separado existencias, ingredientes, movimientos y unidades, siempre paginados por el servidor y limitados al tenant activo. Cada apartado exige su permiso `*.read` exacto y cada mutación su `*.manage` exacto; `manage` no implica `read`. El formulario de ingredientes requiere además `categories.read` e `inventory.complements.read`. Tras un movimiento exitoso debe refrescar la página vigente tanto de movimientos como de existencias.

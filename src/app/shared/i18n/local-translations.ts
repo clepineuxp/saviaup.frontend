@@ -783,6 +783,7 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'cashRegisters.shift.startedAt': 'Abierto el:',
     'cashRegisters.shift.byUser': 'por',
     'cashRegisters.shift.initialFund': 'Inicial:',
+    'cashRegisters.shift.initial': 'Inicial',
     'cashRegisters.shift.closeShiftBtn': 'Cerrar Turno de Caja',
     'cashRegisters.shift.addExpenseBtn': 'Registrar Gasto / Salida',
     'cashRegisters.shift.closedShiftNotice':
@@ -1935,6 +1936,7 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'cashRegisters.shift.startedAt': 'Opened at:',
     'cashRegisters.shift.byUser': 'by',
     'cashRegisters.shift.initialFund': 'Initial:',
+    'cashRegisters.shift.initial': 'Initial',
     'cashRegisters.shift.closeShiftBtn': 'Close Register Shift',
     'cashRegisters.shift.addExpenseBtn': 'Log Expense / Payout',
     'cashRegisters.shift.closedShiftNotice':

@@ -19,3 +19,7 @@ Al crear o editar un gasto, el proveedor se selecciona mediante un combobox con 
 El pie del listado de `/app/expenses` permite cambiar el tamaño de página entre 10, 25, 50 y 100 registros. Cada cambio regresa a la página 1 y solicita nuevamente la información al backend con el `pageSize` elegido.
 
 Antes de crear un gasto se abre una confirmación compacta con nombre, valor, fecha, medio de pago, proveedor, origen de caja y descripción. El usuario puede volver al formulario o confirmar el envío. Al editar un gasto existente, valor, fecha y origen de caja aparecen bloqueados y el payload contiene únicamente los campos editables.
+
+## Total de turnos de caja
+
+El historial de `/app/cash-registers` incluye una columna **Inicial** y consume `totalInCashAmount` para **Total en Caja**. La cifra proviene del backend y representa recaudo de ventas + fondo inicial - gastos; el mismo valor se usa en el resumen del detalle/cierre.
