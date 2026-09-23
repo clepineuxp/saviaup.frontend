@@ -44,34 +44,52 @@
         <span class="form-tab__icon">📋</span>
         <span>{{ 'products.tabs.general' | translate }}</span>
       </button>
-      <button
-        type="button"
-        role="tab"
-        class="form-tab"
-        [class.form-tab--active]="activeTab() === 'variations'"
-        [attr.aria-selected]="activeTab() === 'variations'"
-        (click)="setTab('variations')"
-      >
-        <span class="form-tab__icon">🏷️</span>
-        <span>Variaciones</span>
-        @if (variationRows().length > 0) {
-          <span class="form-tab__badge">{{ variationRows().length }}</span>
-        }
-      </button>
-      <button
-        type="button"
-        role="tab"
-        class="form-tab"
-        [class.form-tab--active]="activeTab() === 'recipe'"
-        [attr.aria-selected]="activeTab() === 'recipe'"
-        (click)="setTab('recipe')"
-      >
-        <span class="form-tab__icon">🧪</span>
-        <span>{{ 'products.tabs.recipe' | translate }}</span>
-        @if (recipeRows().length > 0) {
-          <span class="form-tab__badge">{{ recipeRows().length }}</span>
-        }
-      </button>
+      @if (isCombo()) {
+        <button
+          type="button"
+          role="tab"
+          class="form-tab"
+          [class.form-tab--active]="activeTab() === 'combo'"
+          [attr.aria-selected]="activeTab() === 'combo'"
+          (click)="setTab('combo')"
+        >
+          <span class="form-tab__icon">🧩</span>
+          <span>{{ 'products.combo.tab' | translate }}</span>
+          @if (comboGroupRows().length > 0) {
+            <span class="form-tab__badge">{{ comboGroupRows().length }}</span>
+          }
+        </button>
+      }
+      @if (!isCombo()) {
+        <button
+          type="button"
+          role="tab"
+          class="form-tab"
+          [class.form-tab--active]="activeTab() === 'variations'"
+          [attr.aria-selected]="activeTab() === 'variations'"
+          (click)="setTab('variations')"
+        >
+          <span class="form-tab__icon">🏷️</span>
+          <span>Variaciones</span>
+          @if (variationRows().length > 0) {
+            <span class="form-tab__badge">{{ variationRows().length }}</span>
+          }
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="form-tab"
+          [class.form-tab--active]="activeTab() === 'recipe'"
+          [attr.aria-selected]="activeTab() === 'recipe'"
+          (click)="setTab('recipe')"
+        >
+          <span class="form-tab__icon">🧪</span>
+          <span>{{ 'products.tabs.recipe' | translate }}</span>
+          @if (recipeRows().length > 0) {
+            <span class="form-tab__badge">{{ recipeRows().length }}</span>
+          }
+        </button>
+      }
     </nav>
 
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
@@ -411,10 +429,12 @@
                             </button>
 
                             @if (openSelectorIndex() === idx) {
-                              <div
+                              <button
+                                type="button"
                                 class="recipe-dropdown-backdrop"
+                                aria-label="Cerrar selector de ingredientes"
                                 (click)="closeIngredientSelector()"
-                              ></div>
+                              ></button>
                               <div class="recipe-dropdown">
                                 <div class="recipe-dropdown__header">
                                   <span class="recipe-dropdown__search-icon">🔍</span>
@@ -424,7 +444,6 @@
                                     [value]="ingredientSearch()"
                                     (input)="onSearchInput($any($event.target).value)"
                                     [placeholder]="'Buscar por ingrediente o categoría…'"
-                                    autofocus
                                   />
                                   @if (ingredientSearch()) {
                                     <button
@@ -519,6 +538,225 @@
                     </div>
                   </div>
                 </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (activeTab() === 'combo' && isCombo()) {
+        <div class="recipe-container combo-builder wide">
+          <div class="recipe-intro">
+            <div class="recipe-intro__text">
+              <h3>{{ 'products.combo.title' | translate }}</h3>
+              <p>{{ 'products.combo.description' | translate }}</p>
+            </div>
+            <div class="recipe-intro__actions">
+              <button
+                type="button"
+                class="recipe-btn recipe-btn--primary"
+                (click)="addComboGroup()"
+              >
+                {{ 'products.combo.addGroup' | translate }}
+              </button>
+            </div>
+          </div>
+
+          @if (comboValidationError()) {
+            <app-ui-alert [message]="'products.combo.validation' | translate" />
+          }
+
+          @if (comboGroupRows().length === 0) {
+            <div class="recipe-empty">
+              <div class="recipe-empty__icon">🧩</div>
+              <h4>{{ 'products.combo.empty' | translate }}</h4>
+              <p>{{ 'products.combo.emptyHint' | translate }}</p>
+              <div class="recipe-empty__actions">
+                <button
+                  type="button"
+                  class="recipe-btn recipe-btn--primary"
+                  (click)="addComboGroup()"
+                >
+                  {{ 'products.combo.addFirstGroup' | translate }}
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="combo-groups">
+              @for (group of comboGroupRows(); track group.id; let groupIndex = $index) {
+                <article class="combo-group-card">
+                  <div class="recipe-card__top">
+                    <div class="recipe-card__badge-wrapper">
+                      <span class="recipe-card__num">#{{ groupIndex + 1 }}</span>
+                      <span class="recipe-badge-btn recipe-badge-btn--inventory">
+                        {{ 'products.combo.group' | translate }}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      class="recipe-card__delete"
+                      (click)="removeComboGroup(groupIndex)"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div class="combo-group-fields">
+                    <label class="recipe-label combo-name-field">
+                      <span>{{ 'products.combo.groupName' | translate }}</span>
+                      <input
+                        type="text"
+                        maxlength="120"
+                        [ngModel]="group.name"
+                        [ngModelOptions]="{ standalone: true }"
+                        (ngModelChange)="updateComboGroup(groupIndex, { name: $event })"
+                        [placeholder]="'products.combo.groupNamePlaceholder' | translate"
+                      />
+                    </label>
+
+                    <label class="recipe-label">
+                      <span>{{ 'products.combo.selectionType' | translate }}</span>
+                      <select
+                        [ngModel]="group.selectionType"
+                        [ngModelOptions]="{ standalone: true }"
+                        (ngModelChange)="updateComboGroup(groupIndex, { selectionType: $event })"
+                      >
+                        <option value="SINGLE">{{ 'products.combo.single' | translate }}</option>
+                        <option value="MULTIPLE">
+                          {{ 'products.combo.multiple' | translate }}
+                        </option>
+                        <option value="FIXED">{{ 'products.combo.fixed' | translate }}</option>
+                      </select>
+                    </label>
+
+                    @if (group.selectionType !== 'FIXED') {
+                      <label class="combo-required-toggle">
+                        <span>{{ 'products.combo.required' | translate }}</span>
+                        <input
+                          type="checkbox"
+                          [ngModel]="group.isRequired"
+                          [ngModelOptions]="{ standalone: true }"
+                          (ngModelChange)="updateComboGroup(groupIndex, { isRequired: $event })"
+                        />
+                        <span class="combo-toggle-track" aria-hidden="true"></span>
+                      </label>
+                    }
+
+                    @if (group.selectionType === 'MULTIPLE') {
+                      <label class="recipe-label">
+                        <span>{{ 'products.combo.minimum' | translate }}</span>
+                        <input
+                          type="number"
+                          min="0"
+                          [ngModel]="group.minSelections"
+                          [ngModelOptions]="{ standalone: true }"
+                          (ngModelChange)="updateComboGroup(groupIndex, { minSelections: +$event })"
+                        />
+                      </label>
+                      <label class="recipe-label">
+                        <span>{{ 'products.combo.maximum' | translate }}</span>
+                        <input
+                          type="number"
+                          min="1"
+                          [ngModel]="group.maxSelections"
+                          [ngModelOptions]="{ standalone: true }"
+                          (ngModelChange)="updateComboGroup(groupIndex, { maxSelections: +$event })"
+                        />
+                      </label>
+                    }
+                  </div>
+
+                  <div class="combo-options-header">
+                    <div>
+                      <strong>
+                        {{
+                          (group.selectionType === 'FIXED'
+                            ? 'products.combo.fixedProducts'
+                            : 'products.combo.options'
+                          ) | translate
+                        }}
+                      </strong>
+                      <small>
+                        {{
+                          (group.selectionType === 'FIXED'
+                            ? 'products.combo.fixedProductsHint'
+                            : 'products.combo.optionsHint'
+                          ) | translate
+                        }}
+                      </small>
+                    </div>
+                    <button
+                      type="button"
+                      class="recipe-btn recipe-btn--secondary"
+                      (click)="addComboOption(groupIndex)"
+                    >
+                      {{ 'products.combo.addOption' | translate }}
+                    </button>
+                  </div>
+
+                  <div class="combo-options-list">
+                    @for (option of group.options; track option.id; let optionIndex = $index) {
+                      <div class="combo-option-row">
+                        <label class="recipe-label combo-product-field">
+                          <span>{{ 'products.combo.product' | translate }}</span>
+                          <select
+                            [ngModel]="option.productId"
+                            [ngModelOptions]="{ standalone: true }"
+                            (ngModelChange)="
+                              updateComboOption(groupIndex, optionIndex, { productId: $event })
+                            "
+                          >
+                            <option value="">
+                              {{ 'products.combo.selectProduct' | translate }}
+                            </option>
+                            @for (candidate of availableComboProducts(); track candidate.id) {
+                              <option [value]="candidate.id">{{ candidate.name }}</option>
+                            }
+                          </select>
+                        </label>
+                        <label class="recipe-label">
+                          <span>{{ 'products.combo.productQuantity' | translate }}</span>
+                          <input
+                            type="number"
+                            min="1"
+                            [ngModel]="option.productQuantity"
+                            [ngModelOptions]="{ standalone: true }"
+                            (ngModelChange)="
+                              updateComboOption(groupIndex, optionIndex, {
+                                productQuantity: +$event,
+                              })
+                            "
+                          />
+                        </label>
+                        <label class="recipe-label">
+                          <span>{{ 'products.combo.priceAdjustment' | translate }}</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            [ngModel]="option.priceAdjustment"
+                            [ngModelOptions]="{ standalone: true }"
+                            (ngModelChange)="
+                              updateComboOption(groupIndex, optionIndex, {
+                                priceAdjustment: +$event,
+                              })
+                            "
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          class="combo-option-delete"
+                          (click)="removeComboOption(groupIndex, optionIndex)"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    } @empty {
+                      <p class="combo-options-empty">
+                        {{ 'products.combo.optionRequired' | translate }}
+                      </p>
+                    }
+                  </div>
+                </article>
               }
             </div>
           }

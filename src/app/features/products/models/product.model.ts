@@ -43,6 +43,45 @@ export interface ProductVariationRequest {
   readonly isActive?: boolean;
 }
 
+export type ProductComboSelectionType = 'SINGLE' | 'MULTIPLE' | 'FIXED';
+
+export interface ProductComboOption {
+  readonly id: string;
+  readonly productId: string;
+  readonly productName: string;
+  readonly productQuantity: number;
+  readonly priceAdjustment: number;
+  readonly order: number;
+}
+
+export interface ProductComboGroup {
+  readonly id: string;
+  readonly name: string;
+  readonly selectionType: ProductComboSelectionType;
+  readonly isRequired: boolean;
+  readonly minSelections: number;
+  readonly maxSelections: number;
+  readonly order: number;
+  readonly options: readonly ProductComboOption[];
+}
+
+export interface ProductComboOptionRequest {
+  readonly productId: string;
+  readonly productQuantity: number;
+  readonly priceAdjustment: number;
+  readonly order?: number;
+}
+
+export interface ProductComboGroupRequest {
+  readonly name: string;
+  readonly selectionType: ProductComboSelectionType;
+  readonly isRequired: boolean;
+  readonly minSelections: number;
+  readonly maxSelections: number;
+  readonly order?: number;
+  readonly options: readonly ProductComboOptionRequest[];
+}
+
 export interface ProductIngredientLookup {
   readonly id: string;
   readonly name: string;
@@ -73,6 +112,7 @@ export interface Product {
   readonly updatedAt: string;
   readonly recipe: readonly ProductRecipeItem[];
   readonly variations: readonly ProductVariation[];
+  readonly comboGroups?: readonly ProductComboGroup[];
 }
 
 export interface ProductPage {
@@ -103,6 +143,7 @@ export interface CreateProductRequest {
   readonly isInventoryTracked: boolean;
   readonly recipe?: readonly ProductRecipeItemRequest[];
   readonly variations?: readonly ProductVariationRequest[];
+  readonly comboGroups?: readonly ProductComboGroupRequest[];
 }
 
 export type UpdateProductRequest = CreateProductRequest;

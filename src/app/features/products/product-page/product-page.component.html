@@ -231,6 +231,7 @@
     [product]="editingProduct()"
     [categories]="store.categories()"
     [ingredients]="store.ingredients()"
+    [comboProducts]="store.comboCandidates()"
     [submitting]="store.mutating()"
     [error]="store.operationError()"
     (submitted)="save($event)"

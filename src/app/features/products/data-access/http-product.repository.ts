@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { EMPTY, expand, map, Observable, reduce } from 'rxjs';
 import { API_ENDPOINTS } from '../../../core/config/api-endpoints';
 import { ApiClient } from '../../../shared/api/api-client.service';
 import {
@@ -43,6 +43,24 @@ export class HttpProductRepository implements ProductRepository {
     return this.api
       .get<ProductPageDto>(API_ENDPOINTS.products.root, { params: compactParams(query) })
       .pipe(map(mapProductPage));
+  }
+
+  listComboCandidates(search?: string): Observable<readonly Product[]> {
+    const query: ProductQuery = {
+      page: 1,
+      pageSize: 100,
+      search: search?.trim() || null,
+      categoryId: null,
+      type: 'NORMAL',
+      includeInactive: false,
+    };
+
+    return this.list(query).pipe(
+      expand((page) =>
+        page.page < page.totalPages ? this.list({ ...query, page: page.page + 1 }) : EMPTY,
+      ),
+      reduce<ProductPage, readonly Product[]>((products, page) => [...products, ...page.items], []),
+    );
   }
 
   listCategories(onlyWithProducts = false): Observable<readonly ProductCategory[]> {

@@ -72,6 +72,32 @@ describe('HttpProductRepository', () => {
     expect(result.items[0]).toMatchObject({ id: product.id, type: 'NORMAL' });
   });
 
+  it('loads every page of active normal products for combo options', async () => {
+    get
+      .mockReturnValueOnce(
+        of({ items: [product], page: 1, pageSize: 100, totalCount: 2, totalPages: 2 }),
+      )
+      .mockReturnValueOnce(
+        of({
+          items: [{ ...product, id: 'product-2', name: 'Jugo' }],
+          page: 2,
+          pageSize: 100,
+          totalCount: 2,
+          totalPages: 2,
+        }),
+      );
+
+    const result = await firstValueFrom(repository.listComboCandidates());
+
+    expect(result.map((candidate) => candidate.id)).toEqual(['product-1', 'product-2']);
+    expect(get).toHaveBeenNthCalledWith(1, API_ENDPOINTS.products.root, {
+      params: { page: 1, pageSize: 100, type: 'NORMAL', includeInactive: false },
+    });
+    expect(get).toHaveBeenNthCalledWith(2, API_ENDPOINTS.products.root, {
+      params: { page: 2, pageSize: 100, type: 'NORMAL', includeInactive: false },
+    });
+  });
+
   it('uses category lookup and dedicated CRUD/status endpoints', async () => {
     const request: CreateProductRequest = {
       type: 'COMBO',

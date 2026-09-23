@@ -65,6 +65,10 @@ export class ProductPageComponent implements OnInit {
       .loadIngredients()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ error: () => undefined });
+    this.store
+      .loadComboCandidates()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ error: () => undefined });
 
     this.filters.controls.search.valueChanges
       .pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
@@ -106,6 +110,10 @@ export class ProductPageComponent implements OnInit {
       .loadIngredients()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ error: () => undefined });
+    this.store
+      .loadComboCandidates()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ error: () => undefined });
     this.editingProduct.set(null);
     this.formOpen.set(true);
   }
@@ -115,6 +123,10 @@ export class ProductPageComponent implements OnInit {
     this.store.clearOperationError();
     this.store
       .loadIngredients()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ error: () => undefined });
+    this.store
+      .loadComboCandidates()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ error: () => undefined });
     this.editingProduct.set(product);

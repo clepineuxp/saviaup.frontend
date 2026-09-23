@@ -38,6 +38,11 @@ export interface ConfiguredProductModalState {
   quantity: number;
   notes: string;
   activeSubTab: 'notes' | 'modifiers';
+  comboSelections: Readonly<Record<string, number>>;
+}
+
+interface DraftOrderItem extends CreateOrderItem {
+  readonly comboSummary?: readonly string[];
 }
 
 export interface CustomSaleModalState {
@@ -124,7 +129,7 @@ export class TableOperationDialogComponent {
   readonly activeOrder = signal<Order | null>(null);
   readonly loadingOrder = signal<boolean>(false);
 
-  readonly draftItems = signal<readonly CreateOrderItem[]>([]);
+  readonly draftItems = signal<readonly DraftOrderItem[]>([]);
   readonly draftObservations = signal<string>('');
   readonly submittingOrder = signal<boolean>(false);
   readonly showMobileDraftModal = signal<boolean>(false);
@@ -570,6 +575,7 @@ export class TableOperationDialogComponent {
       quantity: 1,
       notes: '',
       activeSubTab: 'notes',
+      comboSelections: {},
     });
   }
 
@@ -586,7 +592,90 @@ export class TableOperationDialogComponent {
   getConfiguredUnitPrice(): number {
     const curr = this.configuredProduct();
     if (!curr) return 0;
-    return curr.selectedVariation ? curr.selectedVariation.salePrice : curr.product.salePrice;
+    const basePrice = curr.selectedVariation
+      ? curr.selectedVariation.salePrice
+      : curr.product.salePrice;
+    const adjustment = (curr.product.comboGroups ?? []).reduce(
+      (total, group) =>
+        total +
+        group.options.reduce(
+          (groupTotal, option) =>
+            groupTotal +
+            (group.selectionType === 'FIXED' ? 1 : (curr.comboSelections[option.id] ?? 0)) *
+              option.priceAdjustment,
+          0,
+        ),
+      0,
+    );
+    return basePrice + adjustment;
+  }
+
+  comboGroupSelectionTotal(groupId: string): number {
+    const curr = this.configuredProduct();
+    const group = curr?.product.comboGroups?.find((candidate) => candidate.id === groupId);
+    if (!curr || !group) return 0;
+    return group.options.reduce(
+      (total, option) => total + (curr.comboSelections[option.id] ?? 0),
+      0,
+    );
+  }
+
+  comboOptionQuantity(optionId: string): number {
+    return this.configuredProduct()?.comboSelections[optionId] ?? 0;
+  }
+
+  configuredComboObservationLines(): readonly string[] {
+    const curr = this.configuredProduct();
+    if (!curr || curr.product.type !== 'COMBO') return [];
+
+    return (curr.product.comboGroups ?? []).flatMap((group) =>
+      group.options.flatMap((option) => {
+        const selectionQuantity =
+          group.selectionType === 'FIXED' ? 1 : (curr.comboSelections[option.id] ?? 0);
+        if (selectionQuantity === 0) return [];
+        return [
+          `${group.name}: ${option.productQuantity * selectionQuantity}× ${option.productName}`,
+        ];
+      }),
+    );
+  }
+
+  selectSingleComboOption(groupId: string, optionId: string): void {
+    const curr = this.configuredProduct();
+    const group = curr?.product.comboGroups?.find((candidate) => candidate.id === groupId);
+    if (!curr || !group) return;
+    const comboSelections = { ...curr.comboSelections };
+    for (const option of group.options) delete comboSelections[option.id];
+    comboSelections[optionId] = 1;
+    this.configuredProduct.set({ ...curr, comboSelections });
+  }
+
+  updateMultipleComboOption(groupId: string, optionId: string, delta: number): void {
+    const curr = this.configuredProduct();
+    const group = curr?.product.comboGroups?.find((candidate) => candidate.id === groupId);
+    if (!curr || !group) return;
+    const current = curr.comboSelections[optionId] ?? 0;
+    const total = this.comboGroupSelectionTotal(groupId);
+    const next = Math.max(0, current + delta);
+    if (delta > 0 && total >= group.maxSelections) return;
+    const comboSelections = { ...curr.comboSelections };
+    if (next === 0) delete comboSelections[optionId];
+    else comboSelections[optionId] = next;
+    this.configuredProduct.set({ ...curr, comboSelections });
+  }
+
+  comboConfigurationIsValid(): boolean {
+    const curr = this.configuredProduct();
+    if (!curr || curr.product.type !== 'COMBO') return true;
+    const groups = curr.product.comboGroups ?? [];
+    if (groups.length === 0) return false;
+
+    return groups.every((group) => {
+      if (group.selectionType === 'FIXED') return group.options.length > 0;
+      const total = this.comboGroupSelectionTotal(group.id);
+      if (total === 0) return !group.isRequired;
+      return total >= group.minSelections && total <= group.maxSelections;
+    });
   }
 
   updateProductConfigQty(delta: number): void {
@@ -599,22 +688,39 @@ export class TableOperationDialogComponent {
   confirmAddProductConfig(): void {
     const curr = this.configuredProduct();
     if (!curr) return;
+    if (!this.comboConfigurationIsValid()) {
+      this.toastService.show('Completa las selecciones obligatorias del combo.', 'warning', 3000);
+      return;
+    }
 
-    const unitPrice = curr.selectedVariation
-      ? curr.selectedVariation.salePrice
-      : curr.product.salePrice;
+    const unitPrice = this.getConfiguredUnitPrice();
 
     const productName = curr.selectedVariation
       ? `${curr.product.name} - ${curr.selectedVariation.name}`
       : curr.product.name;
 
-    const item: CreateOrderItem = {
+    const item: DraftOrderItem = {
       productId: curr.product.id,
       productName,
       unitPrice,
       quantity: curr.quantity,
       notes: curr.notes.trim() || null,
       isCustomSale: false,
+      comboSummary: this.configuredComboObservationLines(),
+      comboSelections:
+        curr.product.type === 'COMBO'
+          ? (curr.product.comboGroups ?? []).flatMap((group) =>
+              group.selectionType === 'FIXED'
+                ? []
+                : group.options
+                    .filter((option) => (curr.comboSelections[option.id] ?? 0) > 0)
+                    .map((option) => ({
+                      comboGroupId: group.id,
+                      comboOptionId: option.id,
+                      quantity: curr.comboSelections[option.id] ?? 1,
+                    })),
+            )
+          : undefined,
     };
     this.draftItems.update((current) => [...current, item]);
     this.closeProductConfig();
@@ -690,7 +796,15 @@ export class TableOperationDialogComponent {
 
     this.orderRepo
       .addItems(this.table().id, {
-        items,
+        items: items.map((item) => ({
+          productId: item.productId,
+          productName: item.productName,
+          unitPrice: item.unitPrice,
+          quantity: item.quantity,
+          notes: item.notes,
+          isCustomSale: item.isCustomSale,
+          comboSelections: item.comboSelections,
+        })),
         observations: this.draftObservations().trim() || null,
       })
       .pipe(
