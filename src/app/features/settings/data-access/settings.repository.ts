@@ -2,6 +2,7 @@ import { InjectionToken } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   BusinessSettings,
+  ExpenseEditingPolicy,
   EnabledModulePermissions,
   OrganizationSettings,
   OrganizationUser,
@@ -20,7 +21,12 @@ export interface SettingsRepository {
   uploadLogo(file: File): Observable<void>;
   deleteLogo(): Observable<void>;
   getBusiness(): Observable<BusinessSettings>;
-  updateBusiness(request: BusinessSettings): Observable<BusinessSettings>;
+  updateBusiness(
+    request: Omit<BusinessSettings, 'lockExpenseFinancialFieldsAfterCreation'>,
+  ): Observable<BusinessSettings>;
+  updateExpenseEditingPolicy(
+    lockFinancialFieldsAfterCreation: boolean,
+  ): Observable<ExpenseEditingPolicy>;
   listPaymentMethods(): Observable<readonly PaymentMethod[]>;
   createPaymentMethod(request: SavePaymentMethod): Observable<PaymentMethod>;
   updatePaymentMethod(id: string, request: SavePaymentMethod): Observable<PaymentMethod>;

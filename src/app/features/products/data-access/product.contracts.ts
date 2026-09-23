@@ -46,6 +46,26 @@ export interface ProductVariationDto {
   readonly isActive: boolean;
 }
 
+export interface ProductComboOptionDto {
+  readonly id: string;
+  readonly productId: string;
+  readonly productName: string;
+  readonly productQuantity: number;
+  readonly priceAdjustment: number;
+  readonly order: number;
+}
+
+export interface ProductComboGroupDto {
+  readonly id: string;
+  readonly name: string;
+  readonly selectionType: 'SINGLE' | 'MULTIPLE' | 'FIXED';
+  readonly isRequired: boolean;
+  readonly minSelections: number;
+  readonly maxSelections: number;
+  readonly order: number;
+  readonly options: readonly ProductComboOptionDto[];
+}
+
 export interface ProductDto {
   readonly id: string;
   readonly type: string;
@@ -61,6 +81,7 @@ export interface ProductDto {
   readonly updatedAt: string;
   readonly recipe?: readonly ProductRecipeItemDto[];
   readonly variations?: readonly ProductVariationDto[];
+  readonly comboGroups?: readonly ProductComboGroupDto[];
 }
 
 export interface ProductPageDto {

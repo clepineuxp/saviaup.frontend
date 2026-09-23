@@ -1,6 +1,7 @@
 import {
   Product,
   ProductCategory,
+  ProductComboGroup,
   ProductIngredientLookup,
   ProductPage,
   ProductRecipeItem,
@@ -11,6 +12,7 @@ import {
   ProductCategoryDto,
   ProductCategoryLookupDto,
   ProductDto,
+  ProductComboGroupDto,
   ProductIngredientDto,
   ProductPageDto,
   ProductRecipeItemDto,
@@ -42,6 +44,11 @@ export const mapProductVariation = (dto: ProductVariationDto): ProductVariation 
   isActive: dto.isActive ?? true,
 });
 
+export const mapProductComboGroup = (dto: ProductComboGroupDto): ProductComboGroup => ({
+  ...dto,
+  options: dto.options.map((option) => ({ ...option })),
+});
+
 export const mapProductIngredient = (dto: ProductIngredientDto): ProductIngredientLookup => {
   const unit = dto.unit ?? dto.measurementUnit;
   return {
@@ -64,6 +71,7 @@ export const mapProduct = (dto: ProductDto): Product => ({
   category: mapProductCategory(dto.category),
   recipe: dto.recipe?.map(mapProductRecipeItem) ?? [],
   variations: dto.variations?.map(mapProductVariation) ?? [],
+  comboGroups: dto.comboGroups?.map(mapProductComboGroup) ?? [],
 });
 
 export const mapProductPage = (dto: ProductPageDto): ProductPage => ({

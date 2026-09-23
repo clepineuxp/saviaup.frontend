@@ -7,6 +7,7 @@ import { mapExpenseDtoToModel } from './expense.adapter';
 import {
   AnnulExpensePayload,
   CreateExpensePayload,
+  ExpenseEditingPolicyDto,
   ExpenseDto,
   ExpensePageDto,
   UpdateExpensePayload,
@@ -35,17 +36,19 @@ export class HttpExpenseRepository implements ExpenseRepository {
       queryParams['isCashOut'] = filters.isCashOut;
     }
 
-    return this.api
-      .get<ExpensePageDto>(API_ENDPOINTS.expenses.root, { params: queryParams })
-      .pipe(
-        map((dto) => ({
-          items: dto.items.map(mapExpenseDtoToModel),
-          page: dto.page,
-          pageSize: dto.pageSize,
-          totalCount: dto.totalCount,
-          totalPages: dto.totalPages,
-        }))
-      );
+    return this.api.get<ExpensePageDto>(API_ENDPOINTS.expenses.root, { params: queryParams }).pipe(
+      map((dto) => ({
+        items: dto.items.map(mapExpenseDtoToModel),
+        page: dto.page,
+        pageSize: dto.pageSize,
+        totalCount: dto.totalCount,
+        totalPages: dto.totalPages,
+      })),
+    );
+  }
+
+  getEditingPolicy(): Observable<ExpenseEditingPolicyDto> {
+    return this.api.get<ExpenseEditingPolicyDto>(API_ENDPOINTS.settings.expenseEditingPolicy);
   }
 
   create(payload: CreateExpensePayload): Observable<Expense> {
@@ -56,19 +59,13 @@ export class HttpExpenseRepository implements ExpenseRepository {
 
   update(expenseId: string, payload: UpdateExpensePayload): Observable<Expense> {
     return this.api
-      .put<ExpenseDto, UpdateExpensePayload>(
-        API_ENDPOINTS.expenses.detail(expenseId),
-        payload
-      )
+      .put<ExpenseDto, UpdateExpensePayload>(API_ENDPOINTS.expenses.detail(expenseId), payload)
       .pipe(map(mapExpenseDtoToModel));
   }
 
   annul(expenseId: string, payload: AnnulExpensePayload): Observable<Expense> {
     return this.api
-      .post<ExpenseDto, AnnulExpensePayload>(
-        API_ENDPOINTS.expenses.annul(expenseId),
-        payload
-      )
+      .post<ExpenseDto, AnnulExpensePayload>(API_ENDPOINTS.expenses.annul(expenseId), payload)
       .pipe(map(mapExpenseDtoToModel));
   }
 }

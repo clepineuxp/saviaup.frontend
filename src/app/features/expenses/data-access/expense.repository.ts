@@ -1,6 +1,11 @@
 import { Observable } from 'rxjs';
 import { Expense } from '../models/expense.model';
-import { AnnulExpensePayload, CreateExpensePayload, UpdateExpensePayload } from './expense.contracts';
+import {
+  AnnulExpensePayload,
+  CreateExpensePayload,
+  ExpenseEditingPolicyDto,
+  UpdateExpensePayload,
+} from './expense.contracts';
 
 export interface ExpensePageResult {
   items: Expense[];
@@ -24,6 +29,7 @@ export interface ExpenseQueryFilters {
 
 export abstract class ExpenseRepository {
   abstract getPage(filters: ExpenseQueryFilters): Observable<ExpensePageResult>;
+  abstract getEditingPolicy(): Observable<ExpenseEditingPolicyDto>;
   abstract create(payload: CreateExpensePayload): Observable<Expense>;
   abstract update(expenseId: string, payload: UpdateExpensePayload): Observable<Expense>;
   abstract annul(expenseId: string, payload: AnnulExpensePayload): Observable<Expense>;

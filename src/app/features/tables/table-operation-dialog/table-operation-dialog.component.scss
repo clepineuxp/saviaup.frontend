@@ -18,6 +18,104 @@
   }
 }
 
+.combo-sale-builder {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.combo-sale-group {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.9rem;
+  background: var(--color-canvas);
+}
+
+.combo-sale-group__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+
+  div {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  small {
+    color: var(--color-muted);
+  }
+}
+
+.combo-sale-options {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.combo-sale-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  text-align: left;
+
+  > span:first-child {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  small {
+    color: var(--color-muted);
+  }
+
+  &.selected {
+    border-color: var(--color-savia-600);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-savia-600) 16%, transparent);
+  }
+
+  &.single {
+    cursor: pointer;
+  }
+}
+
+.combo-quantity-control {
+  display: grid;
+  grid-template-columns: 2rem 2rem 2rem;
+  align-items: center;
+  text-align: center;
+
+  button {
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0.55rem;
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+}
+
+.combo-selection-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+
+  span {
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    background: var(--color-savia-50);
+    color: var(--color-savia-800);
+    font-size: 0.75rem;
+  }
+}
+
 .dialog-container {
   display: flex;
   flex-direction: column;
@@ -408,8 +506,13 @@
   border-radius: 0.85rem;
   overflow: hidden;
   background: #0f172a;
+  padding: 0;
+  color: inherit;
+  text-align: inherit;
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .product-card:hover {
@@ -472,13 +575,23 @@
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.78) 32%, rgba(15, 23, 42, 0.95) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0) 0%,
+    rgba(15, 23, 42, 0.78) 32%,
+    rgba(15, 23, 42, 0.95) 100%
+  );
   backdrop-filter: blur(3px);
   transition: background 0.2s ease;
 }
 
 .product-card:hover .product-info {
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.1) 0%, rgba(15, 23, 42, 0.88) 28%, rgba(15, 23, 42, 0.98) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.1) 0%,
+    rgba(15, 23, 42, 0.88) 28%,
+    rgba(15, 23, 42, 0.98) 100%
+  );
 }
 
 .product-name {
@@ -878,7 +991,9 @@
   font-size: 0.88rem;
   font-weight: 750;
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .sav-select:focus {
@@ -1178,7 +1293,9 @@
   color: #0f172a;
   outline: none;
   resize: vertical;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .notes-field-group textarea:focus {
@@ -1211,7 +1328,9 @@
   border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   background: #f8fafc;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .partial-item-row.selected {
@@ -1557,7 +1676,9 @@
   font-size: 0.86rem;
   color: #0f172a;
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .form-label input:focus,

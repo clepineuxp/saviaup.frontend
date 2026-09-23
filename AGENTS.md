@@ -165,33 +165,33 @@ La selección de adaptadores se hace en `app.config.ts` mediante `useMockApi` y 
 
 ## Rutas y control de acceso
 
-| Ruta                                       | Acceso               | Layout | Propósito                            |
-| ------------------------------------------ | -------------------- | ------ | ------------------------------------ |
-| `/login`                                   | Invitado             | Auth   | Inicio de sesión                     |
-| `/register`                                | Invitado             | Auth   | Creación de cuenta                   |
-| `/forgot-password`                         | Invitado             | Auth   | Recuperación neutral                 |
-| `/select-tenant`                           | Autenticado          | Tenant | Seleccionar organización             |
-| `/create-tenant`                           | Autenticado          | Tenant | Crear organización                   |
-| `/app`                                     | Autenticado + tenant | App    | Entrada privada/placeholder          |
-| `/app/sell/tables`                         | `tables.read`        | App    | Operación de mesas en tiempo real    |
-| `/app/orders`                              | `orders.read`        | App    | Control y búsqueda de comandas        |
-| `/app/cash-registers`                      | `cash-registers.read`| App    | Control de turnos y arqueos de caja  |
-| `/app/products`                            | `products.read`      | App    | Administración de productos y recetas|
-| `/app/categories`                          | Autenticado + tenant | App    | Administración de categorías         |
-| `/app/inventory`                           | Autenticado + tenant | App    | Entrada al inventario                |
-| `/app/inventory/stock`                     | Permiso de lectura   | App    | Existencias paginadas                |
-| `/app/inventory/ingredients`               | Permiso de lectura   | App    | Administración de ingredientes       |
-| `/app/inventory/movements`                 | Permiso de lectura   | App    | Historial y nuevos movimientos       |
-| `/app/inventory/complements/units`         | Permiso de lectura   | App    | Unidades de medida                   |
-| `/app/expenses`                            | `expenses.read`      | App    | Registro y control de gastos         |
-| `/app/suppliers`                           | `expenses.read`      | App    | Directorio de proveedores            |
-| `/app/statistics`                          | `reports.read`       | App    | Dashboard analítico Chart.js         |
-| `/app/billing`                             | `billing.read`       | App    | Facturación y tirillas térmicas      |
-| `/app/settings`                            | Algún `settings.*`   | App    | Configuración de la organización     |
-| `/app/configuration/tables/manage`         | `tables.manage`      | App    | Configuración de salas y mesas       |
-| `/app/configuration/cash-registers/manage` | `cash-registers.manage` | App | Configuración de cajas registradoras |
-| `/app/{módulo}`                            | Autenticado + tenant | App    | Módulo conocido habilitado           |
-| `/app/modules/:code`                       | Autenticado + tenant | App    | Fallback de módulo desconocido       |
+| Ruta                                       | Acceso                  | Layout | Propósito                             |
+| ------------------------------------------ | ----------------------- | ------ | ------------------------------------- |
+| `/login`                                   | Invitado                | Auth   | Inicio de sesión                      |
+| `/register`                                | Invitado                | Auth   | Creación de cuenta                    |
+| `/forgot-password`                         | Invitado                | Auth   | Recuperación neutral                  |
+| `/select-tenant`                           | Autenticado             | Tenant | Seleccionar organización              |
+| `/create-tenant`                           | Autenticado             | Tenant | Crear organización                    |
+| `/app`                                     | Autenticado + tenant    | App    | Entrada privada/placeholder           |
+| `/app/sell/tables`                         | `tables.read`           | App    | Operación de mesas en tiempo real     |
+| `/app/orders`                              | `orders.read`           | App    | Control y búsqueda de comandas        |
+| `/app/cash-registers`                      | `cash-registers.read`   | App    | Control de turnos y arqueos de caja   |
+| `/app/products`                            | `products.read`         | App    | Administración de productos y recetas |
+| `/app/categories`                          | Autenticado + tenant    | App    | Administración de categorías          |
+| `/app/inventory`                           | Autenticado + tenant    | App    | Entrada al inventario                 |
+| `/app/inventory/stock`                     | Permiso de lectura      | App    | Existencias paginadas                 |
+| `/app/inventory/ingredients`               | Permiso de lectura      | App    | Administración de ingredientes        |
+| `/app/inventory/movements`                 | Permiso de lectura      | App    | Historial y nuevos movimientos        |
+| `/app/inventory/complements/units`         | Permiso de lectura      | App    | Unidades de medida                    |
+| `/app/expenses`                            | `expenses.read`         | App    | Registro y control de gastos          |
+| `/app/suppliers`                           | `expenses.read`         | App    | Directorio de proveedores             |
+| `/app/statistics`                          | `reports.read`          | App    | Dashboard analítico Chart.js          |
+| `/app/billing`                             | `billing.read`          | App    | Facturación y tirillas térmicas       |
+| `/app/settings`                            | Algún `settings.*`      | App    | Configuración de la organización      |
+| `/app/configuration/tables/manage`         | `tables.manage`         | App    | Configuración de salas y mesas        |
+| `/app/configuration/cash-registers/manage` | `cash-registers.manage` | App    | Configuración de cajas registradoras  |
+| `/app/{módulo}`                            | Autenticado + tenant    | App    | Módulo conocido habilitado            |
+| `/app/modules/:code`                       | Autenticado + tenant    | App    | Fallback de módulo desconocido        |
 
 - `GuestGuard` impide que una sesión activa vuelva al flujo de invitado.
 - `AuthGuard` exige sesión válida.
@@ -250,10 +250,15 @@ Seleccionar o crear tenant debe recibir del backend un nuevo par de tokens conte
 
 `ProductStore` es el propietario de la página, filtros y categorías auxiliares del catálogo de productos. Su estado y permisos se limpian al cambiar tenant y todas las consultas permanecen paginadas en servidor. `products.read` permite entrar y listar; `products.manage` habilita crear, editar, cambiar estado y eliminar. El formulario requiere además `categories.read`, inicia el tipo en `NORMAL` y fuerza `isInventoryTracked=false` cuando la categoría seleccionada no es inventariable. La validación definitiva permanece en backend.
 El formulario de productos integra:
+
 - Selector de imagen con compresión Base64 (`ImageSelectorComponent`).
 - Editor reactivo de recetas (`ProductRecipeItem`): vinculación con ingredientes de inventario, cálculo automático de costo estimado por porción y proyección del margen de beneficio contra el precio de venta sugerido.
+- Constructor de combos por grupos: selección única/múltiple con toggle de obligatoriedad, grupos fijos sin selección, límites, productos normales, unidades incluidas y ajustes de precio.
+- El configurador de venta valida cada grupo, recalcula el precio visible y envía solo ids/cantidades; el backend conserva la autoridad sobre configuración y precio.
 
-`ExpenseStore` y `SupplierStore` administran egresos y proveedores con Signals, asociando gastos a turnos de caja y filtrando por rangos de fechas.
+`ExpenseStore` y `SupplierStore` administran egresos y proveedores con Signals, asociando gastos a turnos de caja y filtrando por rangos de fechas. El listado de gastos pagina en servidor con tamaños de 10, 25, 50 o 100 registros. El formulario consume el lookup activo mediante un combobox accesible, presenta un resumen de confirmación antes de crear y consulta `expenses.lockFinancialFieldsAfterCreation` al editar: si está activo bloquea valor, fecha y salida de caja y no los envía; si está desactivado permite actualizarlos. El toggle de configuración solo se habilita con `settings.expense-financial-fields.manage`.
+
+El historial de `/app/cash-registers` muestra el fondo inicial de cada turno y consume `totalInCashAmount` del backend para representar recaudo de ventas + inicial - gastos tanto en el listado como en el detalle.
 `BillingStore` y `StatisticsStore` proveen consultas de comprobantes para impresión y analíticas con Chart.js respectivamente.
 
 `InventoryStore` es el propietario de las páginas, filtros y catálogos auxiliares de inventario. Conserva por separado existencias, ingredientes, movimientos y unidades, siempre paginados por el servidor y limitados al tenant activo. Cada apartado exige su permiso `*.read` exacto y cada mutación su `*.manage` exacto; `manage` no implica `read`. El formulario de ingredientes requiere además `categories.read` e `inventory.complements.read`. Tras un movimiento exitoso debe refrescar la página vigente tanto de movimientos como de existencias.
@@ -351,7 +356,7 @@ Formato de error esperado:
 
 El contrato de categorías usa `Category { id, name, description, imageUrl, isInventoryTracked, isActive, createdAt, updatedAt }`. Crear y actualizar envían `name`, `description`, `imageUrl` e `isInventoryTracked`; el cambio de estado envía `{ isActive }`. El listado administrativo siempre solicita `includeInactive=true`; los selectores operativos futuros deben conservar el valor predeterminado `false`. La eliminación responde `204` y requiere confirmación explícita en la UI. Tratar de forma específica `CATEGORY_NAME_ALREADY_EXISTS`, `CATEGORY_NOT_FOUND`, `VALIDATION_ERROR`, `AUTH_FORBIDDEN`, `TENANT_REQUIRED` y `AUTH_UNAUTHENTICATED`.
 
-El contrato de productos usa `Product { id, type, name, description, imageUrl, category, salePrice, preparationTimeMinutes, isInventoryTracked, isActive, createdAt, updatedAt }`. `type` es `NORMAL | COMBO`; crear y actualizar envían el `categoryId`, un precio positivo y los demás campos editables. El listado usa `{ items, page, pageSize, totalCount, totalPages }` y los filtros se resuelven en backend. La eliminación responde `204`, requiere confirmación explícita y nunca se aplica de forma optimista.
+El contrato de productos usa `Product { id, type, name, description, image, category, salePrice, preparationTimeMinutes, isInventoryTracked, isActive, recipe, variations, comboGroups, createdAt, updatedAt }`. `type` es `NORMAL | COMBO`; crear y actualizar envían el `categoryId`, un precio positivo y los demás campos editables. Un combo exige grupos con opciones basadas en productos normales. El listado usa `{ items, page, pageSize, totalCount, totalPages }` y los filtros se resuelven en backend. La eliminación responde `204`, requiere confirmación explícita y nunca se aplica de forma optimista.
 
 Los listados de inventario usan `{ items, page, pageSize, totalCount, totalPages }`, con páginas basadas en 1 y `pageSize` entre 1 y 100. Los filtros se envían al backend, su cambio vuelve a la página 1 y nunca se pagina localmente. La edición de un ingrediente no envía `initialStock`; las existencias cambian exclusivamente mediante movimientos inmutables. Tratar de forma específica `INGREDIENT_IN_USE`, `INVENTORY_INSUFFICIENT_STOCK`, `MEASUREMENT_UNIT_ALREADY_EXISTS`, `MEASUREMENT_UNIT_IN_USE` y los códigos `*_NOT_FOUND`.
 

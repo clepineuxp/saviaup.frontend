@@ -71,4 +71,14 @@ describe('HttpSettingsRepository', () => {
     expect(get).toHaveBeenCalledWith(API_ENDPOINTS.settings.access.permissions);
     expect(get).toHaveBeenCalledWith(API_ENDPOINTS.settings.access.users);
   });
+
+  it('updates the expense editing policy through its protected endpoint', async () => {
+    put.mockReturnValueOnce(of({ lockFinancialFieldsAfterCreation: false }));
+
+    await firstValueFrom(repository.updateExpenseEditingPolicy(false));
+
+    expect(put).toHaveBeenCalledWith(API_ENDPOINTS.settings.expenseEditingPolicy, {
+      lockFinancialFieldsAfterCreation: false,
+    });
+  });
 });

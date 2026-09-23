@@ -89,6 +89,7 @@
               <th>{{ 'orders.cols.createdAt' | translate }}</th>
               <th>{{ 'orders.cols.paidBy' | translate }}</th>
               <th>{{ 'orders.cols.paidAt' | translate }}</th>
+              <th>{{ 'cashRegisters.shift.initial' | translate }}</th>
               <th>{{ 'cashRegisters.shift.totalInCash' | translate }}</th>
               <th class="text-end">{{ 'cashRegisters.table.actions' | translate }}</th>
             </tr>
@@ -96,11 +97,11 @@
           <tbody>
             @if (loadingShifts()) {
               <tr>
-                <td colspan="8" class="loading-cell">{{ 'common.loading' | translate }}</td>
+                <td colspan="9" class="loading-cell">{{ 'common.loading' | translate }}</td>
               </tr>
             } @else if (shiftsPage()?.items?.length === 0) {
               <tr>
-                <td colspan="8" class="empty-cell">
+                <td colspan="9" class="empty-cell">
                   {{ 'cashRegisters.management.emptyState' | translate }}
                 </td>
               </tr>
@@ -146,8 +147,13 @@
                     }
                   </td>
                   <td>
+                    <strong class="initial-text">{{
+                      shift.initialOpeningAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                    }}</strong>
+                  </td>
+                  <td>
                     <strong class="total-text">{{
-                      shift.totalCollectedAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                      shift.totalInCashAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
                     }}</strong>
                   </td>
                   <td class="text-end">
@@ -316,7 +322,7 @@
                   'cashRegisters.shift.totalInCash' | translate
                 }}</span>
                 <strong class="metric-val collected">{{
-                  state.summary.totalCollectedAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                  state.summary.totalInCashAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
                 }}</strong>
               </div>
             </div>

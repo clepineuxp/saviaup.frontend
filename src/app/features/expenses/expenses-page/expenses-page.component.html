@@ -39,8 +39,9 @@
   <div class="controls-card">
     <div class="date-filters">
       <div class="field-item">
-        <label>{{ 'expenses.filters.from' | translate }}:</label>
+        <label for="expenseFromDate">{{ 'expenses.filters.from' | translate }}:</label>
         <input
+          id="expenseFromDate"
           type="date"
           class="date-input"
           [ngModel]="fromDateInput()"
@@ -48,8 +49,9 @@
         />
       </div>
       <div class="field-item">
-        <label>{{ 'expenses.filters.to' | translate }}:</label>
+        <label for="expenseToDate">{{ 'expenses.filters.to' | translate }}:</label>
         <input
+          id="expenseToDate"
           type="date"
           class="date-input"
           [ngModel]="toDateInput()"
@@ -235,9 +237,25 @@
 
       <!-- Pagination -->
       <div class="pagination-bar">
-        <span class="pagination-info">
-          Mostrando {{ store.expenses().length }} de {{ store.totalCount() }} gastos
-        </span>
+        <div class="pagination-summary">
+          <div class="page-size-selector">
+            <label for="expensePageSize">{{ 'expenses.perPage' | translate }}</label>
+            <select
+              id="expensePageSize"
+              class="page-size-select"
+              [ngModel]="store.pageSize()"
+              (ngModelChange)="changePageSize($event)"
+            >
+              <option [value]="10">10</option>
+              <option [value]="25">25</option>
+              <option [value]="50">50</option>
+              <option [value]="100">100</option>
+            </select>
+          </div>
+          <span class="pagination-info">
+            Mostrando {{ store.expenses().length }} de {{ store.totalCount() }} gastos
+          </span>
+        </div>
         <div class="pagination-controls">
           <button
             type="button"
@@ -268,6 +286,7 @@
 @if (showFormDialog()) {
   <app-expense-form-dialog
     [expense]="selectedExpense()"
+    [lockFinancialFieldsAfterCreation]="store.lockFinancialFieldsAfterCreation()"
     [submitting]="store.mutating()"
     [errorMessage]="store.errorMessage()"
     (submitted)="handleFormSubmit($event)"

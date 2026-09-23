@@ -71,6 +71,7 @@ export const API_ENDPOINTS = {
     organization: '/api/settings/organization',
     organizationLogo: '/api/settings/organization/logo',
     business: '/api/settings/business',
+    expenseEditingPolicy: '/api/settings/business/expense-editing-policy',
     paymentMethods: '/api/settings/payment-methods',
     paymentMethod: (paymentMethodId: string) => `/api/settings/payment-methods/${paymentMethodId}`,
     paymentMethodStatus: (paymentMethodId: string) =>

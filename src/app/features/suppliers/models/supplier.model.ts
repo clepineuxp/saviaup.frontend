@@ -16,4 +16,5 @@ export interface Supplier {
 export interface SupplierLookup {
   id: string;
   name: string;
+  commercialName: string | null;
 }

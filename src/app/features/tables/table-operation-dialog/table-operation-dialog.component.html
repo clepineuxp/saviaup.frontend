@@ -152,7 +152,7 @@
                 <div class="catalog-empty">No se encontraron productos coincidentes.</div>
               } @else {
                 @for (product of products(); track product.id) {
-                  <div class="product-card" (click)="openProductConfig(product)">
+                  <button type="button" class="product-card" (click)="openProductConfig(product)">
                     <div class="product-thumb">
                       @if (product.image) {
                         <img [src]="product.image" [alt]="product.name" />
@@ -174,7 +174,7 @@
                         {{ product.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
                       </span>
                     </div>
-                  </div>
+                  </button>
                 }
               }
             </div>
@@ -354,6 +354,9 @@
                         Pagado · Última mod. por {{ item.lastModifiedByUserName }} el
                         {{ item.updatedAt | organizationDate: 'shortTime' }}
                       </div>
+                      @if (item.notes) {
+                        <div class="item-notes">📝 Observaciones: {{ item.notes }}</div>
+                      }
                     </div>
                   }
                 </div>
@@ -380,6 +383,9 @@
                         Cancelado por <strong>{{ item.cancelledByUserName }}</strong> el
                         {{ item.cancelledAt | organizationDate: 'shortTime' }}
                       </div>
+                      @if (item.notes) {
+                        <div class="item-notes">📝 Observaciones: {{ item.notes }}</div>
+                      }
                     </div>
                   }
                 </div>
@@ -504,6 +510,13 @@
                       @if (item.notes) {
                         <small class="item-notes">📝 {{ item.notes }}</small>
                       }
+                      @if (item.comboSummary?.length) {
+                        <div class="combo-selection-summary">
+                          @for (line of item.comboSummary; track line) {
+                            <span>{{ line }}</span>
+                          }
+                        </div>
+                      }
                       <span class="item-price">
                         {{ item.unitPrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} x
                         {{ item.quantity }}
@@ -575,6 +588,147 @@
           </header>
 
           <div class="sub-modal-body">
+            @if (cfg.product.type === 'COMBO') {
+              <div class="combo-sale-builder">
+                <div class="combo-sale-intro">
+                  <strong>{{ 'sales.combo.configureTitle' | translate }}</strong>
+                  <span>{{ 'sales.combo.configureHint' | translate }}</span>
+                </div>
+                @for (group of cfg.product.comboGroups ?? []; track group.id) {
+                  <section class="combo-sale-group">
+                    <div class="combo-sale-group__header">
+                      <div>
+                        <strong>{{ group.name }}</strong>
+                        <small>
+                          {{
+                            (group.selectionType === 'FIXED'
+                              ? 'products.combo.fixed'
+                              : group.selectionType === 'SINGLE'
+                                ? 'products.combo.single'
+                                : 'products.combo.multiple'
+                            ) | translate
+                          }}
+                          @if (group.selectionType !== 'FIXED') {
+                            ·
+                            {{
+                              (group.isRequired ? 'sales.combo.required' : 'sales.combo.optional')
+                                | translate
+                            }}
+                          }
+                        </small>
+                      </div>
+                      <span class="combo-limit-pill">
+                        @if (group.selectionType === 'FIXED') {
+                          {{ group.options.length }} {{ 'sales.combo.included' | translate }}
+                        } @else {
+                          {{ comboGroupSelectionTotal(group.id) }}/{{ group.maxSelections }}
+                        }
+                      </span>
+                    </div>
+
+                    <div class="combo-sale-options">
+                      @for (option of group.options; track option.id) {
+                        @if (group.selectionType === 'FIXED') {
+                          <div class="combo-sale-option multiple selected">
+                            <span>
+                              <strong>✓ {{ option.productName }}</strong>
+                              <small>
+                                {{ option.productQuantity }}
+                                {{ 'sales.combo.unitsIncluded' | translate }}
+                                @if (option.priceAdjustment !== 0) {
+                                  ·
+                                  @if (option.priceAdjustment > 0) {
+                                    +
+                                  }
+                                  {{
+                                    option.priceAdjustment
+                                      | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                                  }}
+                                }
+                              </small>
+                            </span>
+                            <strong>{{ 'sales.combo.fixedIncluded' | translate }}</strong>
+                          </div>
+                        } @else if (group.selectionType === 'SINGLE') {
+                          <button
+                            type="button"
+                            class="combo-sale-option single"
+                            [class.selected]="comboOptionQuantity(option.id) === 1"
+                            (click)="selectSingleComboOption(group.id, option.id)"
+                          >
+                            <span>
+                              <strong>{{ option.productName }}</strong>
+                              <small>
+                                {{ option.productQuantity }}
+                                {{ 'sales.combo.unitsIncluded' | translate }}
+                              </small>
+                            </span>
+                            <span class="combo-price-adjustment">
+                              @if (option.priceAdjustment > 0) {
+                                +
+                              }
+                              {{
+                                option.priceAdjustment | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                              }}
+                            </span>
+                          </button>
+                        } @else {
+                          <div
+                            class="combo-sale-option multiple"
+                            [class.selected]="comboOptionQuantity(option.id) > 0"
+                          >
+                            <span>
+                              <strong>{{ option.productName }}</strong>
+                              <small>
+                                {{ option.productQuantity }}
+                                {{ 'sales.combo.unitsIncluded' | translate }}
+                                @if (option.priceAdjustment !== 0) {
+                                  ·
+                                  @if (option.priceAdjustment > 0) {
+                                    +
+                                  }
+                                  {{
+                                    option.priceAdjustment
+                                      | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                                  }}
+                                }
+                              </small>
+                            </span>
+                            <div class="combo-quantity-control">
+                              <button
+                                type="button"
+                                [disabled]="comboOptionQuantity(option.id) === 0"
+                                (click)="updateMultipleComboOption(group.id, option.id, -1)"
+                              >
+                                −
+                              </button>
+                              <strong>{{ comboOptionQuantity(option.id) }}</strong>
+                              <button
+                                type="button"
+                                [disabled]="
+                                  comboGroupSelectionTotal(group.id) >= group.maxSelections
+                                "
+                                (click)="updateMultipleComboOption(group.id, option.id, 1)"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        }
+                      }
+                    </div>
+                    @if (
+                      comboGroupSelectionTotal(group.id) > 0 &&
+                      comboGroupSelectionTotal(group.id) < group.minSelections
+                    ) {
+                      <small class="combo-selection-error">
+                        {{ 'sales.combo.minimumPending' | translate }}: {{ group.minSelections }}
+                      </small>
+                    }
+                  </section>
+                }
+              </div>
+            }
             @if (cfg.product.variations && cfg.product.variations.length > 0) {
               <div class="variation-picker-section">
                 <span class="variation-picker-title">Selecciona presentación / variación:</span>
@@ -638,7 +792,24 @@
 
             @if (cfg.activeSubTab === 'notes') {
               <div class="notes-field-group">
-                <label for="prodNotesInput" class="notes-label">Observaciones del producto:</label>
+                @if (configuredComboObservationLines().length > 0) {
+                  <div>
+                    <strong>{{ 'sales.combo.observationComposition' | translate }}</strong>
+                    <div class="combo-selection-summary">
+                      @for (line of configuredComboObservationLines(); track line) {
+                        <span>{{ line }}</span>
+                      }
+                    </div>
+                  </div>
+                }
+                <label for="prodNotesInput" class="notes-label">
+                  {{
+                    (cfg.product.type === 'COMBO'
+                      ? 'sales.combo.additionalNotes'
+                      : 'sales.productNotes'
+                    ) | translate
+                  }}
+                </label>
                 <textarea
                   id="prodNotesInput"
                   rows="3"
@@ -654,7 +825,12 @@
             <button type="button" class="btn-cancel" (click)="closeProductConfig()">
               Cancelar
             </button>
-            <button type="button" class="btn-confirm primary" (click)="confirmAddProductConfig()">
+            <button
+              type="button"
+              class="btn-confirm primary"
+              [disabled]="!comboConfigurationIsValid() || getConfiguredUnitPrice() <= 0"
+              (click)="confirmAddProductConfig()"
+            >
               Agregar ({{
                 getConfiguredUnitPrice() * cfg.quantity
                   | currency: 'COP' : 'symbol-narrow' : '1.0-0'

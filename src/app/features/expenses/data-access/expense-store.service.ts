@@ -23,11 +23,12 @@ export class ExpenseStoreService {
 
   readonly items = signal<Expense[]>([]);
   readonly page = signal<number>(1);
-  readonly pageSize = signal<number>(20);
+  readonly pageSize = signal<number>(25);
   readonly totalCount = signal<number>(0);
   readonly totalPages = signal<number>(0);
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | null>(null);
+  readonly lockFinancialFieldsAfterCreation = signal<boolean>(true);
 
   readonly fromDateFilter = signal<string>(this.getTodayString());
   readonly toDateFilter = signal<string>(this.getTodayString());
@@ -56,6 +57,14 @@ export class ExpenseStoreService {
       .filter((e) => e.status === 'ACTIVE' && e.isCashOut)
       .reduce((sum, e) => sum + e.amount, 0),
   );
+
+  loadEditingPolicy(): void {
+    this.repository.getEditingPolicy().subscribe({
+      next: (policy) =>
+        this.lockFinancialFieldsAfterCreation.set(policy.lockFinancialFieldsAfterCreation),
+      error: () => this.lockFinancialFieldsAfterCreation.set(true),
+    });
+  }
 
   loadPage(page: number = this.page()): void {
     this.loading.set(true);
@@ -107,6 +116,15 @@ export class ExpenseStoreService {
     this.statusFilter.set(status);
     this.paymentMethodFilter.set(paymentMethod);
     this.isCashOutFilter.set(isCashOut);
+    this.loadPage(1);
+  }
+
+  setPageSize(pageSize: number): void {
+    const supportedPageSizes = [10, 25, 50, 100];
+    const normalizedPageSize = Number(pageSize);
+    if (!supportedPageSizes.includes(normalizedPageSize)) return;
+
+    this.pageSize.set(normalizedPageSize);
     this.loadPage(1);
   }
 

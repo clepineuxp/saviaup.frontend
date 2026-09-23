@@ -61,33 +61,33 @@ El build de producción reemplaza automáticamente el environment por `environme
 
 ## Rutas
 
-| Ruta                                       | Acceso                       | Propósito                              |
-| ------------------------------------------ | ---------------------------- | -------------------------------------- |
-| `/login`                                   | Invitado                     | Inicio de sesión                       |
-| `/register`                                | Invitado                     | Registro de usuario                    |
-| `/forgot-password`                         | Invitado                     | Solicitud neutral de recuperación      |
-| `/select-tenant`                           | Autenticado                  | Selección de organización              |
-| `/create-tenant`                           | Autenticado                  | Creación de organización               |
-| `/app`                                     | Autenticado + tenant         | Inicio y estado vacío del workspace    |
-| `/app/sell/tables`                         | `tables.read`                | Operación de mesas en tiempo real      |
-| `/app/orders`                              | `orders.read`                | Control y búsqueda de comandas         |
-| `/app/cash-registers`                      | `cash-registers.read`        | Control de turnos y arqueos de caja    |
-| `/app/products`                            | `products.read`              | Catálogo de productos y recetas        |
-| `/app/categories`                          | Autenticado + tenant         | Administración de categorías           |
-| `/app/inventory`                           | Autenticado + tenant         | Entrada al inventario                  |
-| `/app/inventory/stock`                     | `inventory.stock.read`       | Existencias y alertas de mínimo        |
-| `/app/inventory/ingredients`               | `inventory.ingredients.read` | Ingredientes de cocina y almacén       |
-| `/app/inventory/movements`                 | `inventory.movements.read`   | Movimientos inmutables                 |
-| `/app/inventory/complements/units`         | `inventory.complements.read` | Unidades de medida                     |
-| `/app/expenses`                            | `expenses.read`              | Gestión y registro de gastos           |
-| `/app/suppliers`                           | `expenses.read`              | Directorio de proveedores              |
+| Ruta                                       | Acceso                         | Propósito                             |
+| ------------------------------------------ | ------------------------------ | ------------------------------------- |
+| `/login`                                   | Invitado                       | Inicio de sesión                      |
+| `/register`                                | Invitado                       | Registro de usuario                   |
+| `/forgot-password`                         | Invitado                       | Solicitud neutral de recuperación     |
+| `/select-tenant`                           | Autenticado                    | Selección de organización             |
+| `/create-tenant`                           | Autenticado                    | Creación de organización              |
+| `/app`                                     | Autenticado + tenant           | Inicio y estado vacío del workspace   |
+| `/app/sell/tables`                         | `tables.read`                  | Operación de mesas en tiempo real     |
+| `/app/orders`                              | `orders.read`                  | Control y búsqueda de comandas        |
+| `/app/cash-registers`                      | `cash-registers.read`          | Control de turnos y arqueos de caja   |
+| `/app/products`                            | `products.read`                | Catálogo de productos y recetas       |
+| `/app/categories`                          | Autenticado + tenant           | Administración de categorías          |
+| `/app/inventory`                           | Autenticado + tenant           | Entrada al inventario                 |
+| `/app/inventory/stock`                     | `inventory.stock.read`         | Existencias y alertas de mínimo       |
+| `/app/inventory/ingredients`               | `inventory.ingredients.read`   | Ingredientes de cocina y almacén      |
+| `/app/inventory/movements`                 | `inventory.movements.read`     | Movimientos inmutables                |
+| `/app/inventory/complements/units`         | `inventory.complements.read`   | Unidades de medida                    |
+| `/app/expenses`                            | `expenses.read`                | Gestión y registro de gastos          |
+| `/app/suppliers`                           | `expenses.read`                | Directorio de proveedores             |
 | `/app/statistics`                          | `reports.read` / `orders.read` | Dashboard de estadísticas y ventas    |
-| `/app/billing`                             | `billing.read`               | Gestión y reimpresión de comprobantes  |
-| `/app/settings`                            | `settings.*.read`            | Configuración de la organización       |
-| `/app/configuration/tables/manage`         | `tables.manage`              | Distribución visual de salas y mesas   |
-| `/app/configuration/cash-registers/manage` | `cash-registers.manage`      | Configuración de cajas registradoras   |
-| `/app/{módulo}`                            | Autenticado + tenant         | Módulo habilitado conocido             |
-| `/app/modules/:code`                       | Autenticado + tenant         | Fallback seguro para código nuevo      |
+| `/app/billing`                             | `billing.read`                 | Gestión y reimpresión de comprobantes |
+| `/app/settings`                            | `settings.*.read`              | Configuración de la organización      |
+| `/app/configuration/tables/manage`         | `tables.manage`                | Distribución visual de salas y mesas  |
+| `/app/configuration/cash-registers/manage` | `cash-registers.manage`        | Configuración de cajas registradoras  |
+| `/app/{módulo}`                            | Autenticado + tenant           | Módulo habilitado conocido            |
+| `/app/modules/:code`                       | Autenticado + tenant           | Fallback seguro para código nuevo     |
 
 En la aplicación administrativa, `/m/:slug` es únicamente un puente para los enlaces históricos:
 redirige a `{MENU_FRONTEND_URL}/{slug}`. El renderizado público pertenece exclusivamente a
@@ -308,6 +308,7 @@ El formulario integra `ImageSelectorComponent` para cargar, previsualizar y comp
 `/app/products` exige `products.read`. El listado usa paginación del servidor, búsqueda por nombre, filtros por categoría y tipo (`NORMAL`/`COMBO`), e inclusión opcional de inactivos. `products.manage` habilita crear, editar, activar/desactivar y eliminar con confirmación explícita.
 
 El formulario soporta:
+
 - Datos básicos: nombre, categoría, tipo, precio de venta, tiempo de preparación y descripción.
 - Selector interactivo de imagen (`ImageSelectorComponent`) con soporte drag & drop y compresión en base64.
 - **Editor de recetas (`ProductRecipeItem`)**:
@@ -316,6 +317,11 @@ El formulario soporta:
   - Cálculo automático en tiempo real del costo estimado de la receta, costo unitario por ingrediente y proyección del margen de ganancia porcentual contra el precio de venta.
   - Indicadores visuales y badges en las tarjetas y listado de productos para identificar platos con receta vinculada.
 - Al cobrar órdenes en mesas, el backend deduce automáticamente las cantidades correspondientes del inventario de ingredientes según la receta.
+- **Constructor de combos** para productos `COMBO`:
+  - grupos de selección única o múltiple, obligatorios u opcionales, y grupos fijos que incluyen todos sus productos sin intervención;
+  - límites mínimo/máximo por grupo;
+  - opciones basadas en productos normales activos, cantidad de unidades incluidas y ajuste de precio positivo, negativo o neutro;
+  - validación de al menos un grupo con un producto antes de guardar.
 
 `isInventoryTracked` reacciona a la categoría elegida: se habilita solo para categorías inventariables y se deshabilita, limpia y envía como `false` para cualquier otra. El backend repite la regla para no confiar en el cliente. `ProductStore` mantiene página, filtros, permisos y categorías aislados por tenant y refresca la consulta vigente después de cada mutación exitosa.
 
@@ -355,6 +361,7 @@ El archivo de Figma “Savia Up · Web App” fue creado como espacio de diseño
 - `/app/configuration/tables/manage` administra salas y mesas, reordena salas y edita capacidad, flags, estado y forma (`SQUARE`, `ROUND`, `RECTANGLE_HORIZONTAL`, `RECTANGLE_VERTICAL`). La posición se define arrastrando la misma tarjeta y con las mismas dimensiones que usa la operación (`100×100`, `150×100` o `100×150`); doble clic abre la edición y el modal permite eliminar con confirmación. El estado se comunica por color y su etiqueta aparece solo con `hover`/foco.
 - `TableRealtimeClient` conecta únicamente durante el ciclo de vida de la feature, envía el JWT vigente y aplica reconexión automática para `OnTableStatusChanged` y `OnTableOrderUpdated`.
 - El bloqueo de caja abierta se deriva del backend y deshabilita todas las acciones de `tables.operate` sin ocultar el estado actual.
+- Los productos `COMBO` abren un configurador dentro del flujo de venta. La UI muestra los productos fijos, exige las selecciones obligatorias, limita cantidades múltiples, recalcula el precio visible y envía `comboSelections` solo para grupos seleccionables. La pestaña de observaciones resume productos fijos/seleccionados y separa la nota adicional; el backend vuelve a construir el texto definitivo antes de guardar.
 
 ## Continuidad de sesión en la PWA
 
@@ -368,6 +375,8 @@ Se conserva la opción **Recordarme**: activada usa almacenamiento persistente; 
 
 ## Módulos operativos adicionales
 
-- **Gastos y proveedores (`/app/expenses`, `/app/suppliers`)**: control integral de egresos operativos, categorías de gasto, proveedores y vinculación directa con el turno de caja abierto.
+- **Gastos y proveedores (`/app/expenses`, `/app/suppliers`)**: control integral de egresos operativos, categorías de gasto, proveedores y vinculación directa con el turno de caja abierto. El formulario incluye búsqueda de proveedores, confirmación previa con resumen y aplica la política de organización para bloquear o habilitar valor, fecha y origen de caja durante la edición. El listado permite elegir entre 10, 25, 50 o 100 registros por página.
+- **Política de edición de gastos**: la configuración de negocio ofrece un toggle alineado con SaviaUp para `expenses.lockFinancialFieldsAfterCreation`; cambiarlo requiere `settings.expense-financial-fields.manage`, mientras que el formulario de gastos puede consultar la política sin ese permiso administrativo.
+- **Historial de caja (`/app/cash-registers`)**: muestra el fondo inicial de cada turno y presenta el total en caja calculado por el backend como recaudo de ventas + inicial - gastos.
 - **Facturación (`/app/billing`)**: consulta y filtro por fecha de comprobantes de pago emitidos, con modal de vista previa e impresión de tirilla térmica de 80mm.
 - **Estadísticas (`/app/statistics`)**: panel interactivo desarrollado con Chart.js para visualización de ventas del período, gráfico comparativo agrupado Ventas vs Gastos, métodos de pago más usados, productos top y recaudación.

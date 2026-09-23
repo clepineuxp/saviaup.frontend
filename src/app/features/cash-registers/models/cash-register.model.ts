@@ -67,6 +67,8 @@ export interface CashRegisterShiftSummary {
   readonly totalTipsAmount: number;
   readonly totalCollectedAmount: number;
   readonly totalExpensesAmount: number;
+  readonly initialOpeningAmount: number;
+  readonly totalInCashAmount: number;
   readonly methodSummaries: readonly PaymentMethodClosingSummary[];
 }
 
@@ -85,6 +87,8 @@ export interface CashRegisterShift {
   readonly totalTipsAmount: number;
   readonly totalCollectedAmount: number;
   readonly totalExpensesAmount: number;
+  readonly initialOpeningAmount: number;
+  readonly totalInCashAmount: number;
   readonly openingBalancesJson: string;
   readonly closingSummaryJson?: string | null;
 }

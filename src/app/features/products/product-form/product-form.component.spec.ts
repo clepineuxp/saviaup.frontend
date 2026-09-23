@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LocalizationService } from '../../../shared/i18n/localization.service';
 import { ImageService } from '../../../shared/services/image.service';
-import { Product, ProductCategory } from '../models/product.model';
+import { CreateProductRequest, Product, ProductCategory } from '../models/product.model';
 import { ProductFormComponent } from './product-form.component';
 
 const inventoryCategory: ProductCategory = {
@@ -53,6 +53,7 @@ describe('ProductFormComponent', () => {
     fixture = TestBed.createComponent(ProductFormComponent);
     fixture.componentRef.setInput('product', null);
     fixture.componentRef.setInput('categories', [inventoryCategory, serviceCategory]);
+    fixture.componentRef.setInput('comboProducts', [product]);
     fixture.detectChanges();
     TestBed.flushEffects();
     component = fixture.componentInstance;
@@ -140,5 +141,74 @@ describe('ProductFormComponent', () => {
 
     expect(statusRequested).toEqual([product]);
     expect(deleteRequested).toEqual([product]);
+  });
+
+  it('builds a combo with required multiple selections and price adjustments', () => {
+    const submitted: CreateProductRequest[] = [];
+    component.submitted.subscribe((request) => submitted.push(request));
+    component.form.patchValue({
+      type: 'COMBO',
+      categoryId: inventoryCategory.id,
+      name: 'Combo desayuno',
+      salePrice: 22000,
+      isInventoryTracked: true,
+    });
+    TestBed.flushEffects();
+    component.addComboGroup();
+    component.updateComboGroup(0, {
+      name: 'Acompañantes',
+      selectionType: 'MULTIPLE',
+      isRequired: true,
+      minSelections: 1,
+      maxSelections: 2,
+    });
+    component.addComboOption(0);
+    component.updateComboOption(0, 0, { productQuantity: 2, priceAdjustment: 1500 });
+
+    component.submit();
+
+    expect(submitted).toHaveLength(1);
+    expect(submitted[0]).toMatchObject({
+      type: 'COMBO',
+      isInventoryTracked: false,
+      recipe: [],
+      comboGroups: [
+        {
+          name: 'Acompañantes',
+          selectionType: 'MULTIPLE',
+          isRequired: true,
+          minSelections: 1,
+          maxSelections: 2,
+          options: [{ productId: product.id, productQuantity: 2, priceAdjustment: 1500 }],
+        },
+      ],
+    });
+  });
+
+  it('normalizes a fixed group so every configured product is always included', () => {
+    const submitted: CreateProductRequest[] = [];
+    component.submitted.subscribe((request) => submitted.push(request));
+    component.form.patchValue({
+      type: 'COMBO',
+      categoryId: inventoryCategory.id,
+      name: 'Combo fijo',
+      salePrice: 18000,
+    });
+    TestBed.flushEffects();
+    component.addComboGroup();
+    component.updateComboGroup(0, { name: 'Incluidos', selectionType: 'FIXED' });
+    component.addComboOption(0);
+    component.updateComboOption(0, 0, { productQuantity: 2, priceAdjustment: -500 });
+
+    component.submit();
+
+    expect(submitted[0].comboGroups?.[0]).toMatchObject({
+      name: 'Incluidos',
+      selectionType: 'FIXED',
+      isRequired: true,
+      minSelections: 1,
+      maxSelections: 1,
+      options: [{ productId: product.id, productQuantity: 2, priceAdjustment: -500 }],
+    });
   });
 });
