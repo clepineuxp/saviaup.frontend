@@ -107,6 +107,10 @@ jobs:
               kubectl apply -f "$BASE_PATH/ingress.yaml"
             fi
 
+            if [ "${{ inputs.apply_ingress }}" = "true" ] && [ -f "$BASE_PATH/legacy-menu-redirect.yaml" ]; then
+              kubectl apply -f "$BASE_PATH/legacy-menu-redirect.yaml"
+            fi
+
             if [ ! -d "$COMPONENT_PATH" ]; then
               echo "No se encontró la carpeta $COMPONENT_PATH"
               exit 1
