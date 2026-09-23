@@ -14,13 +14,13 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { LocalizationService } from '../../../shared/i18n/localization.service';
 import { SettingsStore } from '../data-access/settings-store.service';
 import {
-  BusinessSettings,
   OrganizationUser,
   PaymentMethod,
   SaveSettingsRole,
   SETTINGS_PERMISSIONS,
   SettingsRole,
   SettingsTab,
+  UpdateBusinessSettings,
 } from '../models/settings.model';
 
 @Component({
@@ -52,7 +52,10 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
       this.store.hasPermission(SETTINGS_PERMISSIONS.organizationRead)
         ? ('organization' as const)
         : null,
-      this.store.hasPermission(SETTINGS_PERMISSIONS.businessRead) ? ('business' as const) : null,
+      this.store.hasPermission(SETTINGS_PERMISSIONS.businessRead) ||
+      this.store.hasPermission(SETTINGS_PERMISSIONS.expenseFinancialFieldsManage)
+        ? ('business' as const)
+        : null,
       this.store.hasPermission(SETTINGS_PERMISSIONS.paymentsRead) ? ('payments' as const) : null,
       this.store.hasPermission(SETTINGS_PERMISSIONS.usersRead) ? ('users' as const) : null,
       this.store.hasPermission(SETTINGS_PERMISSIONS.rolesRead) ? ('roles' as const) : null,
@@ -237,7 +240,21 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
     if (this.businessForm.invalid || !this.store.hasPermission(SETTINGS_PERMISSIONS.businessManage))
       return this.businessForm.markAllAsTouched();
     this.store
-      .updateBusiness(this.businessForm.getRawValue() as BusinessSettings)
+      .updateBusiness(this.businessForm.getRawValue() as UpdateBusinessSettings)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.successKey.set('settings.success.saved'),
+        error: () => undefined,
+      });
+  }
+
+  toggleExpenseFinancialFieldsLock(): void {
+    const business = this.store.business();
+    if (!business || !this.store.hasPermission(SETTINGS_PERMISSIONS.expenseFinancialFieldsManage))
+      return;
+
+    this.store
+      .updateExpenseEditingPolicy(!business.lockExpenseFinancialFieldsAfterCreation)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => this.successKey.set('settings.success.saved'),
@@ -317,7 +334,8 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
         if (digitalMenuDependents.includes(code)) next.add(digitalMenuAccess);
       } else {
         next.delete(code);
-        if (code === digitalMenuAccess) digitalMenuDependents.forEach((permission) => next.delete(permission));
+        if (code === digitalMenuAccess)
+          digitalMenuDependents.forEach((permission) => next.delete(permission));
       }
       return next;
     });

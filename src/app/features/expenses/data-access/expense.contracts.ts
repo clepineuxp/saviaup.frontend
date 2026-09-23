@@ -40,6 +40,14 @@ export interface UpdateExpensePayload {
   description?: string | null;
   paymentMethod: string;
   supplierId?: string | null;
+  amount?: number;
+  isCashOut?: boolean;
+  expenseDate?: string | null;
+  businessDate?: string | null;
+}
+
+export interface ExpenseEditingPolicyDto {
+  lockFinancialFieldsAfterCreation: boolean;
 }
 
 export interface AnnulExpensePayload {

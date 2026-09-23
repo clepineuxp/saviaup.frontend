@@ -216,4 +216,35 @@ describe('ExpenseFormDialogComponent', () => {
     expect(submitted[0]).not.toHaveProperty('expenseDate');
     expect(submitted[0]).not.toHaveProperty('isCashOut');
   });
+
+  it('allows financial fields and includes them when the organization unlocks expense editing', () => {
+    fixture.destroy();
+    fixture = TestBed.createComponent(ExpenseFormDialogComponent);
+    fixture.componentRef.setInput('expense', existingExpense);
+    fixture.componentRef.setInput('lockFinancialFieldsAfterCreation', false);
+    fixture.componentRef.setInput('submitting', false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    component = fixture.componentInstance;
+    const submitted: unknown[] = [];
+    component.submitted.subscribe((payload) => submitted.push(payload));
+
+    expect(component.form.controls.amount.enabled).toBe(true);
+    expect(component.form.controls.expenseDate.enabled).toBe(true);
+    expect(component.form.controls.isCashOut.enabled).toBe(true);
+
+    component.form.patchValue({
+      amount: 150000,
+      expenseDate: '2026-09-20',
+      isCashOut: false,
+    });
+    component.submit();
+
+    expect(submitted[0]).toMatchObject({
+      amount: 150000,
+      isCashOut: false,
+      expenseDate: null,
+      businessDate: '2026-09-20',
+    });
+  });
 });

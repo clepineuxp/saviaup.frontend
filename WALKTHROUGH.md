@@ -18,7 +18,9 @@ Al crear o editar un gasto, el proveedor se selecciona mediante un combobox con 
 
 El pie del listado de `/app/expenses` permite cambiar el tamaño de página entre 10, 25, 50 y 100 registros. Cada cambio regresa a la página 1 y solicita nuevamente la información al backend con el `pageSize` elegido.
 
-Antes de crear un gasto se abre una confirmación compacta con nombre, valor, fecha, medio de pago, proveedor, origen de caja y descripción. El usuario puede volver al formulario o confirmar el envío. Al editar un gasto existente, valor, fecha y origen de caja aparecen bloqueados y el payload contiene únicamente los campos editables.
+Antes de crear un gasto se abre una confirmación compacta con nombre, valor, fecha, medio de pago, proveedor, origen de caja y descripción. El usuario puede volver al formulario o confirmar el envío. Al editar un gasto existente, el formulario consulta la política `expenses.lockFinancialFieldsAfterCreation`: con el bloqueo activo deshabilita valor, fecha y origen de caja y no los envía; con el bloqueo desactivado permite editarlos y los incluye en el payload.
+
+La pestaña de negocio muestra un toggle SaviaUp para esta política. Consultarla forma parte del flujo normal de gastos, pero modificarla requiere `settings.expense-financial-fields.manage`; sin ese permiso el control permanece visible y deshabilitado.
 
 ## Total de turnos de caja
 

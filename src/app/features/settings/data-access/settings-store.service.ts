@@ -24,6 +24,7 @@ import {
   SaveSettingsRole,
   SETTINGS_PERMISSIONS,
   SettingsRole,
+  UpdateBusinessSettings,
   UpdateOrganizationSettings,
   UpdateOrganizationUser,
 } from '../models/settings.model';
@@ -75,7 +76,9 @@ export class SettingsStore {
               ? this.repository.getOrganization()
               : of(null),
           business:
-            can(SETTINGS_PERMISSIONS.businessRead) || canOperateOrRead
+            can(SETTINGS_PERMISSIONS.businessRead) ||
+            can(SETTINGS_PERMISSIONS.expenseFinancialFieldsManage) ||
+            canOperateOrRead
               ? this.repository.getBusiness()
               : of(null),
           payments:
@@ -139,9 +142,26 @@ export class SettingsStore {
       ),
     );
   }
-  updateBusiness(request: BusinessSettings): Observable<BusinessSettings> {
+  updateBusiness(request: UpdateBusinessSettings): Observable<BusinessSettings> {
     return this.mutate(this.repository.updateBusiness(request)).pipe(
       tap((value) => this.businessState.set(value)),
+    );
+  }
+  updateExpenseEditingPolicy(lockFinancialFieldsAfterCreation: boolean): Observable<void> {
+    return this.mutate(
+      this.repository.updateExpenseEditingPolicy(lockFinancialFieldsAfterCreation),
+    ).pipe(
+      tap((policy) =>
+        this.businessState.update((value) =>
+          value
+            ? {
+                ...value,
+                lockExpenseFinancialFieldsAfterCreation: policy.lockFinancialFieldsAfterCreation,
+              }
+            : value,
+        ),
+      ),
+      map(() => undefined),
     );
   }
   savePayment(id: string | null, request: SavePaymentMethod): Observable<PaymentMethod> {

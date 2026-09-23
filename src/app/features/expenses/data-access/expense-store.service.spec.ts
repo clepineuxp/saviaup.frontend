@@ -15,10 +15,12 @@ describe('ExpenseStoreService', () => {
     totalPages: 0,
   };
   let getPage: ReturnType<typeof vi.fn>;
+  let getEditingPolicy: ReturnType<typeof vi.fn>;
   let store: ExpenseStoreService;
 
   beforeEach(() => {
     getPage = vi.fn(() => of(emptyPage));
+    getEditingPolicy = vi.fn(() => of({ lockFinancialFieldsAfterCreation: true }));
     TestBed.configureTestingModule({
       providers: [
         ExpenseStoreService,
@@ -28,7 +30,7 @@ describe('ExpenseStoreService', () => {
         },
         {
           provide: HttpExpenseRepository,
-          useValue: { getPage },
+          useValue: { getPage, getEditingPolicy },
         },
       ],
     });
@@ -57,5 +59,13 @@ describe('ExpenseStoreService', () => {
 
     expect(store.pageSize()).toBe(25);
     expect(getPage).not.toHaveBeenCalled();
+  });
+
+  it('loads the organization expense editing policy', () => {
+    getEditingPolicy.mockReturnValueOnce(of({ lockFinancialFieldsAfterCreation: false }));
+
+    store.loadEditingPolicy();
+
+    expect(store.lockFinancialFieldsAfterCreation()).toBe(false);
   });
 });

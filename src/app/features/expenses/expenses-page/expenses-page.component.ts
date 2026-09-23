@@ -52,6 +52,7 @@ export class ExpensesPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.supplierStore.loadLookup();
+    this.store.loadEditingPolicy();
     this.store.loadPage(1);
   }
 

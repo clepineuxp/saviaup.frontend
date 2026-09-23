@@ -65,7 +65,7 @@
           @if (form.controls.amount.invalid && form.controls.amount.touched) {
             <span class="field__error">Ingrese un valor válido mayor a 0.</span>
           }
-          @if (expense()) {
+          @if (expense() && lockFinancialFieldsAfterCreation()) {
             <span class="field__hint field__hint--locked">
               {{ 'expenses.modal.immutableFieldHint' | translate }}
             </span>
@@ -75,7 +75,7 @@
         <label class="field">
           <span class="field__label">{{ 'expenses.modal.dateLabel' | translate }}</span>
           <input class="field__input" type="date" formControlName="expenseDate" />
-          @if (expense()) {
+          @if (expense() && lockFinancialFieldsAfterCreation()) {
             <span class="field__hint field__hint--locked">
               {{ 'expenses.modal.immutableFieldHint' | translate }}
             </span>
@@ -206,13 +206,16 @@
         ></textarea>
       </label>
 
-      <label class="cashout-switch" [class.is-locked]="expense()">
+      <label
+        class="cashout-switch"
+        [class.is-locked]="expense() && lockFinancialFieldsAfterCreation()"
+      >
         <input type="checkbox" formControlName="isCashOut" />
         <span class="cashout-switch__control"></span>
         <span class="cashout-switch__text">
           <strong>{{ 'expenses.modal.isCashOutLabel' | translate }}</strong>
           <small>{{ 'expenses.modal.isCashOutHint' | translate }}</small>
-          @if (expense()) {
+          @if (expense() && lockFinancialFieldsAfterCreation()) {
             <small class="cashout-switch__locked">
               {{ 'expenses.modal.immutableFieldHint' | translate }}
             </small>
@@ -315,7 +318,12 @@
 
       <div class="expense-confirmation__notice">
         <span aria-hidden="true">🔒</span>
-        <span>{{ 'expenses.confirm.immutableNotice' | translate }}</span>
+        <span>{{
+          (lockFinancialFieldsAfterCreation()
+            ? 'expenses.confirm.immutableNotice'
+            : 'expenses.confirm.editableNotice'
+          ) | translate
+        }}</span>
       </div>
 
       <footer class="expense-confirmation__actions">

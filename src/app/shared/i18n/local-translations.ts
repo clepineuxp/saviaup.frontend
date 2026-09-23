@@ -55,6 +55,9 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'settings.business.deliveryHint': 'Permite gestionar pedidos para entrega.',
     'settings.business.cash': 'Requiere abrir caja',
     'settings.business.cashHint': 'Bloquea operaciones hasta tener un turno de caja abierto.',
+    'settings.business.lockExpenseFinancialFields': 'Bloquear valor, fecha y salida de caja',
+    'settings.business.lockExpenseFinancialFieldsHint':
+      'Impide modificar estos datos después de registrar un gasto. Requiere un permiso especial para cambiar esta regla.',
     'settings.business.tip': 'Mostrar propina voluntaria',
     'settings.business.tipHint': 'Presenta una sugerencia de servicio en el cobro.',
     'settings.business.tipMessage': 'Mensaje de propina',
@@ -967,6 +970,8 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'expenses.confirm.cashOutNo': 'No sale de caja chica / turno activo',
     'expenses.confirm.immutableNotice':
       'Después de registrar el gasto no podrás modificar el valor, la fecha ni el origen del dinero.',
+    'expenses.confirm.editableNotice':
+      'La organización permite corregir posteriormente el valor, la fecha y el origen del dinero.',
     'expenses.confirm.edit': 'Volver y corregir',
     'expenses.confirm.submit': 'Confirmar y registrar',
     'expenses.annul.title': 'Anular Gasto',
@@ -1219,6 +1224,9 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'settings.business.deliveryHint': 'Allows delivery order management.',
     'settings.business.cash': 'Requires opening cash register',
     'settings.business.cashHint': 'Blocks operations until a cash register shift is open.',
+    'settings.business.lockExpenseFinancialFields': 'Lock amount, date and cash source',
+    'settings.business.lockExpenseFinancialFieldsHint':
+      'Prevents changing these values after an expense is recorded. A dedicated permission is required to change this rule.',
     'settings.business.enableCustomSales': 'Enable open / custom sales',
     'settings.business.enableCustomSalesHint':
       'Allows adding written custom items to table orders without linking to a catalog product.',
@@ -2117,6 +2125,8 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'expenses.confirm.cashOutNo': 'Not paid from petty cash / active shift',
     'expenses.confirm.immutableNotice':
       'After recording the expense, you cannot change the amount, date, or source of funds.',
+    'expenses.confirm.editableNotice':
+      'The organization allows the amount, date, and source of funds to be corrected later.',
     'expenses.confirm.edit': 'Go back and edit',
     'expenses.confirm.submit': 'Confirm and record',
     'expenses.annul.title': 'Annul Expense',

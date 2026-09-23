@@ -47,6 +47,7 @@ export class ExpenseFormDialogComponent implements OnInit {
   readonly supplierStore = inject(SupplierStoreService);
 
   readonly expense = input<Expense | null>(null);
+  readonly lockFinancialFieldsAfterCreation = input(true);
   readonly submitting = input(false);
   readonly errorMessage = input<string | null>(null);
 
@@ -126,9 +127,11 @@ export class ExpenseFormDialogComponent implements OnInit {
         expenseDate: dateVal,
       });
       this.supplierSearch.set(exp.supplier?.name ?? '');
-      this.form.controls.amount.disable();
-      this.form.controls.expenseDate.disable();
-      this.form.controls.isCashOut.disable();
+      if (this.lockFinancialFieldsAfterCreation()) {
+        this.form.controls.amount.disable();
+        this.form.controls.expenseDate.disable();
+        this.form.controls.isCashOut.disable();
+      }
     }
     this.supplierFormInitialized.set(true);
 
@@ -158,7 +161,17 @@ export class ExpenseFormDialogComponent implements OnInit {
     };
 
     if (this.expense()) {
-      this.submitted.emit(editablePayload);
+      this.submitted.emit(
+        this.lockFinancialFieldsAfterCreation()
+          ? editablePayload
+          : {
+              ...editablePayload,
+              amount: val.amount,
+              isCashOut: val.isCashOut,
+              expenseDate: null,
+              businessDate: val.expenseDate,
+            },
+      );
       return;
     }
 

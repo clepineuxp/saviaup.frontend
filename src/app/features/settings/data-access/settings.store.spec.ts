@@ -17,6 +17,7 @@ describe('SettingsStore', () => {
     deleteLogo: vi.fn(),
     getBusiness: vi.fn(),
     updateBusiness: vi.fn(),
+    updateExpenseEditingPolicy: vi.fn(),
     listPaymentMethods: vi.fn(),
     createPaymentMethod: vi.fn(),
     updatePaymentMethod: vi.fn(),

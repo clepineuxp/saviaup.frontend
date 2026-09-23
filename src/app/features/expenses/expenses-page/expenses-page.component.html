@@ -286,6 +286,7 @@
 @if (showFormDialog()) {
   <app-expense-form-dialog
     [expense]="selectedExpense()"
+    [lockFinancialFieldsAfterCreation]="store.lockFinancialFieldsAfterCreation()"
     [submitting]="store.mutating()"
     [errorMessage]="store.errorMessage()"
     (submitted)="handleFormSubmit($event)"
