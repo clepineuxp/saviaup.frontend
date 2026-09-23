@@ -13,7 +13,7 @@ import { Title } from '@angular/platform-browser';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, concatMap, EMPTY, from, interval, Subject, takeUntil } from 'rxjs';
 import { PublicDigitalMenuService } from '../../features/digital-menu/data-access/public-digital-menu.service';
-import { PublicDigitalMenu } from '../../features/digital-menu/models/digital-menu.model';
+import { PublicDigitalMenu } from '../../features/digital-menu/models/public-digital-menu.model';
 
 @Component({
   selector: 'app-digital-menu-layout',

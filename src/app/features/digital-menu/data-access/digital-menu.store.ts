@@ -2,6 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { catchError, finalize, of, tap } from 'rxjs';
 import { ApiError } from '../../../shared/http/api-error';
 import { APP_ENVIRONMENT } from '../../../core/config/app-environment';
+import { buildPublicMenuUrl } from '../../../core/navigation/public-menu-url';
 import { DigitalMenuService } from './digital-menu.service';
 import {
   DigitalMenuConfig,
@@ -53,14 +54,12 @@ export class DigitalMenuStore {
   readonly slug = computed(() => this.configState()?.slug ?? null);
   readonly canEditSlug = computed(() => this.configState()?.canEditSlug ?? true);
 
-  readonly publicMenuBaseUrl = computed(() =>
-    this.environment.menuFrontendUrl.replace(/\/$/, ''),
-  );
+  readonly publicMenuBaseUrl = computed(() => this.environment.menuFrontendUrl.replace(/\/$/, ''));
 
   readonly publicMenuUrl = computed(() => {
     const s = this.slug();
     if (!s) return null;
-    return `${this.publicMenuBaseUrl()}/m/${s}`;
+    return buildPublicMenuUrl(this.publicMenuBaseUrl(), s);
   });
 
   load(): void {
@@ -116,11 +115,19 @@ export class DigitalMenuStore {
     if (targetId === destinationId) return;
     const categories = [...this.categoriesState()];
     const sourceIndex = categories.findIndex((category) => category.targetId === targetId);
-    const destinationIndex = categories.findIndex((category) => category.targetId === destinationId);
+    const destinationIndex = categories.findIndex(
+      (category) => category.targetId === destinationId,
+    );
     if (sourceIndex === -1 || destinationIndex === -1) return;
     const [source] = categories.splice(sourceIndex, 1);
-    categories.splice(destinationIndex > sourceIndex ? destinationIndex - 1 : destinationIndex, 0, source);
-    this.categoriesState.set(categories.map((category, index) => ({ ...category, sortOrder: index + 1 })));
+    categories.splice(
+      destinationIndex > sourceIndex ? destinationIndex - 1 : destinationIndex,
+      0,
+      source,
+    );
+    this.categoriesState.set(
+      categories.map((category, index) => ({ ...category, sortOrder: index + 1 })),
+    );
   }
 
   // --- Product actions ---
@@ -180,9 +187,17 @@ export class DigitalMenuStore {
       .map(({ index }) => index);
     const siblings = siblingIndexes.map((index) => products[index]);
     const sourceSiblingIndex = siblings.findIndex((product) => product.targetId === targetId);
-    const destinationSiblingIndex = siblings.findIndex((product) => product.targetId === destinationId);
+    const destinationSiblingIndex = siblings.findIndex(
+      (product) => product.targetId === destinationId,
+    );
     const [dragged] = siblings.splice(sourceSiblingIndex, 1);
-    siblings.splice(destinationSiblingIndex > sourceSiblingIndex ? destinationSiblingIndex - 1 : destinationSiblingIndex, 0, dragged);
+    siblings.splice(
+      destinationSiblingIndex > sourceSiblingIndex
+        ? destinationSiblingIndex - 1
+        : destinationSiblingIndex,
+      0,
+      dragged,
+    );
     siblingIndexes.forEach((index, siblingIndex) => {
       products[index] = { ...siblings[siblingIndex], sortOrder: siblingIndex + 1 };
     });

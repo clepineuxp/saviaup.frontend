@@ -2,8 +2,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
-import { APP_ENVIRONMENT } from '../../../../src/app/core/config/app-environment';
-import { PublicDigitalMenuService } from '../../../../src/app/features/digital-menu/data-access/public-digital-menu.service';
+import { PUBLIC_MENU_ENVIRONMENT } from './core/config/public-menu-environment';
+import { PublicDigitalMenuService } from './features/digital-menu/data-access/public-digital-menu.service';
 
 describe('PublicDigitalMenuService in the public app', () => {
   let http: HttpTestingController;
@@ -15,13 +15,9 @@ describe('PublicDigitalMenuService in the public app', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         {
-          provide: APP_ENVIRONMENT,
+          provide: PUBLIC_MENU_ENVIRONMENT,
           useValue: {
-            production: false,
-            useMockApi: false,
             apiUrl: 'https://public-api.test',
-            signalRUrl: 'https://public-api.test/hubs',
-            menuFrontendUrl: 'https://menu.test',
           },
         },
       ],
@@ -71,9 +67,9 @@ describe('PublicDigitalMenuService in the public app', () => {
   });
 
   it.each([
-    { status: 401, statusText: 'Unauthorized', kind: 'unauthenticated' },
-    { status: 403, statusText: 'Forbidden', kind: 'unauthorized' },
-  ])('surfaces $status as a resource error without attempting refresh', async (scenario) => {
+    { status: 401, statusText: 'Unauthorized' },
+    { status: 403, statusText: 'Forbidden' },
+  ])('surfaces $status without attempting refresh', async (scenario) => {
     const response = firstValueFrom(service.getPublicMenu('demo'));
     const request = http.expectOne('https://public-api.test/api/public/menu/demo');
     request.flush(
@@ -82,7 +78,6 @@ describe('PublicDigitalMenuService in the public app', () => {
     );
 
     await expect(response).rejects.toMatchObject({
-      kind: scenario.kind,
       status: scenario.status,
     });
     http.expectNone('https://public-api.test/api/auth/refresh');
