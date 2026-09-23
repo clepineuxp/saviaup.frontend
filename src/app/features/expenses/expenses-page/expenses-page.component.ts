@@ -52,6 +52,7 @@ export class ExpensesPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.supplierStore.loadLookup();
+    this.store.loadEditingPolicy();
     this.store.loadPage(1);
   }
 
@@ -128,5 +129,9 @@ export class ExpensesPageComponent implements OnInit {
     if (newPage >= 1 && newPage <= this.store.totalPages()) {
       this.store.loadPage(newPage);
     }
+  }
+
+  changePageSize(pageSize: number): void {
+    this.store.setPageSize(Number(pageSize));
   }
 }

@@ -33,9 +33,17 @@ export interface BusinessSettings {
   readonly tipMessage: string;
   readonly suggestedTipPercentage: number;
   readonly enableOrderPrintZones: boolean;
+  readonly lockExpenseFinancialFieldsAfterCreation: boolean;
 }
 
-export type UpdateBusinessSettings = BusinessSettings;
+export type UpdateBusinessSettings = Omit<
+  BusinessSettings,
+  'lockExpenseFinancialFieldsAfterCreation'
+>;
+
+export interface ExpenseEditingPolicy {
+  readonly lockFinancialFieldsAfterCreation: boolean;
+}
 
 export interface PaymentMethod {
   readonly id: string;
@@ -112,4 +120,5 @@ export const SETTINGS_PERMISSIONS = {
   usersManage: 'settings.users.manage',
   rolesRead: 'settings.roles.read',
   rolesManage: 'settings.roles.manage',
+  expenseFinancialFieldsManage: 'settings.expense-financial-fields.manage',
 } as const;

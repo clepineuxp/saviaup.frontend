@@ -4,6 +4,7 @@ import { API_ENDPOINTS } from '../../../core/config/api-endpoints';
 import { ApiClient } from '../../../shared/api/api-client.service';
 import {
   BusinessSettings,
+  ExpenseEditingPolicy,
   EnabledModulePermissions,
   OrganizationSettings,
   OrganizationUser,
@@ -12,6 +13,7 @@ import {
   SaveSettingsRole,
   SettingsRole,
   UpdateOrganizationSettings,
+  UpdateBusinessSettings,
   UpdateOrganizationUser,
 } from '../models/settings.model';
 import { SettingsRepository } from './settings.repository';
@@ -39,8 +41,15 @@ export class HttpSettingsRepository implements SettingsRepository {
   getBusiness(): Observable<BusinessSettings> {
     return this.api.get(API_ENDPOINTS.settings.business);
   }
-  updateBusiness(request: BusinessSettings): Observable<BusinessSettings> {
+  updateBusiness(request: UpdateBusinessSettings): Observable<BusinessSettings> {
     return this.api.put(API_ENDPOINTS.settings.business, request);
+  }
+  updateExpenseEditingPolicy(
+    lockFinancialFieldsAfterCreation: boolean,
+  ): Observable<ExpenseEditingPolicy> {
+    return this.api.put(API_ENDPOINTS.settings.expenseEditingPolicy, {
+      lockFinancialFieldsAfterCreation,
+    });
   }
   listPaymentMethods(): Observable<readonly PaymentMethod[]> {
     return this.api.get(API_ENDPOINTS.settings.paymentMethods, {

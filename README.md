@@ -375,6 +375,8 @@ Se conserva la opción **Recordarme**: activada usa almacenamiento persistente; 
 
 ## Módulos operativos adicionales
 
-- **Gastos y proveedores (`/app/expenses`, `/app/suppliers`)**: control integral de egresos operativos, categorías de gasto, proveedores y vinculación directa con el turno de caja abierto.
+- **Gastos y proveedores (`/app/expenses`, `/app/suppliers`)**: control integral de egresos operativos, categorías de gasto, proveedores y vinculación directa con el turno de caja abierto. El formulario incluye búsqueda de proveedores, confirmación previa con resumen y aplica la política de organización para bloquear o habilitar valor, fecha y origen de caja durante la edición. El listado permite elegir entre 10, 25, 50 o 100 registros por página.
+- **Política de edición de gastos**: la configuración de negocio ofrece un toggle alineado con SaviaUp para `expenses.lockFinancialFieldsAfterCreation`; cambiarlo requiere `settings.expense-financial-fields.manage`, mientras que el formulario de gastos puede consultar la política sin ese permiso administrativo.
+- **Historial de caja (`/app/cash-registers`)**: muestra el fondo inicial de cada turno y presenta el total en caja calculado por el backend como recaudo de ventas + inicial - gastos.
 - **Facturación (`/app/billing`)**: consulta y filtro por fecha de comprobantes de pago emitidos, con modal de vista previa e impresión de tirilla térmica de 80mm.
 - **Estadísticas (`/app/statistics`)**: panel interactivo desarrollado con Chart.js para visualización de ventas del período, gráfico comparativo agrupado Ventas vs Gastos, métodos de pago más usados, productos top y recaudación.

@@ -16,6 +16,7 @@ export interface SupplierDto {
 export interface SupplierLookupDto {
   id: string;
   name: string;
+  commercialName: string | null;
 }
 
 export interface CreateSupplierPayload {

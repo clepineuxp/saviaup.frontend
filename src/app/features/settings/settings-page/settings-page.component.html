@@ -235,6 +235,28 @@
             </button>
           </div>
 
+          <div
+            class="toggle-card"
+            [class.disabled]="!store.hasPermission('settings.expense-financial-fields.manage')"
+          >
+            <div>
+              <strong>{{ 'settings.business.lockExpenseFinancialFields' | translate }}</strong>
+              <small>{{ 'settings.business.lockExpenseFinancialFieldsHint' | translate }}</small>
+            </div>
+            <button
+              type="button"
+              class="toggle-switch"
+              [class.active]="store.business()?.lockExpenseFinancialFieldsAfterCreation"
+              [disabled]="
+                store.mutating() || !store.hasPermission('settings.expense-financial-fields.manage')
+              "
+              (click)="toggleExpenseFinancialFieldsLock()"
+              [attr.aria-label]="'settings.business.lockExpenseFinancialFields' | translate"
+            >
+              <span class="switch-knob"></span>
+            </button>
+          </div>
+
           @if (hasPrintingModulePermission()) {
             <div
               class="toggle-card"
