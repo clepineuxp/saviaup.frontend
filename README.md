@@ -27,9 +27,10 @@ npm start
 La aplicación queda disponible en `http://localhost:4200`.
 
 El menú digital público es una segunda aplicación del mismo workspace. Se ejecuta en
-`http://localhost:4201/m/{slug}` con `npm run start:menu`; consulta únicamente el endpoint público
-y no carga autenticación, sesión ni navegación administrativa. Consulta [MENU_FRONTEND.md](MENU_FRONTEND.md)
-para su arquitectura y despliegue.
+`http://localhost:4201/{slug}` con `npm run start:menu` (también acepta `/m/{slug}` por
+compatibilidad); consulta únicamente los endpoints públicos y no carga autenticación, sesión ni
+navegación administrativa. Consulta [MENU_FRONTEND.md](MENU_FRONTEND.md) para su arquitectura y
+despliegue.
 
 Comandos adicionales:
 
@@ -88,8 +89,9 @@ El build de producción reemplaza automáticamente el environment por `environme
 | `/app/{módulo}`                            | Autenticado + tenant         | Módulo habilitado conocido             |
 | `/app/modules/:code`                       | Autenticado + tenant         | Fallback seguro para código nuevo      |
 
-La ruta `/m/:slug` pertenece exclusivamente a `saviaup.frontend-menu`; el ingress redirige los
-enlaces históricos del dominio administrativo al dominio público correspondiente.
+En la aplicación administrativa, `/m/:slug` es únicamente un puente para los enlaces históricos:
+redirige a `{MENU_FRONTEND_URL}/{slug}`. El renderizado público pertenece exclusivamente a
+`saviaup.frontend-menu`.
 
 Todas las pantallas de feature se cargan de forma lazy.
 

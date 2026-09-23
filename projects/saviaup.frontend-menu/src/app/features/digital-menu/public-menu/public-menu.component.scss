@@ -1,0 +1,478 @@
+.public-menu-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--menu-text) 14%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--menu-text) 4%, transparent);
+}
+.search-field:focus-within {
+  border-color: var(--menu-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--menu-primary) 18%, transparent);
+}
+.search-icon {
+  font-size: 1.35rem;
+  opacity: 0.65;
+}
+.search-input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.btn-clear {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.sticky-category-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: 0 -1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: color-mix(in srgb, var(--menu-bg) 94%, transparent);
+  backdrop-filter: blur(12px);
+}
+.category-rail-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pills-container {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  padding: 0 2.6rem;
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 2.5rem,
+    #000 calc(100% - 2.5rem),
+    transparent
+  );
+}
+.pills-container::-webkit-scrollbar {
+  display: none;
+}
+.category-pill {
+  border: 1px solid color-mix(in srgb, var(--menu-text) 13%, transparent);
+  border-radius: 999px;
+  padding: 0.52rem 1rem;
+  background: color-mix(in srgb, var(--menu-text) 4%, transparent);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+.category-pill:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--menu-text) 9%, transparent);
+}
+.category-pill.active {
+  background: var(--menu-primary);
+  border-color: var(--menu-primary);
+  color: var(--menu-selected-button-text, #fff);
+}
+.rail-control {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  width: 3.2rem;
+  border: 0;
+  color: var(--menu-text);
+  cursor: pointer;
+  font-size: 1.9rem;
+  line-height: 1;
+}
+.rail-control-left {
+  left: 0;
+  background: linear-gradient(90deg, var(--menu-bg) 55%, transparent);
+  text-align: left;
+}
+.rail-control-right {
+  right: 0;
+  background: linear-gradient(270deg, var(--menu-bg) 55%, transparent);
+  text-align: right;
+}
+
+.menu-sections-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+}
+.menu-category-section {
+  scroll-margin-top: 5rem;
+}
+.category-section-header {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  padding: 0 0 0.65rem;
+  margin: 0 0 1rem;
+  border: 0;
+  border-bottom: 2px solid var(--menu-primary);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+.category-title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 850;
+  line-height: 1.2;
+}
+.category-desc {
+  margin: 0;
+  font-size: 0.88rem;
+  opacity: 0.75;
+  line-height: 1.45;
+}
+.category-toggle {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+.category-heading-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.category-toggle-icon {
+  color: var(--menu-primary);
+  font-size: 1.8rem;
+  transition: transform 0.3s ease;
+}
+.collapsible.open .category-toggle-icon {
+  transform: rotate(180deg);
+}
+.category-products {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.36s ease,
+    opacity 0.25s ease;
+}
+.category-products > .products-grid {
+  overflow: hidden;
+}
+.collapsible.open .category-products,
+.menu-category-section:not(.collapsible) .category-products {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
+  gap: 1rem;
+}
+
+.product-card {
+  position: relative;
+  display: flex;
+  min-height: 128px;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--menu-text) 12%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, #fff 68%, var(--menu-bg));
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 3px 12px color-mix(in srgb, #000 7%, transparent);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+.product-card:hover,
+.product-card:focus-visible {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--menu-primary) 48%, transparent);
+  box-shadow: 0 12px 22px color-mix(in srgb, #000 13%, transparent);
+  outline: 0;
+}
+.product-image-wrap {
+  align-self: stretch;
+  width: 116px;
+  flex: 0 0 116px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--menu-text) 7%, transparent);
+}
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.product-body {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  overflow: hidden;
+  padding: 0.9rem 1rem;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--menu-primary) 5%, transparent),
+    transparent 68%
+  );
+}
+.product-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.45rem;
+}
+.product-header-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+.product-name {
+  font-size: 1rem;
+  line-height: 1.32;
+}
+.product-price,
+.modal-product-price {
+  color: var(--menu-accent);
+  font-size: 1.08rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+.product-description {
+  font-size: 0.83rem;
+  line-height: 1.45;
+  opacity: 0.84;
+}
+.product-variations {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.product-variation {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+.product-variation strong {
+  color: var(--menu-accent);
+  white-space: nowrap;
+}
+.product-description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.product-description--with-variations {
+  -webkit-line-clamp: 1;
+}
+
+.no-results {
+  padding: 3rem 1rem;
+  text-align: center;
+}
+.no-results span {
+  font-size: 3rem;
+}
+.no-results h3 {
+  margin: 0.5rem 0 0.2rem;
+}
+.no-results p {
+  margin: 0;
+  opacity: 0.7;
+}
+.product-modal-backdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(4, 10, 20, 0.48);
+  backdrop-filter: blur(8px);
+  animation: modal-backdrop-in 0.2s ease;
+}
+.product-modal {
+  position: relative;
+  width: min(680px, 100%);
+  max-height: calc(100vh - 2.5rem);
+  overflow: auto;
+  border-radius: 1.25rem;
+  background: var(--menu-bg);
+  color: var(--menu-text);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+  animation: modal-in 0.24s ease;
+}
+.modal-close {
+  position: absolute;
+  z-index: 1;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.76);
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.6rem;
+}
+.modal-product-image {
+  display: block;
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+}
+.modal-product-content {
+  padding: 1.5rem;
+}
+.modal-product-content h2 {
+  margin: 0 0 0.45rem;
+  font-size: 1.55rem;
+}
+.modal-product-content p {
+  margin: 1rem 0 0;
+  line-height: 1.6;
+  opacity: 0.82;
+}
+.modal-variations {
+  margin-top: 1.25rem;
+}
+.modal-variations h3 {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+}
+.modal-variations-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid color-mix(in srgb, var(--menu-text) 12%, transparent);
+}
+.modal-variation {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--menu-text) 12%, transparent);
+}
+.modal-variation strong {
+  color: var(--menu-accent);
+  white-space: nowrap;
+}
+@keyframes modal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+:host-context([data-template='gourmet']),
+:host-context([data-template='gourmet-hero']) {
+  .search-field,
+  .product-card {
+    background: color-mix(in srgb, #fff 5%, transparent);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+  .category-pill {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.13);
+  }
+  .product-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .category-section-header {
+    border-bottom-color: color-mix(in srgb, var(--menu-primary) 70%, transparent);
+  }
+  .category-products {
+    border-left: 1px solid color-mix(in srgb, var(--menu-primary) 48%, transparent);
+    padding-left: 1rem;
+  }
+  .product-modal {
+    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.64);
+  }
+}
+:host-context([data-template='showcase']),
+:host-context([data-template='gourmet-hero']) {
+  .product-card {
+    flex-direction: column;
+  }
+  .product-image-wrap {
+    width: 100%;
+    height: 185px;
+    flex-basis: 185px;
+  }
+  .product-body {
+    min-height: 110px;
+  }
+}
+@media (max-width: 640px) {
+  .sticky-category-nav {
+    margin: 0 -1rem;
+    padding: 0.65rem 1rem;
+  }
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+  .menu-sections-wrapper {
+    gap: 1.5rem;
+  }
+  .product-image-wrap {
+    width: 104px;
+    flex-basis: 104px;
+  }
+  .product-card {
+    min-height: 116px;
+  }
+  .rail-control {
+    width: 2.7rem;
+  }
+  .pills-container {
+    padding: 0 2.1rem;
+    mask-image: linear-gradient(90deg, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
+  }
+}

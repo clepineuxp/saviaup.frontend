@@ -11,7 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DigitalMenuLayoutComponent } from '../../../layouts/digital-menu-layout/digital-menu-layout.component';
-import { PublicProduct } from '../models/digital-menu.model';
+import { PublicProduct } from '../models/public-digital-menu.model';
 
 @Component({
   selector: 'app-public-menu',
@@ -61,7 +61,9 @@ export class PublicMenuComponent {
     this.activeCategoryId.set(categoryId);
     if (this.usesCollapsibleCategories()) this.expandedCategoryId.set(categoryId);
     requestAnimationFrame(() =>
-      document.getElementById(`cat-${categoryId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+      document
+        .getElementById(`cat-${categoryId}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
     );
   }
 
@@ -72,15 +74,19 @@ export class PublicMenuComponent {
     this.expandedCategoryId.set(shouldOpen ? categoryId : null);
     if (shouldOpen) {
       requestAnimationFrame(() =>
-        document.getElementById(`cat-${categoryId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+        document
+          .getElementById(`cat-${categoryId}`)
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
       );
     }
   }
 
   isCategoryOpen(categoryId: string): boolean {
-    return !this.usesCollapsibleCategories()
-      || this.searchQuery().trim().length > 0
-      || this.expandedCategoryId() === categoryId;
+    return (
+      !this.usesCollapsibleCategories() ||
+      this.searchQuery().trim().length > 0 ||
+      this.expandedCategoryId() === categoryId
+    );
   }
 
   scrollCategoryRail(direction: -1 | 1): void {

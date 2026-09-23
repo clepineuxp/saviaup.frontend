@@ -2,8 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { routes } from './app.routes';
 
 describe('application routes', () => {
-  it('does not expose the public menu route from the authenticated application', () => {
-    expect(routes.some((route) => route.path === 'm/:slug')).toBe(false);
+  it('redirects the legacy public menu route outside the administrative application', () => {
+    const legacyMenuRoute = routes.find((route) => route.path === 'm/:slug');
+
+    expect(legacyMenuRoute).toBeDefined();
+    expect(legacyMenuRoute?.loadComponent).toBeTypeOf('function');
+    expect(legacyMenuRoute?.canActivate).toBeUndefined();
   });
 
   it('registers categories as a top-level lazy app route', () => {

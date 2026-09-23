@@ -5,14 +5,7 @@ const runtimeApiUrl = (): string => {
 
 export const environment = {
   production: false,
-  useMockApi: false,
   get apiUrl(): string {
     return runtimeApiUrl();
-  },
-  get signalRUrl(): string {
-    return `${runtimeApiUrl().replace(/\/$/, '')}/hubs`;
-  },
-  get menuFrontendUrl(): string {
-    return window.location.origin;
   },
 };
