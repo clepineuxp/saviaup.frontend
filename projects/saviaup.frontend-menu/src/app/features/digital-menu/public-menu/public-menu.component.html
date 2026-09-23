@@ -1,0 +1,218 @@
+<div class="public-menu-page">
+  <div class="menu-search-wrapper">
+    <div class="search-field">
+      <span class="search-icon">⌕</span>
+      <input
+        type="search"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        placeholder="Buscar en el menú…"
+        class="search-input"
+      />
+      @if (searchQuery()) {
+        <button
+          type="button"
+          class="btn-clear"
+          (click)="searchQuery.set('')"
+          aria-label="Limpiar búsqueda"
+        >
+          ×
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (menu()?.categories?.length && !searchQuery()) {
+    <nav class="sticky-category-nav" aria-label="Categorías del menú">
+      <div class="category-rail-shell">
+        <button
+          type="button"
+          class="rail-control rail-control-left"
+          (click)="scrollCategoryRail(-1)"
+          aria-label="Ver categorías anteriores"
+        >
+          ‹
+        </button>
+        <div #categoryRail class="pills-container">
+          @for (category of menu()?.categories; track category.id) {
+            <button
+              type="button"
+              class="category-pill notranslate"
+              translate="no"
+              [class.active]="activeCategoryId() === category.id"
+              (click)="scrollToCategory(category.id)"
+            >
+              {{ category.name }}
+            </button>
+          }
+        </div>
+        <button
+          type="button"
+          class="rail-control rail-control-right"
+          (click)="scrollCategoryRail(1)"
+          aria-label="Ver más categorías"
+        >
+          ›
+        </button>
+      </div>
+    </nav>
+  }
+
+  <div class="menu-sections-wrapper">
+    @if (filteredCategories().length === 0) {
+      <div class="no-results">
+        <span>🍽</span>
+        <h3>No se encontraron productos</h3>
+        <p>Intenta con otro término de búsqueda.</p>
+      </div>
+    } @else {
+      @for (category of filteredCategories(); track category.id) {
+        <section
+          class="menu-category-section"
+          [class.collapsible]="usesCollapsibleCategories()"
+          [class.open]="isCategoryOpen(category.id)"
+          [id]="'cat-' + category.id"
+        >
+          @if (usesCollapsibleCategories()) {
+            <button
+              type="button"
+              class="category-section-header category-toggle"
+              [attr.aria-expanded]="isCategoryOpen(category.id)"
+              (click)="toggleCategory(category.id)"
+            >
+              <span class="category-heading-copy"
+                ><span class="category-title notranslate" translate="no">{{ category.name }}</span>
+                @if (category.description) {
+                  <span class="category-desc">{{ category.description }}</span>
+                }
+              </span>
+              <span class="category-toggle-icon" aria-hidden="true">⌄</span>
+            </button>
+          } @else {
+            <header class="category-section-header">
+              <h2 class="category-title notranslate" translate="no">{{ category.name }}</h2>
+              @if (category.description) {
+                <p class="category-desc">{{ category.description }}</p>
+              }
+            </header>
+          }
+
+          <div class="category-products" [attr.aria-hidden]="!isCategoryOpen(category.id)">
+            <div class="products-grid">
+              @for (product of category.products; track product.id) {
+                <button
+                  type="button"
+                  class="product-card"
+                  (click)="openProduct(product)"
+                  [attr.aria-label]="'Ver ' + product.name"
+                >
+                  @if (menu()?.style?.showImages && product.image) {
+                    <span class="product-image-wrap"
+                      ><img
+                        [src]="product.image"
+                        [alt]="product.name"
+                        loading="lazy"
+                        decoding="async"
+                        fetchpriority="low"
+                        class="product-image"
+                    /></span>
+                  }
+                  <span class="product-body">
+                    <span class="product-content">
+                      <span class="product-header-line">
+                        <strong class="product-name notranslate" translate="no">{{
+                          product.name
+                        }}</strong>
+                        @if (product.variations.length === 0) {
+                          <span class="product-price"
+                            >${{ product.salePrice | number: '1.0-0' }}</span
+                          >
+                        }
+                      </span>
+                      @if (product.variations.length > 0) {
+                        <span class="product-variations" aria-label="Variaciones disponibles">
+                          @for (variation of product.variations; track variation.id) {
+                            <span class="product-variation"
+                              ><span class="notranslate" translate="no">{{ variation.name }}</span
+                              ><strong>${{ variation.salePrice | number: '1.0-0' }}</strong></span
+                            >
+                          }
+                        </span>
+                      }
+                      @if (product.description) {
+                        <span
+                          class="product-description"
+                          [class.product-description--with-variations]="
+                            product.variations.length > 0
+                          "
+                          >{{ product.description }}</span
+                        >
+                      }
+                    </span>
+                  </span>
+                </button>
+              }
+            </div>
+          </div>
+        </section>
+      }
+    }
+  </div>
+</div>
+
+@if (selectedProduct(); as product) {
+  <div
+    class="product-modal-backdrop"
+    (click)="closeProduct()"
+    (keyup)="onBackdropKeyup($event)"
+    role="presentation"
+  >
+    <section
+      class="product-modal"
+      role="dialog"
+      aria-modal="true"
+      tabindex="-1"
+      [attr.aria-label]="product.name"
+      (click)="$event.stopPropagation()"
+      (keyup)="$event.stopPropagation()"
+    >
+      <button
+        type="button"
+        class="modal-close"
+        (click)="closeProduct()"
+        aria-label="Cerrar detalle"
+      >
+        ×
+      </button>
+      @if (product.image) {
+        <img
+          class="modal-product-image"
+          [src]="product.image"
+          [alt]="product.name"
+          decoding="async"
+        />
+      }
+      <div class="modal-product-content">
+        <h2 class="notranslate" translate="no">{{ product.name }}</h2>
+        @if (product.description) {
+          <p>{{ product.description }}</p>
+        }
+        @if (product.variations.length > 0) {
+          <section class="modal-variations" aria-label="Variaciones disponibles">
+            <h3>Presentaciones disponibles</h3>
+            <div class="modal-variations-list">
+              @for (variation of product.variations; track variation.id) {
+                <div class="modal-variation">
+                  <span class="notranslate" translate="no">{{ variation.name }}</span
+                  ><strong>${{ variation.salePrice | number: '1.0-0' }}</strong>
+                </div>
+              }
+            </div>
+          </section>
+        } @else {
+          <strong class="modal-product-price">${{ product.salePrice | number: '1.0-0' }}</strong>
+        }
+      </div>
+    </section>
+  </div>
+}

@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of, Subject } from 'rxjs';
-import { PublicDigitalMenuService } from '../../../../src/app/features/digital-menu/data-access/public-digital-menu.service';
+import { PublicDigitalMenuService } from './features/digital-menu/data-access/public-digital-menu.service';
 import {
   PublicCategoryImages,
   PublicDigitalMenu,
-} from '../../../../src/app/features/digital-menu/models/digital-menu.model';
-import { DigitalMenuLayoutComponent } from '../../../../src/app/layouts/digital-menu-layout/digital-menu-layout.component';
+} from './features/digital-menu/models/public-digital-menu.model';
+import { DigitalMenuLayoutComponent } from './layouts/digital-menu-layout/digital-menu-layout.component';
 
 describe('DigitalMenuLayoutComponent progressive images', () => {
   it('loads category image batches sequentially and updates the visible menu', () => {

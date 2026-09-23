@@ -33,6 +33,14 @@ const knownModuleRoutes: Routes = KNOWN_MODULE_NAVIGATION.filter(
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
   {
+    path: 'm/:slug',
+    title: 'Menú digital · Savia Up',
+    loadComponent: () =>
+      import('./core/navigation/public-menu-redirect.component').then(
+        (component) => component.PublicMenuRedirectComponent,
+      ),
+  },
+  {
     path: '',
     loadChildren: () =>
       import('./features/auth/auth.routes').then((routesFile) => routesFile.AUTH_ROUTES),
