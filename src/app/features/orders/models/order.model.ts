@@ -1,5 +1,18 @@
 export type OrderItemStatus = 'PENDING' | 'PAID' | 'CANCELLED';
 
+export interface OrderItemComboSelection {
+  readonly id: string;
+  readonly comboGroupId: string | null;
+  readonly comboOptionId: string | null;
+  readonly productId: string | null;
+  readonly groupName: string;
+  readonly productName: string;
+  readonly productQuantity: number;
+  readonly selectionQuantity: number;
+  readonly priceAdjustment: number;
+  readonly order: number;
+}
+
 export interface OrderItem {
   readonly id: string;
   readonly orderId: string;
@@ -21,6 +34,7 @@ export interface OrderItem {
   readonly lastModifiedByUserName: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly comboSelections?: readonly OrderItemComboSelection[];
 }
 
 export interface OrderItemReport {
@@ -89,6 +103,13 @@ export interface CreateOrderItem {
   readonly quantity: number;
   readonly notes?: string | null;
   readonly isCustomSale: boolean;
+  readonly comboSelections?: readonly CreateOrderItemComboSelection[];
+}
+
+export interface CreateOrderItemComboSelection {
+  readonly comboGroupId: string;
+  readonly comboOptionId: string;
+  readonly quantity: number;
 }
 
 export interface AddOrderItemsRequest {

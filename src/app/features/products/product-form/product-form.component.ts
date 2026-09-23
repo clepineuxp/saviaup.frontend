@@ -29,10 +29,11 @@ import {
   CreateProductRequest,
   Product,
   ProductCategory,
+  ProductComboGroupRequest,
+  ProductComboSelectionType,
   ProductIngredientLookup,
   ProductRecipeItemRequest,
   ProductType,
-  ProductVariation,
   ProductVariationRequest,
 } from '../models/product.model';
 
@@ -49,6 +50,23 @@ export interface VariationRowItem {
   readonly id: string;
   name: string;
   salePrice: number;
+}
+
+export interface ComboOptionRowItem {
+  readonly id: string;
+  productId: string;
+  productQuantity: number;
+  priceAdjustment: number;
+}
+
+export interface ComboGroupRowItem {
+  readonly id: string;
+  name: string;
+  selectionType: ProductComboSelectionType;
+  isRequired: boolean;
+  minSelections: number;
+  maxSelections: number;
+  options: ComboOptionRowItem[];
 }
 
 @Component({
@@ -71,6 +89,7 @@ export class ProductFormComponent {
   readonly product = input<Product | null>(null);
   readonly categories = input.required<readonly ProductCategory[]>();
   readonly ingredients = input<readonly ProductIngredientLookup[]>([]);
+  readonly comboProducts = input<readonly Product[]>([]);
   readonly submitting = input(false);
   readonly error = input<ProductFeatureError | null>(null);
   readonly submitted = output<CreateProductRequest>();
@@ -79,10 +98,15 @@ export class ProductFormComponent {
   readonly deleteRequested = output<Product>();
   readonly searchIngredients = output<string>();
 
-  readonly activeTab = signal<'general' | 'variations' | 'recipe'>('general');
+  readonly activeTab = signal<'general' | 'variations' | 'recipe' | 'combo'>('general');
   readonly previewFailed = signal(false);
   readonly recipeRows = signal<RecipeRowItem[]>([]);
   readonly variationRows = signal<VariationRowItem[]>([]);
+  readonly comboGroupRows = signal<ComboGroupRowItem[]>([]);
+  readonly comboValidationError = signal(false);
+  readonly availableComboProducts = computed(() =>
+    this.comboProducts().filter((candidate) => candidate.id !== this.product()?.id),
+  );
 
   readonly openSelectorIndex = signal<number | null>(null);
   readonly ingredientSearch = signal<string>('');
@@ -130,11 +154,17 @@ export class ProductFormComponent {
   private readonly categoryIdValue = toSignal(this.form.controls.categoryId.valueChanges, {
     initialValue: this.form.controls.categoryId.value,
   });
+  private readonly typeValue = toSignal(this.form.controls.type.valueChanges, {
+    initialValue: this.form.controls.type.value,
+  });
+  readonly isCombo = computed(() => this.typeValue() === 'COMBO');
 
   readonly selectedCategory = computed(() =>
     this.categories().find((category) => category.id === this.categoryIdValue()),
   );
-  readonly inventoryDisabled = computed(() => !this.selectedCategory()?.isInventoryTracked);
+  readonly inventoryDisabled = computed(
+    () => this.isCombo() || !this.selectedCategory()?.isInventoryTracked,
+  );
 
   constructor() {
     this.searchSubject
@@ -207,6 +237,24 @@ export class ProductFormComponent {
         this.variationRows.set([]);
       }
 
+      this.comboGroupRows.set(
+        product?.comboGroups?.map((group) => ({
+          id: group.id,
+          name: group.name,
+          selectionType: group.selectionType,
+          isRequired: group.isRequired,
+          minSelections: group.minSelections,
+          maxSelections: group.maxSelections,
+          options: group.options.map((option) => ({
+            id: option.id,
+            productId: option.productId,
+            productQuantity: option.productQuantity,
+            priceAdjustment: option.priceAdjustment,
+          })),
+        })) ?? [],
+      );
+      this.comboValidationError.set(false);
+
       this.activeTab.set('general');
       this.previewFailed.set(false);
       this.closeIngredientSelector();
@@ -223,10 +271,109 @@ export class ProductFormComponent {
     });
 
     effect(() => this.applyServerErrors(this.error()));
+
+    effect(() => {
+      if (this.isCombo() && (this.activeTab() === 'recipe' || this.activeTab() === 'variations')) {
+        this.activeTab.set('combo');
+      } else if (!this.isCombo() && this.activeTab() === 'combo') {
+        this.activeTab.set('general');
+      }
+    });
   }
 
-  setTab(tab: 'general' | 'variations' | 'recipe'): void {
+  setTab(tab: 'general' | 'variations' | 'recipe' | 'combo'): void {
     this.activeTab.set(tab);
+  }
+
+  addComboGroup(): void {
+    this.comboGroupRows.update((groups) => [
+      ...groups,
+      {
+        id: crypto.randomUUID(),
+        name: '',
+        selectionType: 'SINGLE',
+        isRequired: true,
+        minSelections: 1,
+        maxSelections: 1,
+        options: [],
+      },
+    ]);
+  }
+
+  updateComboGroup(index: number, patch: Partial<ComboGroupRowItem>): void {
+    this.comboGroupRows.update((groups) =>
+      groups.map((group, groupIndex) => {
+        if (groupIndex !== index) return group;
+        const updated = { ...group, ...patch };
+        if (patch.selectionType === 'FIXED') {
+          updated.isRequired = true;
+          updated.minSelections = updated.options.length;
+          updated.maxSelections = updated.options.length;
+        } else if (patch.selectionType === 'SINGLE') {
+          updated.minSelections = updated.isRequired ? 1 : 0;
+          updated.maxSelections = 1;
+        } else if (patch.isRequired !== undefined) {
+          updated.minSelections = patch.isRequired
+            ? Math.max(1, updated.minSelections)
+            : Math.max(0, updated.minSelections);
+        }
+        return updated;
+      }),
+    );
+    this.comboValidationError.set(false);
+  }
+
+  removeComboGroup(index: number): void {
+    this.comboGroupRows.update((groups) => groups.filter((_, groupIndex) => groupIndex !== index));
+  }
+
+  addComboOption(groupIndex: number): void {
+    const group = this.comboGroupRows()[groupIndex];
+    if (!group) return;
+    const product = this.availableComboProducts().find(
+      (candidate) => !group.options.some((option) => option.productId === candidate.id),
+    );
+    const options = [
+      ...group.options,
+      {
+        id: crypto.randomUUID(),
+        productId: product?.id ?? '',
+        productQuantity: 1,
+        priceAdjustment: 0,
+      },
+    ];
+    this.updateComboGroup(groupIndex, {
+      options,
+      ...(group.selectionType === 'FIXED'
+        ? { isRequired: true, minSelections: options.length, maxSelections: options.length }
+        : {}),
+    });
+  }
+
+  updateComboOption(
+    groupIndex: number,
+    optionIndex: number,
+    patch: Partial<ComboOptionRowItem>,
+  ): void {
+    const group = this.comboGroupRows()[groupIndex];
+    if (!group) return;
+    this.updateComboGroup(groupIndex, {
+      options: group.options.map((option, index) =>
+        index === optionIndex ? { ...option, ...patch } : option,
+      ),
+    });
+  }
+
+  removeComboOption(groupIndex: number, optionIndex: number): void {
+    const group = this.comboGroupRows()[groupIndex];
+    if (!group) return;
+    const options = group.options.filter((_, index) => index !== optionIndex);
+    this.updateComboGroup(groupIndex, {
+      options,
+      ...(group.selectionType === 'FIXED'
+        ? { isRequired: true, minSelections: options.length, maxSelections: options.length }
+        : {}),
+    });
   }
 
   addVariationRow(): void {
@@ -348,6 +495,52 @@ export class ProductFormComponent {
 
     const value = this.form.getRawValue();
 
+    const comboGroups: ProductComboGroupRequest[] = this.comboGroupRows().map((group, index) => ({
+      name: group.name.trim(),
+      selectionType: group.selectionType,
+      isRequired: group.selectionType === 'FIXED' || group.isRequired,
+      minSelections:
+        group.selectionType === 'FIXED'
+          ? group.options.length
+          : group.selectionType === 'SINGLE'
+            ? group.isRequired
+              ? 1
+              : 0
+            : group.minSelections,
+      maxSelections:
+        group.selectionType === 'FIXED'
+          ? group.options.length
+          : group.selectionType === 'SINGLE'
+            ? 1
+            : group.maxSelections,
+      order: index + 1,
+      options: group.options.map((option, optionIndex) => ({
+        productId: option.productId,
+        productQuantity: Math.max(1, Number(option.productQuantity) || 1),
+        priceAdjustment: Number(option.priceAdjustment) || 0,
+        order: optionIndex + 1,
+      })),
+    }));
+    if (
+      value.type === 'COMBO' &&
+      (comboGroups.length === 0 ||
+        comboGroups.some(
+          (group) =>
+            !group.name ||
+            group.options.length === 0 ||
+            group.options.some((option) => !option.productId) ||
+            new Set(group.options.map((option) => option.productId)).size !==
+              group.options.length ||
+            (group.selectionType !== 'FIXED' &&
+              (group.minSelections < (group.isRequired ? 1 : 0) ||
+                group.maxSelections < group.minSelections)),
+        ))
+    ) {
+      this.comboValidationError.set(true);
+      this.activeTab.set('combo');
+      return;
+    }
+
     const recipe: ProductRecipeItemRequest[] = this.recipeRows()
       .filter((r) => {
         const hasName = r.isCustom
@@ -386,11 +579,13 @@ export class ProductFormComponent {
       description: this.cleanOptional(value.description),
       image: this.cleanOptional(value.image),
       preparationTimeMinutes: value.preparationTimeMinutes,
-      isInventoryTracked: this.selectedCategory()?.isInventoryTracked
-        ? value.isInventoryTracked
-        : false,
-      recipe,
-      variations: variations.length > 0 ? variations : undefined,
+      isInventoryTracked:
+        value.type === 'NORMAL' && this.selectedCategory()?.isInventoryTracked
+          ? value.isInventoryTracked
+          : false,
+      recipe: value.type === 'NORMAL' ? recipe : [],
+      ...(variations.length > 0 ? { variations } : {}),
+      ...(value.type === 'COMBO' ? { comboGroups } : {}),
     });
   }
 
