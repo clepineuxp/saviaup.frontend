@@ -38,12 +38,8 @@ export interface CreateExpensePayload {
 export interface UpdateExpensePayload {
   name: string;
   description?: string | null;
-  amount: number;
-  isCashOut: boolean;
   paymentMethod: string;
   supplierId?: string | null;
-  expenseDate?: string | null;
-  businessDate?: string | null;
 }
 
 export interface AnnulExpensePayload {

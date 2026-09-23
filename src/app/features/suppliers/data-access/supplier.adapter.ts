@@ -22,5 +22,6 @@ export function mapSupplierLookupDtoToModel(dto: SupplierLookupDto): SupplierLoo
   return {
     id: dto.id,
     name: dto.name,
+    commercialName: dto.commercialName,
   };
 }

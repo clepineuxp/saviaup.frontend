@@ -375,6 +375,6 @@ Se conserva la opción **Recordarme**: activada usa almacenamiento persistente; 
 
 ## Módulos operativos adicionales
 
-- **Gastos y proveedores (`/app/expenses`, `/app/suppliers`)**: control integral de egresos operativos, categorías de gasto, proveedores y vinculación directa con el turno de caja abierto.
+- **Gastos y proveedores (`/app/expenses`, `/app/suppliers`)**: control integral de egresos operativos, categorías de gasto, proveedores y vinculación directa con el turno de caja abierto. El formulario incluye búsqueda de proveedores, confirmación previa con resumen y bloqueo de valor, fecha y origen de caja durante la edición. El listado permite elegir entre 10, 25, 50 o 100 registros por página.
 - **Facturación (`/app/billing`)**: consulta y filtro por fecha de comprobantes de pago emitidos, con modal de vista previa e impresión de tirilla térmica de 80mm.
 - **Estadísticas (`/app/statistics`)**: panel interactivo desarrollado con Chart.js para visualización de ventas del período, gráfico comparativo agrupado Ventas vs Gastos, métodos de pago más usados, productos top y recaudación.

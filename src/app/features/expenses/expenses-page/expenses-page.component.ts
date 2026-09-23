@@ -129,4 +129,8 @@ export class ExpensesPageComponent implements OnInit {
       this.store.loadPage(newPage);
     }
   }
+
+  changePageSize(pageSize: number): void {
+    this.store.setPageSize(Number(pageSize));
+  }
 }
