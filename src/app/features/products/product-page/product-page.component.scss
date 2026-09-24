@@ -187,12 +187,39 @@ tr.inactive {
 
 .pill {
   display: inline-flex;
+  align-items: center;
   border-radius: 99px;
   padding: 0.28rem 0.48rem;
   background: var(--color-savia-50);
   color: var(--color-savia-700);
   font-size: 0.64rem;
   font-weight: 760;
+}
+
+.product-tags {
+  display: flex;
+  min-width: 9rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.tags-column {
+  text-align: center;
+}
+
+.pill--type {
+  border: 1px solid color-mix(in srgb, var(--color-savia-600) 24%, transparent);
+}
+
+.pill--variation {
+  background: #f2edff;
+  color: #6941a5;
+}
+
+.pill--recipe {
+  background: #fff3df;
+  color: #8a5716;
 }
 
 .pill--off {

@@ -253,6 +253,7 @@ El formulario de productos integra:
 
 - Selector de imagen con compresión Base64 (`ImageSelectorComponent`).
 - Editor reactivo de recetas (`ProductRecipeItem`): vinculación con ingredientes de inventario, cálculo automático de costo estimado por porción y proyección del margen de beneficio contra el precio de venta sugerido.
+- El listado de productos agrupa en la columna `Etiquetas / Tags`, centrada y ubicada antes de acciones, badges para `NORMAL`/`COMBO`, presencia de variaciones y presencia de receta.
 - Constructor de combos por grupos: selección única/múltiple con toggle de obligatoriedad, grupos fijos sin selección, límites, productos normales o sus variaciones mediante combobox filtrable, unidades incluidas y ajustes de precio. Cuando un producto posee variaciones, el selector excluye la opción base y ofrece únicamente sus variaciones activas.
 - El configurador de venta valida cada grupo, recalcula el precio visible y envía solo ids/cantidades; el backend conserva la autoridad sobre configuración y precio.
 

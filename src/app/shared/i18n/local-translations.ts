@@ -283,6 +283,7 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'products.column.product': 'Producto',
     'products.column.category': 'Categoría',
     'products.column.type': 'Tipo',
+    'products.column.tags': 'Etiquetas',
     'products.column.salePrice': 'Precio de venta',
     'products.column.preparationTime': 'Preparación',
     'products.column.inventory': 'Inventario',
@@ -290,6 +291,8 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'products.column.actions': 'Acciones',
     'products.type.normal': 'Normal',
     'products.type.combo': 'Combo',
+    'products.tag.variations': 'Con variaciones',
+    'products.tag.recipe': 'Con receta',
     'products.combo.tab': 'Composición',
     'products.combo.title': 'Composición del combo',
     'products.combo.description':
@@ -1461,6 +1464,7 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'products.column.product': 'Product',
     'products.column.category': 'Category',
     'products.column.type': 'Type',
+    'products.column.tags': 'Tags',
     'products.column.salePrice': 'Sale price',
     'products.column.preparationTime': 'Preparation',
     'products.column.inventory': 'Inventory',
@@ -1468,6 +1472,8 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'products.column.actions': 'Actions',
     'products.type.normal': 'Normal',
     'products.type.combo': 'Combo',
+    'products.tag.variations': 'Has variations',
+    'products.tag.recipe': 'Has recipe',
     'products.combo.tab': 'Composition',
     'products.combo.title': 'Combo composition',
     'products.combo.description':

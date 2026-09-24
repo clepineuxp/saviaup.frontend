@@ -310,6 +310,7 @@ El formulario integra `ImageSelectorComponent` para cargar, previsualizar y comp
 El formulario soporta:
 
 - Datos básicos: nombre, categoría, tipo, precio de venta, tiempo de preparación y descripción. En productos con variaciones, el precio base se oculta y se envía como `null`; cada variación conserva su precio obligatorio.
+- El listado identifica en la columna `Etiquetas / Tags`, ubicada antes de acciones, si cada registro es normal/combo y si además posee variaciones o receta; sus badges se muestran centrados.
 - Selector interactivo de imagen (`ImageSelectorComponent`) con soporte drag & drop y compresión en base64.
 - **Editor de recetas (`ProductRecipeItem`)**:
   - Búsqueda y vinculación interactiva de ingredientes desde el inventario del tenant o insumos personalizados.
