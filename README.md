@@ -309,7 +309,7 @@ El formulario integra `ImageSelectorComponent` para cargar, previsualizar y comp
 
 El formulario soporta:
 
-- Datos básicos: nombre, categoría, tipo, precio de venta, tiempo de preparación y descripción.
+- Datos básicos: nombre, categoría, tipo, precio de venta, tiempo de preparación y descripción. En productos con variaciones, el precio base se oculta y se envía como `null`; cada variación conserva su precio obligatorio.
 - Selector interactivo de imagen (`ImageSelectorComponent`) con soporte drag & drop y compresión en base64.
 - **Editor de recetas (`ProductRecipeItem`)**:
   - Búsqueda y vinculación interactiva de ingredientes desde el inventario del tenant o insumos personalizados.
@@ -320,7 +320,8 @@ El formulario soporta:
 - **Constructor de combos** para productos `COMBO`:
   - grupos de selección única o múltiple, obligatorios u opcionales, y grupos fijos que incluyen todos sus productos sin intervención;
   - límites mínimo/máximo por grupo;
-  - opciones basadas en productos normales activos, cantidad de unidades incluidas y ajuste de precio positivo, negativo o neutro;
+  - opciones basadas en productos normales activos o en una variación específica, elegidas con un combobox que filtra por nombre de producto y variación; si un producto tiene variaciones, el selector muestra únicamente sus variaciones y nunca el producto base;
+  - cantidad de unidades incluidas y ajuste de precio positivo, negativo o neutro;
   - validación de al menos un grupo con un producto antes de guardar.
 
 `isInventoryTracked` reacciona a la categoría elegida: se habilita solo para categorías inventariables y se deshabilita, limpia y envía como `false` para cualquier otra. El backend repite la regla para no confiar en el cliente. `ProductStore` mantiene página, filtros, permisos y categorías aislados por tenant y refresca la consulta vigente después de cada mutación exitosa.
@@ -361,7 +362,7 @@ El archivo de Figma “Savia Up · Web App” fue creado como espacio de diseño
 - `/app/configuration/tables/manage` administra salas y mesas, reordena salas y edita capacidad, flags, estado y forma (`SQUARE`, `ROUND`, `RECTANGLE_HORIZONTAL`, `RECTANGLE_VERTICAL`). La posición se define arrastrando la misma tarjeta y con las mismas dimensiones que usa la operación (`100×100`, `150×100` o `100×150`); doble clic abre la edición y el modal permite eliminar con confirmación. El estado se comunica por color y su etiqueta aparece solo con `hover`/foco.
 - `TableRealtimeClient` conecta únicamente durante el ciclo de vida de la feature, envía el JWT vigente y aplica reconexión automática para `OnTableStatusChanged` y `OnTableOrderUpdated`.
 - El bloqueo de caja abierta se deriva del backend y deshabilita todas las acciones de `tables.operate` sin ocultar el estado actual.
-- Los productos `COMBO` abren un configurador dentro del flujo de venta. La UI muestra los productos fijos, exige las selecciones obligatorias, limita cantidades múltiples, recalcula el precio visible y envía `comboSelections` solo para grupos seleccionables. La pestaña de observaciones resume productos fijos/seleccionados y separa la nota adicional; el backend vuelve a construir el texto definitivo antes de guardar.
+- Los productos `COMBO` abren un configurador dentro del flujo de venta. La UI muestra los productos o variaciones fijas, exige las selecciones obligatorias, limita cantidades múltiples, recalcula el precio visible y envía `comboSelections` solo para grupos seleccionables. La pestaña de observaciones resume productos/variaciones fijos o seleccionados y separa la nota adicional; el backend vuelve a construir el texto definitivo antes de guardar.
 
 ## Continuidad de sesión en la PWA
 

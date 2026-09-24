@@ -1,7 +1,7 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { firstValueFrom, of, throwError } from 'rxjs';
+import { firstValueFrom, of, Subject, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthStore } from '../../../core/auth/auth-store.service';
 import { User } from '../../../core/models/user.model';
@@ -49,6 +49,7 @@ describe('ProductStore', () => {
     list: vi.fn(),
     listCategories: vi.fn(),
     listIngredients: vi.fn(),
+    listComboCandidates: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     setStatus: vi.fn(),
@@ -65,6 +66,7 @@ describe('ProductStore', () => {
     repository.list.mockReturnValue(of(page()));
     repository.listCategories.mockReturnValue(of([category]));
     repository.listIngredients.mockReturnValue(of([]));
+    repository.listComboCandidates.mockReturnValue(of([]));
     repository.create.mockReturnValue(of(product));
     repository.delete.mockReturnValue(of(undefined));
 
@@ -143,5 +145,23 @@ describe('ProductStore', () => {
     expect(store.page().items).toEqual([]);
     expect(store.categories()).toEqual([]);
     expect(store.hasPermission('products.read')).toBe(false);
+  });
+
+  it('discards an older combo search response that arrives after a newer search', () => {
+    const firstSearch = new Subject<readonly Product[]>();
+    const secondSearch = new Subject<readonly Product[]>();
+    const newerProduct = { ...product, id: 'product-2', name: 'Limonada grande' };
+    repository.listComboCandidates
+      .mockReturnValueOnce(firstSearch)
+      .mockReturnValueOnce(secondSearch);
+
+    store.loadComboCandidates('lim').subscribe();
+    store.loadComboCandidates('grande').subscribe();
+    secondSearch.next([newerProduct]);
+    secondSearch.complete();
+    firstSearch.next([product]);
+    firstSearch.complete();
+
+    expect(store.comboCandidates()).toEqual([newerProduct]);
   });
 });

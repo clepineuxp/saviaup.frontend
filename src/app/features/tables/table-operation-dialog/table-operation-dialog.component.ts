@@ -14,7 +14,12 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { catchError, EMPTY, of } from 'rxjs';
-import { Product, ProductCategory, ProductVariation } from '../../products/models/product.model';
+import {
+  Product,
+  ProductCategory,
+  ProductComboOption,
+  ProductVariation,
+} from '../../products/models/product.model';
 import { ORDER_REPOSITORY } from '../../orders/data-access/order.repository';
 import {
   CreateOrderItem,
@@ -594,7 +599,7 @@ export class TableOperationDialogComponent {
     if (!curr) return 0;
     const basePrice = curr.selectedVariation
       ? curr.selectedVariation.salePrice
-      : curr.product.salePrice;
+      : (curr.product.salePrice ?? 0);
     const adjustment = (curr.product.comboGroups ?? []).reduce(
       (total, group) =>
         total +
@@ -608,6 +613,15 @@ export class TableOperationDialogComponent {
       0,
     );
     return basePrice + adjustment;
+  }
+
+  getProductDisplayPrice(product: Product): number {
+    const activeVariationPrices = (product.variations ?? [])
+      .filter((variation) => variation.isActive)
+      .map((variation) => variation.salePrice);
+    return activeVariationPrices.length > 0
+      ? Math.min(...activeVariationPrices)
+      : (product.salePrice ?? 0);
   }
 
   comboGroupSelectionTotal(groupId: string): number {
@@ -634,10 +648,16 @@ export class TableOperationDialogComponent {
           group.selectionType === 'FIXED' ? 1 : (curr.comboSelections[option.id] ?? 0);
         if (selectionQuantity === 0) return [];
         return [
-          `${group.name}: ${option.productQuantity * selectionQuantity}× ${option.productName}`,
+          `${group.name}: ${option.productQuantity * selectionQuantity}× ${this.comboOptionDisplayName(option)}`,
         ];
       }),
     );
+  }
+
+  comboOptionDisplayName(option: ProductComboOption): string {
+    return option.productVariationName
+      ? `${option.productName} - ${option.productVariationName}`
+      : option.productName;
   }
 
   selectSingleComboOption(groupId: string, optionId: string): void {

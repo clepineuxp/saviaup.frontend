@@ -153,7 +153,10 @@
                 }}</span>
               </td>
               <td>
-                <b>{{ product.salePrice | number: '1.2-2' }}</b>
+                @if (product.variations.length > 0) {
+                  <small>Desde </small>
+                }
+                <b>{{ displayPrice(product) | number: '1.2-2' }}</b>
               </td>
               <td>
                 @if (product.preparationTimeMinutes !== null) {
@@ -237,6 +240,7 @@
     (submitted)="save($event)"
     (cancelled)="closeForm()"
     (searchIngredients)="searchIngredients($event)"
+    (searchComboProducts)="searchComboProducts($event)"
     (statusRequested)="toggleStatusFromForm($event)"
     (deleteRequested)="requestDeleteFromForm($event)"
   />

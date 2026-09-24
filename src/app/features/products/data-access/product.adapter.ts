@@ -46,7 +46,11 @@ export const mapProductVariation = (dto: ProductVariationDto): ProductVariation 
 
 export const mapProductComboGroup = (dto: ProductComboGroupDto): ProductComboGroup => ({
   ...dto,
-  options: dto.options.map((option) => ({ ...option })),
+  options: dto.options.map((option) => ({
+    ...option,
+    productVariationId: option.productVariationId ?? null,
+    productVariationName: option.productVariationName ?? null,
+  })),
 });
 
 export const mapProductIngredient = (dto: ProductIngredientDto): ProductIngredientLookup => {

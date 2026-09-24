@@ -127,6 +127,30 @@ describe('ProductFormComponent', () => {
     ]);
   });
 
+  it('removes the base price when a normal product has variations', () => {
+    const submitted: CreateProductRequest[] = [];
+    component.submitted.subscribe((request) => submitted.push(request));
+    component.form.patchValue({
+      categoryId: inventoryCategory.id,
+      name: 'Limonada',
+      salePrice: 8000,
+    });
+
+    component.addVariationRow();
+    component.updateVariationRow(0, { name: 'Grande', salePrice: 12000 });
+    TestBed.flushEffects();
+
+    expect(component.form.controls.salePrice.disabled).toBe(true);
+    expect(component.form.controls.salePrice.value).toBeNull();
+    component.submit();
+
+    expect(submitted).toHaveLength(1);
+    expect(submitted[0]).toMatchObject({
+      salePrice: null,
+      variations: [{ name: 'Grande', salePrice: 12000 }],
+    });
+  });
+
   it('exposes deactivation and deletion actions while editing a product', () => {
     const statusRequested: Product[] = [];
     const deleteRequested: Product[] = [];
@@ -209,6 +233,51 @@ describe('ProductFormComponent', () => {
       minSelections: 1,
       maxSelections: 1,
       options: [{ productId: product.id, productQuantity: 2, priceAdjustment: -500 }],
+    });
+  });
+
+  it('filters products and variations and submits the selected variation for a combo', () => {
+    const variationProduct: Product = {
+      ...product,
+      variations: [
+        {
+          id: 'variation-large',
+          name: 'Presentación grande',
+          salePrice: 12000,
+          order: 1,
+          isActive: true,
+        },
+      ],
+    };
+    fixture.componentRef.setInput('comboProducts', [variationProduct]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const submitted: CreateProductRequest[] = [];
+    component.submitted.subscribe((request) => submitted.push(request));
+    component.form.patchValue({
+      type: 'COMBO',
+      categoryId: inventoryCategory.id,
+      name: 'Combo con variación',
+      salePrice: 25000,
+    });
+    TestBed.flushEffects();
+    component.addComboGroup();
+    component.updateComboGroup(0, { name: 'Bebida', selectionType: 'SINGLE' });
+    component.addComboOption(0);
+    component.comboCatalogSearch.set('grande');
+
+    const filtered = component.filteredComboCatalogOptions();
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0].productVariationId).toBe('variation-large');
+    expect(
+      component.comboCatalogOptions().some((option) => option.productVariationId === null),
+    ).toBe(false);
+    component.selectComboCatalogOption(0, 0, filtered[0]);
+    component.submit();
+
+    expect(submitted[0].comboGroups?.[0].options[0]).toMatchObject({
+      productId: product.id,
+      productVariationId: 'variation-large',
     });
   });
 });
