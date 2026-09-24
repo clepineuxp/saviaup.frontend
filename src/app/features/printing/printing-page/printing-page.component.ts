@@ -1,5 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UiAlertComponent } from '../../../shared/components/ui-alert/ui-alert.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
@@ -58,6 +66,7 @@ export class PrintingPageComponent implements OnInit {
   readonly store = inject(PrintingStore);
   private readonly toast = inject(ToastService);
   private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly activeTab = signal<PrintingTab>('agents');
   readonly editingPrinter = signal<Printer | null>(null);
@@ -111,6 +120,11 @@ export class PrintingPageComponent implements OnInit {
       if (!this.canShowAgents()) this.activeTab.set(this.canShowZones() ? 'zones' : 'queue');
       if (firstAgent && this.canShowAgents())
         this.store.loadAvailablePrinters(firstAgent).subscribe();
+      if (this.canManageAgents())
+        this.store
+          .watchDiscoveredAgents()
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe();
     });
   }
 
