@@ -50,6 +50,8 @@ export interface ProductComboOptionDto {
   readonly id: string;
   readonly productId: string;
   readonly productName: string;
+  readonly productVariationId?: string | null;
+  readonly productVariationName?: string | null;
   readonly productQuantity: number;
   readonly priceAdjustment: number;
   readonly order: number;
@@ -73,7 +75,7 @@ export interface ProductDto {
   readonly description: string | null;
   readonly image: string | null;
   readonly category: ProductCategoryDto;
-  readonly salePrice: number;
+  readonly salePrice: number | null;
   readonly preparationTimeMinutes: number | null;
   readonly isInventoryTracked: boolean;
   readonly isActive: boolean;

@@ -55,8 +55,20 @@ export interface VariationRowItem {
 export interface ComboOptionRowItem {
   readonly id: string;
   productId: string;
+  productVariationId: string | null;
+  productName: string;
+  productVariationName: string | null;
   productQuantity: number;
   priceAdjustment: number;
+}
+
+interface ComboCatalogOption {
+  readonly key: string;
+  readonly productId: string;
+  readonly productVariationId: string | null;
+  readonly productName: string;
+  readonly productVariationName: string | null;
+  readonly searchText: string;
 }
 
 export interface ComboGroupRowItem {
@@ -97,6 +109,7 @@ export class ProductFormComponent {
   readonly statusRequested = output<Product>();
   readonly deleteRequested = output<Product>();
   readonly searchIngredients = output<string>();
+  readonly searchComboProducts = output<string>();
 
   readonly activeTab = signal<'general' | 'variations' | 'recipe' | 'combo'>('general');
   readonly previewFailed = signal(false);
@@ -107,11 +120,49 @@ export class ProductFormComponent {
   readonly availableComboProducts = computed(() =>
     this.comboProducts().filter((candidate) => candidate.id !== this.product()?.id),
   );
+  readonly comboCatalogOptions = computed<readonly ComboCatalogOption[]>(() =>
+    this.availableComboProducts().flatMap((candidate): ComboCatalogOption[] => {
+      if (candidate.variations.length > 0) {
+        return candidate.variations
+          .filter((variation) => variation.isActive)
+          .map((variation) => ({
+            key: this.comboCatalogKey(candidate.id, variation.id),
+            productId: candidate.id,
+            productVariationId: variation.id,
+            productName: candidate.name,
+            productVariationName: variation.name,
+            searchText: this.normalizeSearch(`${candidate.name} ${variation.name}`),
+          }));
+      }
+
+      return [
+        {
+          key: this.comboCatalogKey(candidate.id, null),
+          productId: candidate.id,
+          productVariationId: null,
+          productName: candidate.name,
+          productVariationName: null,
+          searchText: this.normalizeSearch(candidate.name),
+        },
+      ];
+    }),
+  );
+  readonly openComboSelector = signal<{ groupIndex: number; optionIndex: number } | null>(null);
+  readonly comboCatalogSearch = signal('');
+  readonly filteredComboCatalogOptions = computed(() => {
+    const term = this.normalizeSearch(this.comboCatalogSearch());
+    const options = this.comboCatalogOptions();
+    return (term ? options.filter((option) => option.searchText.includes(term)) : options).slice(
+      0,
+      50,
+    );
+  });
 
   readonly openSelectorIndex = signal<number | null>(null);
   readonly ingredientSearch = signal<string>('');
   readonly searchDebounced = signal<string>('');
   private readonly searchSubject = new Subject<string>();
+  private readonly comboSearchSubject = new Subject<string>();
   private readonly knownIngredients = new Map<string, ProductIngredientLookup>();
 
   readonly filteredIngredients = computed(() => {
@@ -133,7 +184,7 @@ export class ProductFormComponent {
       nonBlankRequiredValidator(),
       Validators.maxLength(120),
     ]),
-    salePrice: this.formBuilder.nonNullable.control(0, [
+    salePrice: this.formBuilder.control<number | null>(null, [
       Validators.required,
       Validators.min(0.01),
       Validators.max(99999999.99),
@@ -158,6 +209,9 @@ export class ProductFormComponent {
     initialValue: this.form.controls.type.value,
   });
   readonly isCombo = computed(() => this.typeValue() === 'COMBO');
+  readonly usesVariationPricing = computed(
+    () => !this.isCombo() && this.variationRows().length > 0,
+  );
 
   readonly selectedCategory = computed(() =>
     this.categories().find((category) => category.id === this.categoryIdValue()),
@@ -173,6 +227,10 @@ export class ProductFormComponent {
         this.searchDebounced.set(term);
         this.searchIngredients.emit(term);
       });
+
+    this.comboSearchSubject
+      .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe((term) => this.searchComboProducts.emit(term));
 
     effect(() => {
       for (const ing of this.ingredients()) {
@@ -248,6 +306,9 @@ export class ProductFormComponent {
           options: group.options.map((option) => ({
             id: option.id,
             productId: option.productId,
+            productVariationId: option.productVariationId ?? null,
+            productName: option.productName,
+            productVariationName: option.productVariationName ?? null,
             productQuantity: option.productQuantity,
             priceAdjustment: option.priceAdjustment,
           })),
@@ -258,6 +319,7 @@ export class ProductFormComponent {
       this.activeTab.set('general');
       this.previewFailed.set(false);
       this.closeIngredientSelector();
+      this.closeComboSelector();
     });
 
     effect(() => {
@@ -268,6 +330,23 @@ export class ProductFormComponent {
       } else {
         control.enable({ emitEvent: false });
       }
+    });
+
+    effect(() => {
+      const control = this.form.controls.salePrice;
+      if (this.usesVariationPricing()) {
+        control.clearValidators();
+        control.setValue(null, { emitEvent: false });
+        control.disable({ emitEvent: false });
+      } else {
+        control.setValidators([
+          Validators.required,
+          Validators.min(0.01),
+          Validators.max(99999999.99),
+        ]);
+        control.enable({ emitEvent: false });
+      }
+      control.updateValueAndValidity({ emitEvent: false });
     });
 
     effect(() => this.applyServerErrors(this.error()));
@@ -330,14 +409,21 @@ export class ProductFormComponent {
   addComboOption(groupIndex: number): void {
     const group = this.comboGroupRows()[groupIndex];
     if (!group) return;
-    const product = this.availableComboProducts().find(
-      (candidate) => !group.options.some((option) => option.productId === candidate.id),
+    const catalogOption = this.comboCatalogOptions().find(
+      (candidate) =>
+        !group.options.some(
+          (option) =>
+            this.comboCatalogKey(option.productId, option.productVariationId) === candidate.key,
+        ),
     );
     const options = [
       ...group.options,
       {
         id: crypto.randomUUID(),
-        productId: product?.id ?? '',
+        productId: catalogOption?.productId ?? '',
+        productVariationId: catalogOption?.productVariationId ?? null,
+        productName: catalogOption?.productName ?? '',
+        productVariationName: catalogOption?.productVariationName ?? null,
         productQuantity: 1,
         priceAdjustment: 0,
       },
@@ -374,6 +460,65 @@ export class ProductFormComponent {
         ? { isRequired: true, minSelections: options.length, maxSelections: options.length }
         : {}),
     });
+  }
+
+  toggleComboSelector(groupIndex: number, optionIndex: number): void {
+    const open = this.openComboSelector();
+    if (open?.groupIndex === groupIndex && open.optionIndex === optionIndex) {
+      this.closeComboSelector();
+      return;
+    }
+    this.openComboSelector.set({ groupIndex, optionIndex });
+    this.comboCatalogSearch.set('');
+    this.searchComboProducts.emit('');
+  }
+
+  closeComboSelector(): void {
+    this.openComboSelector.set(null);
+    this.comboCatalogSearch.set('');
+  }
+
+  isComboSelectorOpen(groupIndex: number, optionIndex: number): boolean {
+    const open = this.openComboSelector();
+    return open?.groupIndex === groupIndex && open.optionIndex === optionIndex;
+  }
+
+  selectComboCatalogOption(
+    groupIndex: number,
+    optionIndex: number,
+    catalogOption: ComboCatalogOption,
+  ): void {
+    this.updateComboOption(groupIndex, optionIndex, {
+      productId: catalogOption.productId,
+      productVariationId: catalogOption.productVariationId,
+      productName: catalogOption.productName,
+      productVariationName: catalogOption.productVariationName,
+    });
+    this.closeComboSelector();
+  }
+
+  getComboCatalogOption(option: ComboOptionRowItem): ComboCatalogOption | undefined {
+    const key = this.comboCatalogKey(option.productId, option.productVariationId);
+    return (
+      this.comboCatalogOptions().find((candidate) => candidate.key === key) ??
+      (option.productId && option.productName
+        ? {
+            key,
+            productId: option.productId,
+            productVariationId: option.productVariationId,
+            productName: option.productName,
+            productVariationName: option.productVariationName,
+            searchText: this.normalizeSearch(
+              `${option.productName} ${option.productVariationName ?? ''}`,
+            ),
+          }
+        : undefined)
+    );
+  }
+
+  onComboCatalogSearchInput(term: string): void {
+    this.comboCatalogSearch.set(term);
+    this.comboSearchSubject.next(term);
   }
 
   addVariationRow(): void {
@@ -516,6 +661,7 @@ export class ProductFormComponent {
       order: index + 1,
       options: group.options.map((option, optionIndex) => ({
         productId: option.productId,
+        productVariationId: option.productVariationId,
         productQuantity: Math.max(1, Number(option.productQuantity) || 1),
         priceAdjustment: Number(option.priceAdjustment) || 0,
         order: optionIndex + 1,
@@ -529,8 +675,11 @@ export class ProductFormComponent {
             !group.name ||
             group.options.length === 0 ||
             group.options.some((option) => !option.productId) ||
-            new Set(group.options.map((option) => option.productId)).size !==
-              group.options.length ||
+            new Set(
+              group.options.map((option) =>
+                this.comboCatalogKey(option.productId, option.productVariationId),
+              ),
+            ).size !== group.options.length ||
             (group.selectionType !== 'FIXED' &&
               (group.minSelections < (group.isRequired ? 1 : 0) ||
                 group.maxSelections < group.minSelections)),
@@ -566,10 +715,7 @@ export class ProductFormComponent {
         isActive: true,
       }));
 
-    let salePrice = value.salePrice;
-    if (variations.length > 0 && (!salePrice || salePrice <= 0)) {
-      salePrice = variations[0].salePrice;
-    }
+    const salePrice = value.type === 'NORMAL' && variations.length > 0 ? null : value.salePrice;
 
     this.submitted.emit({
       type: value.type,
@@ -584,7 +730,7 @@ export class ProductFormComponent {
           ? value.isInventoryTracked
           : false,
       recipe: value.type === 'NORMAL' ? recipe : [],
-      ...(variations.length > 0 ? { variations } : {}),
+      ...(value.type === 'NORMAL' && variations.length > 0 ? { variations } : {}),
       ...(value.type === 'COMBO' ? { comboGroups } : {}),
     });
   }
@@ -599,7 +745,23 @@ export class ProductFormComponent {
 
   @HostListener('document:keydown.escape')
   handleEscape(): void {
+    if (this.openComboSelector()) {
+      this.closeComboSelector();
+      return;
+    }
     this.close();
+  }
+
+  private comboCatalogKey(productId: string, productVariationId: string | null): string {
+    return `${productId}:${productVariationId ?? 'base'}`;
+  }
+
+  private normalizeSearch(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLowerCase();
   }
 
   private cleanOptional(value: string): string | null {

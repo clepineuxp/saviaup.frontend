@@ -49,6 +49,8 @@ export interface ProductComboOption {
   readonly id: string;
   readonly productId: string;
   readonly productName: string;
+  readonly productVariationId?: string | null;
+  readonly productVariationName?: string | null;
   readonly productQuantity: number;
   readonly priceAdjustment: number;
   readonly order: number;
@@ -67,6 +69,7 @@ export interface ProductComboGroup {
 
 export interface ProductComboOptionRequest {
   readonly productId: string;
+  readonly productVariationId: string | null;
   readonly productQuantity: number;
   readonly priceAdjustment: number;
   readonly order?: number;
@@ -102,7 +105,7 @@ export interface Product {
   readonly description: string | null;
   readonly image: string | null;
   readonly category: ProductCategory;
-  readonly salePrice: number;
+  readonly salePrice: number | null;
   readonly preparationTimeMinutes: number | null;
   readonly isInventoryTracked: boolean;
   readonly isActive: boolean;
@@ -136,7 +139,7 @@ export interface CreateProductRequest {
   readonly type: ProductType;
   readonly name: string;
   readonly categoryId: string;
-  readonly salePrice: number;
+  readonly salePrice: number | null;
   readonly description: string | null;
   readonly image: string | null;
   readonly preparationTimeMinutes: number | null;

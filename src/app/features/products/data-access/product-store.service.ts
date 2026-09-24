@@ -67,6 +67,7 @@ export class ProductStore {
   private scopedTenantId: string | null = null;
   private scopeVersion = 0;
   private loadVersion = 0;
+  private comboLoadVersion = 0;
   private permissionsTenantId: string | null = null;
   private permissionsRequest?: Observable<readonly string[]>;
   private currentQuery = DEFAULT_QUERY;
@@ -218,9 +219,11 @@ export class ProductStore {
     const tenantId = this.requireTenant();
     if (!tenantId) return EMPTY;
     const scopeVersion = this.scopeVersion;
+    const loadVersion = ++this.comboLoadVersion;
     return this.repository.listComboCandidates(search).pipe(
       tap((products) => {
-        if (this.isCurrent(tenantId, scopeVersion)) this.comboCandidatesState.set(products);
+        if (this.isCurrent(tenantId, scopeVersion) && loadVersion === this.comboLoadVersion)
+          this.comboCandidatesState.set(products);
       }),
       catchError(() => of([])),
     );
@@ -325,6 +328,7 @@ export class ProductStore {
     this.scopedTenantId = tenantId;
     this.scopeVersion += 1;
     this.loadVersion += 1;
+    this.comboLoadVersion += 1;
     this.permissionsTenantId = null;
     this.permissionsRequest = undefined;
     this.permissionsState.set(new Set());
