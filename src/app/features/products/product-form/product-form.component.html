@@ -145,19 +145,31 @@
           }
         </label>
 
-        <label>
-          <span>{{ 'products.form.salePrice' | translate }}</span>
-          <input
-            type="number"
-            formControlName="salePrice"
-            min="0.01"
-            step="0.01"
-            [attr.aria-invalid]="form.controls.salePrice.invalid && form.controls.salePrice.touched"
-          />
-          @if (form.controls.salePrice.invalid && form.controls.salePrice.touched) {
-            <small class="error">{{ 'products.validation.positivePrice' | translate }}</small>
-          }
-        </label>
+        @if (usesVariationPricing()) {
+          <div class="variation-price-notice" role="note">
+            <span class="variation-price-notice__icon">🏷️</span>
+            <span>
+              <strong>{{ 'products.form.variationPriceTitle' | translate }}</strong>
+              <small>{{ 'products.form.variationPriceHelp' | translate }}</small>
+            </span>
+          </div>
+        } @else {
+          <label>
+            <span>{{ 'products.form.salePrice' | translate }}</span>
+            <input
+              type="number"
+              formControlName="salePrice"
+              min="0.01"
+              step="0.01"
+              [attr.aria-invalid]="
+                form.controls.salePrice.invalid && form.controls.salePrice.touched
+              "
+            />
+            @if (form.controls.salePrice.invalid && form.controls.salePrice.touched) {
+              <small class="error">{{ 'products.validation.positivePrice' | translate }}</small>
+            }
+          </label>
+        }
 
         <label>
           <span>{{ 'products.form.preparationTime' | translate }}</span>
@@ -697,23 +709,132 @@
                   <div class="combo-options-list">
                     @for (option of group.options; track option.id; let optionIndex = $index) {
                       <div class="combo-option-row">
-                        <label class="recipe-label combo-product-field">
+                        <div class="recipe-label combo-product-field">
                           <span>{{ 'products.combo.product' | translate }}</span>
-                          <select
-                            [ngModel]="option.productId"
-                            [ngModelOptions]="{ standalone: true }"
-                            (ngModelChange)="
-                              updateComboOption(groupIndex, optionIndex, { productId: $event })
-                            "
-                          >
-                            <option value="">
-                              {{ 'products.combo.selectProduct' | translate }}
-                            </option>
-                            @for (candidate of availableComboProducts(); track candidate.id) {
-                              <option [value]="candidate.id">{{ candidate.name }}</option>
+                          <div class="recipe-search-select combo-catalog-select">
+                            <button
+                              type="button"
+                              class="recipe-select-trigger"
+                              [class.recipe-select-trigger--open]="
+                                isComboSelectorOpen(groupIndex, optionIndex)
+                              "
+                              role="combobox"
+                              aria-haspopup="listbox"
+                              [attr.aria-expanded]="isComboSelectorOpen(groupIndex, optionIndex)"
+                              [attr.aria-controls]="
+                                'combo-catalog-' + groupIndex + '-' + optionIndex
+                              "
+                              (click)="toggleComboSelector(groupIndex, optionIndex)"
+                            >
+                              @if (getComboCatalogOption(option); as selectedOption) {
+                                <span class="recipe-select-trigger__info combo-catalog-selection">
+                                  <span class="recipe-select-trigger__name">
+                                    {{ selectedOption.productName }}
+                                  </span>
+                                  @if (selectedOption.productVariationName) {
+                                    <span class="combo-catalog-variation">
+                                      {{ selectedOption.productVariationName }}
+                                    </span>
+                                  } @else {
+                                    <span class="combo-catalog-base">
+                                      {{ 'products.combo.baseProduct' | translate }}
+                                    </span>
+                                  }
+                                </span>
+                              } @else {
+                                <span class="recipe-select-trigger__placeholder">
+                                  {{ 'products.combo.selectProduct' | translate }}
+                                </span>
+                              }
+                              <span class="recipe-select-trigger__arrow" aria-hidden="true">▼</span>
+                            </button>
+
+                            @if (isComboSelectorOpen(groupIndex, optionIndex)) {
+                              <button
+                                type="button"
+                                class="recipe-dropdown-backdrop"
+                                [attr.aria-label]="'products.combo.closeSelector' | translate"
+                                (click)="closeComboSelector()"
+                              ></button>
+                              <div
+                                class="recipe-dropdown combo-catalog-dropdown"
+                                role="listbox"
+                                [id]="'combo-catalog-' + groupIndex + '-' + optionIndex"
+                              >
+                                <div class="recipe-dropdown__header">
+                                  <span class="recipe-dropdown__search-icon" aria-hidden="true"
+                                    >⌕</span
+                                  >
+                                  <input
+                                    type="search"
+                                    class="recipe-dropdown__search-input"
+                                    [ngModel]="comboCatalogSearch()"
+                                    [ngModelOptions]="{ standalone: true }"
+                                    (ngModelChange)="onComboCatalogSearchInput($event)"
+                                    [placeholder]="'products.combo.searchProduct' | translate"
+                                    autocomplete="off"
+                                    maxlength="120"
+                                  />
+                                  @if (comboCatalogSearch()) {
+                                    <button
+                                      type="button"
+                                      class="recipe-dropdown__search-clear"
+                                      (click)="onComboCatalogSearchInput('')"
+                                    >
+                                      ✕
+                                    </button>
+                                  }
+                                </div>
+                                <div class="recipe-dropdown__list">
+                                  @for (
+                                    candidate of filteredComboCatalogOptions();
+                                    track candidate.key
+                                  ) {
+                                    <button
+                                      type="button"
+                                      class="recipe-dropdown__item combo-catalog-option"
+                                      [class.recipe-dropdown__item--selected]="
+                                        candidate.key ===
+                                        option.productId +
+                                          ':' +
+                                          (option.productVariationId ?? 'base')
+                                      "
+                                      (click)="
+                                        selectComboCatalogOption(groupIndex, optionIndex, candidate)
+                                      "
+                                    >
+                                      <span class="combo-catalog-option__text">
+                                        <strong>{{ candidate.productName }}</strong>
+                                        @if (candidate.productVariationName) {
+                                          <span aria-hidden="true">|</span>
+                                          <span>{{ candidate.productVariationName }}</span>
+                                        } @else {
+                                          <small>{{
+                                            'products.combo.baseProduct' | translate
+                                          }}</small>
+                                        }
+                                      </span>
+                                      @if (
+                                        candidate.key ===
+                                        option.productId +
+                                          ':' +
+                                          (option.productVariationId ?? 'base')
+                                      ) {
+                                        <span class="combo-catalog-option__check" aria-hidden="true"
+                                          >✓</span
+                                        >
+                                      }
+                                    </button>
+                                  } @empty {
+                                    <div class="recipe-dropdown__empty">
+                                      <p>{{ 'products.combo.noProductMatches' | translate }}</p>
+                                    </div>
+                                  }
+                                </div>
+                              </div>
                             }
-                          </select>
-                        </label>
+                          </div>
+                        </div>
                         <label class="recipe-label">
                           <span>{{ 'products.combo.productQuantity' | translate }}</span>
                           <input

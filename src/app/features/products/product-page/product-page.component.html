@@ -100,11 +100,11 @@
           <tr>
             <th>{{ 'products.column.product' | translate }}</th>
             <th>{{ 'products.column.category' | translate }}</th>
-            <th>{{ 'products.column.type' | translate }}</th>
             <th>{{ 'products.column.salePrice' | translate }}</th>
             <th>{{ 'products.column.preparationTime' | translate }}</th>
             <th>{{ 'products.column.inventory' | translate }}</th>
             <th>{{ 'products.column.status' | translate }}</th>
+            <th class="tags-column">{{ 'products.column.tags' | translate }}</th>
             @if (canManage()) {
               <th>{{ 'products.column.actions' | translate }}</th>
             }
@@ -148,12 +148,10 @@
               </td>
               <td>{{ product.category.name }}</td>
               <td>
-                <span class="pill">{{
-                  'products.type.' + product.type.toLowerCase() | translate
-                }}</span>
-              </td>
-              <td>
-                <b>{{ product.salePrice | number: '1.2-2' }}</b>
+                @if (product.variations.length > 0) {
+                  <small>Desde </small>
+                }
+                <b>{{ displayPrice(product) | number: '1.2-2' }}</b>
               </td>
               <td>
                 @if (product.preparationTimeMinutes !== null) {
@@ -182,6 +180,23 @@
                       | translate
                   }}
                 </span>
+              </td>
+              <td class="tags-column">
+                <div class="product-tags">
+                  <span class="pill pill--type">{{
+                    'products.type.' + product.type.toLowerCase() | translate
+                  }}</span>
+                  @if (product.variations.length > 0) {
+                    <span class="pill pill--variation">
+                      {{ 'products.tag.variations' | translate }}
+                    </span>
+                  }
+                  @if (product.recipe.length > 0) {
+                    <span class="pill pill--recipe">
+                      {{ 'products.tag.recipe' | translate }}
+                    </span>
+                  }
+                </div>
               </td>
               @if (canManage()) {
                 <td class="actions">
@@ -237,6 +252,7 @@
     (submitted)="save($event)"
     (cancelled)="closeForm()"
     (searchIngredients)="searchIngredients($event)"
+    (searchComboProducts)="searchComboProducts($event)"
     (statusRequested)="toggleStatusFromForm($event)"
     (deleteRequested)="requestDeleteFromForm($event)"
   />

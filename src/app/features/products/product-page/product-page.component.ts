@@ -65,11 +65,6 @@ export class ProductPageComponent implements OnInit {
       .loadIngredients()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ error: () => undefined });
-    this.store
-      .loadComboCandidates()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({ error: () => undefined });
-
     this.filters.controls.search.valueChanges
       .pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
@@ -141,6 +136,13 @@ export class ProductPageComponent implements OnInit {
   searchIngredients(search: string): void {
     this.store
       .loadIngredients(search, 1, 10)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ error: () => undefined });
+  }
+
+  searchComboProducts(search: string): void {
+    this.store
+      .loadComboCandidates(search)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ error: () => undefined });
   }
@@ -238,6 +240,15 @@ export class ProductPageComponent implements OnInit {
 
   hideBrokenImage(event: Event): void {
     if (event.target instanceof HTMLImageElement) event.target.hidden = true;
+  }
+
+  displayPrice(product: Product): number | null {
+    const activeVariationPrices = product.variations
+      .filter((variation) => variation.isActive)
+      .map((variation) => variation.salePrice);
+    return activeVariationPrices.length > 0
+      ? Math.min(...activeVariationPrices)
+      : product.salePrice;
   }
 
   private load(page: number): void {

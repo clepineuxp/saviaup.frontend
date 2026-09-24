@@ -171,7 +171,10 @@
                         @if (product.variations && product.variations.length > 0) {
                           <small class="price-from-label">Desde </small>
                         }
-                        {{ product.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                        {{
+                          getProductDisplayPrice(product)
+                            | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                        }}
                       </span>
                     </div>
                   </button>
@@ -631,7 +634,7 @@
                         @if (group.selectionType === 'FIXED') {
                           <div class="combo-sale-option multiple selected">
                             <span>
-                              <strong>✓ {{ option.productName }}</strong>
+                              <strong>✓ {{ comboOptionDisplayName(option) }}</strong>
                               <small>
                                 {{ option.productQuantity }}
                                 {{ 'sales.combo.unitsIncluded' | translate }}
@@ -657,7 +660,7 @@
                             (click)="selectSingleComboOption(group.id, option.id)"
                           >
                             <span>
-                              <strong>{{ option.productName }}</strong>
+                              <strong>{{ comboOptionDisplayName(option) }}</strong>
                               <small>
                                 {{ option.productQuantity }}
                                 {{ 'sales.combo.unitsIncluded' | translate }}
@@ -678,7 +681,7 @@
                             [class.selected]="comboOptionQuantity(option.id) > 0"
                           >
                             <span>
-                              <strong>{{ option.productName }}</strong>
+                              <strong>{{ comboOptionDisplayName(option) }}</strong>
                               <small>
                                 {{ option.productQuantity }}
                                 {{ 'sales.combo.unitsIncluded' | translate }}

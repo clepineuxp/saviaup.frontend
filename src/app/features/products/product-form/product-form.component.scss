@@ -118,6 +118,69 @@
   background: var(--color-canvas);
 }
 
+.combo-catalog-select {
+  min-width: 0;
+}
+
+.combo-catalog-selection {
+  flex: 1;
+}
+
+.combo-catalog-base,
+.combo-catalog-variation {
+  flex: 0 0 auto;
+  max-width: 45%;
+  overflow: hidden;
+  padding: 0.12rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combo-catalog-base {
+  color: var(--color-muted);
+  background: color-mix(in srgb, var(--color-muted) 10%, transparent);
+}
+
+.combo-catalog-variation {
+  color: var(--color-savia-800);
+  background: var(--color-savia-50);
+}
+
+.combo-catalog-dropdown {
+  width: min(30rem, calc(100vw - 3rem));
+  max-width: 30rem;
+}
+
+.combo-catalog-option__text {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-muted);
+
+  strong {
+    overflow: hidden;
+    color: var(--color-ink);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    flex: 0 0 auto;
+    padding: 0.1rem 0.35rem;
+    border-radius: 999px;
+    background: var(--color-canvas);
+  }
+}
+
+.combo-catalog-option__check {
+  color: var(--color-savia-700);
+  font-weight: 800;
+}
+
 .combo-option-delete {
   width: 2.75rem;
   height: 2.75rem;
@@ -335,6 +398,38 @@ textarea:focus {
 
 .error {
   color: #a44037;
+}
+
+.variation-price-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.8rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--color-savia-600) 28%, var(--color-border));
+  border-radius: 0.78rem;
+  background: var(--color-savia-50);
+  color: var(--color-savia-900);
+
+  &__icon {
+    font-size: 1.25rem;
+  }
+
+  strong,
+  small {
+    display: block;
+  }
+
+  strong {
+    font-size: 0.78rem;
+  }
+
+  small {
+    margin-top: 0.15rem;
+    color: var(--color-muted);
+    font-size: 0.7rem;
+    line-height: 1.35;
+  }
 }
 
 .image-row {
