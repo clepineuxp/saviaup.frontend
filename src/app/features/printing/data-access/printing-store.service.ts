@@ -158,6 +158,18 @@ export class PrintingStore {
     );
   }
 
+  watchDiscoveredAgents(intervalMilliseconds = 3000): Observable<readonly DiscoveredPrintAgent[]> {
+    if (!this.hasPermission('printing.agents.manage')) return of([]);
+    return timer(intervalMilliseconds, intervalMilliseconds).pipe(
+      switchMap(() =>
+        this.repository.discoveredAgents().pipe(
+          catchError(() => of(this.discoveredAgentsState())),
+        ),
+      ),
+      tap((agents) => this.discoveredAgentsState.set(agents)),
+    );
+  }
+
   linkDiscoveredAgent(
     discoveryId: string,
     locationId: string | null,
