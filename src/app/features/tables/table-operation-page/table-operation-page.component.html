@@ -133,7 +133,12 @@
 
       @if (store.selectedArea(); as area) {
         @if (store.viewMode() === 'room') {
-          <app-canvas-room-view [area]="area" (tableSelected)="chooseTable($event)" />
+          <app-canvas-room-view
+            [area]="area"
+            [zoom]="roomZoom()"
+            (zoomChange)="roomZoom.set($event)"
+            (tableSelected)="chooseTable($event)"
+          />
         } @else {
           <!-- LIST VIEW DE MESAS -->
           <div class="tables-list-view">

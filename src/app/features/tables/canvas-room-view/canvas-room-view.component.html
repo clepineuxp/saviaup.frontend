@@ -35,6 +35,10 @@
       (pointermove)="pan($event)"
       (pointerup)="endPan()"
       (pointercancel)="endPan()"
+      (touchstart)="beginPinch($event)"
+      (touchmove)="pinch($event)"
+      (touchend)="endPinch($event)"
+      (touchcancel)="endPinch($event)"
     >
       <div
         class="room-canvas"

@@ -32,16 +32,40 @@ describe('PublicMenuComponent combo details', () => {
       .querySelector<HTMLElement>('.product-modal')
       ?.textContent?.replace(/\s+/g, ' ');
 
-    expect(modalText).toContain('Grupo 1 (Fuerte)');
+    expect(modalText).toContain('Fuerte');
+    expect(modalText).not.toContain('Grupo 1');
     expect(modalText).toContain('Selección múltiple');
     expect(modalText).toContain('Elige entre 1 y 2 opciones.');
     expect(modalText).toContain('Pollo · Pechuga');
     expect(modalText).toContain('Agrega +$5,000');
     expect(modalText).toContain('Descuenta −$2,000');
-    expect(modalText).toContain('Grupo 2 (Bebida)');
+    expect(modalText).toContain('Bebida');
+    expect(modalText).not.toContain('Grupo 2');
     expect(modalText).toContain('Incluido automáticamente en tu combo.');
     expect(modalText).toContain('2 × Limonada');
     expect(modalText).toContain('Sin costo adicional');
+  });
+
+  it('shows a concise combo badge without the group count', () => {
+    const badge = fixture.nativeElement.querySelector(
+      '.product-combo-summary',
+    ) as HTMLElement | null;
+
+    expect(badge?.textContent?.trim()).toBe('Combo personalizable');
+  });
+
+  it('opens a menu containing all categories from the category rail', () => {
+    const toggle = fixture.nativeElement.querySelector(
+      '.category-menu-toggle',
+    ) as HTMLButtonElement | null;
+
+    toggle?.click();
+    fixture.detectChanges();
+
+    const items = fixture.nativeElement.querySelectorAll('.categories-menu-item');
+    expect(items).toHaveLength(1);
+    expect(items[0].textContent?.trim()).toBe('Combos');
+    expect(toggle?.getAttribute('aria-expanded')).toBe('true');
   });
 });
 

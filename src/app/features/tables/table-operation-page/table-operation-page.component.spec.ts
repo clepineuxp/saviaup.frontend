@@ -23,11 +23,13 @@ const snapshot: TableOperationSnapshot = {
 };
 
 describe('TableOperationPageComponent pull refresh', () => {
-  const verifyConnectionAndReload = vi.fn(() => of(snapshot));
+  const verifyRealtimeConnection = vi.fn(() => of(true));
+  const refreshOperation = vi.fn(() => of(snapshot));
   let component: TableOperationPageComponent;
 
   beforeEach(() => {
-    verifyConnectionAndReload.mockClear();
+    verifyRealtimeConnection.mockClear();
+    refreshOperation.mockClear();
     TestBed.configureTestingModule({
       imports: [TableOperationPageComponent],
       providers: [
@@ -46,7 +48,8 @@ describe('TableOperationPageComponent pull refresh', () => {
             canOperate: signal(true).asReadonly(),
             mutating: signal(false).asReadonly(),
             initializeOperation: () => of(snapshot),
-            verifyConnectionAndReload,
+            verifyRealtimeConnection,
+            refreshOperation,
           },
         },
         {
@@ -83,14 +86,15 @@ describe('TableOperationPageComponent pull refresh', () => {
     component = TestBed.createComponent(TableOperationPageComponent).componentInstance;
   });
 
-  it('checks SignalR and reloads the snapshot after a downward pull at the top', () => {
+  it('checks SignalR without reloading the snapshot after a downward pull at the top', () => {
     component.beginPullRefresh(touchEvent(100));
     component.movePullRefresh(touchEvent(250));
     expect(component.pullReady()).toBe(true);
 
     component.endPullRefresh();
 
-    expect(verifyConnectionAndReload).toHaveBeenCalledOnce();
+    expect(verifyRealtimeConnection).toHaveBeenCalledOnce();
+    expect(refreshOperation).not.toHaveBeenCalled();
     expect(component.pullDistance()).toBe(0);
     expect(component.pullRefreshing()).toBe(false);
   });
@@ -100,7 +104,26 @@ describe('TableOperationPageComponent pull refresh', () => {
     component.movePullRefresh(touchEvent(150));
     component.endPullRefresh();
 
-    expect(verifyConnectionAndReload).not.toHaveBeenCalled();
+    expect(verifyRealtimeConnection).not.toHaveBeenCalled();
+  });
+
+  it('keeps the room zoom while the operation state reloads', () => {
+    component.roomZoom.set(1.4);
+
+    component.reloadOperationState();
+
+    expect(component.roomZoom()).toBe(1.4);
+    expect(refreshOperation).toHaveBeenCalledOnce();
+  });
+
+  it('cancels pull refresh when a second touch starts a pinch gesture', () => {
+    component.beginPullRefresh(touchEvent(100));
+    component.movePullRefresh(touchEvent(180));
+    component.movePullRefresh(multiTouchEvent(180, 220));
+
+    expect(component.pullDistance()).toBe(0);
+    component.endPullRefresh();
+    expect(verifyRealtimeConnection).not.toHaveBeenCalled();
   });
 });
 
@@ -112,5 +135,11 @@ function touchEvent(clientY: number): TouchEvent {
       closest: () => ({ scrollTop: 0 }),
     },
     touches: [{ clientY }],
+  } as unknown as TouchEvent;
+}
+
+function multiTouchEvent(firstClientY: number, secondClientY: number): TouchEvent {
+  return {
+    touches: [{ clientY: firstClientY }, { clientY: secondClientY }],
   } as unknown as TouchEvent;
 }

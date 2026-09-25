@@ -15,6 +15,7 @@ describe('TableRealtimeClient', () => {
   let closed: (() => void) | undefined;
   const start = vi.fn<() => Promise<void>>();
   const stop = vi.fn<() => Promise<void>>();
+  const invoke = vi.fn<() => Promise<boolean>>();
   const createConnection = vi.fn();
 
   beforeEach(() => {
@@ -30,6 +31,7 @@ describe('TableRealtimeClient', () => {
       connectionState = HubConnectionState.Disconnected;
       closed?.();
     });
+    invoke.mockReset().mockResolvedValue(true);
     browser = Object.assign(new EventTarget(), { navigator: { onLine: true } });
     testDocument = document.implementation.createHTMLDocument('Realtime tests');
     Object.defineProperty(testDocument, 'defaultView', { value: browser });
@@ -41,6 +43,7 @@ describe('TableRealtimeClient', () => {
       },
       start,
       stop,
+      invoke,
       on: vi.fn(),
       onreconnecting: vi.fn((callback: () => void) => (reconnecting = callback)),
       onreconnected: vi.fn((callback: () => void) => (reconnected = callback)),
@@ -80,13 +83,29 @@ describe('TableRealtimeClient', () => {
     expect(resyncs).toBe(1);
   });
 
-  it('resynchronizes when the PWA returns to the foreground', async () => {
+  it('pings SignalR without requesting a REST resync when the PWA returns connected', async () => {
     let resyncs = 0;
     client.resyncRequired$.subscribe(() => resyncs++);
     await client.connect();
 
     browser.dispatchEvent(new Event('focus'));
+    await vi.waitFor(() => expect(invoke).toHaveBeenCalledWith('Ping'));
 
+    expect(start).toHaveBeenCalledOnce();
+    expect(resyncs).toBe(0);
+  });
+
+  it('reconnects and requests one resync when the foreground ping fails', async () => {
+    let resyncs = 0;
+    client.resyncRequired$.subscribe(() => resyncs++);
+    await client.connect();
+    invoke.mockRejectedValueOnce(new Error('stale connection'));
+
+    browser.dispatchEvent(new Event('focus'));
+
+    await vi.waitFor(() => expect(start).toHaveBeenCalledTimes(2));
+    expect(stop).toHaveBeenCalledOnce();
+    expect(client.state()).toBe('connected');
     expect(resyncs).toBe(1);
   });
 

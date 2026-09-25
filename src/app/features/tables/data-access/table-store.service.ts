@@ -127,15 +127,13 @@ export class TableStore {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((event) => {
         if (event.resources.includes('tables') && this.scopedTenantId) {
-          this.loadOperation().subscribe({ error: () => undefined });
+          this.refreshOperation().subscribe();
         }
       });
     this.realtime.resyncRequired$
       .pipe(
         auditTime(100),
-        exhaustMap(() =>
-          this.scopedTenantId ? this.loadOperation().pipe(catchError(() => EMPTY)) : EMPTY,
-        ),
+        exhaustMap(() => (this.scopedTenantId ? this.refreshOperation() : EMPTY)),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
@@ -174,19 +172,26 @@ export class TableStore {
     return this.ensurePermissions().pipe(switchMap(() => this.loadOperation()));
   }
 
-  verifyConnectionAndReload(): Observable<TableOperationSnapshot> {
-    return from(this.realtime.verifyConnection()).pipe(
-      catchError(() => of(false)),
-      switchMap(() => this.initializeOperation()),
-    );
+  verifyRealtimeConnection(): Observable<boolean> {
+    return from(this.realtime.verifyConnection()).pipe(catchError(() => of(false)));
   }
 
   loadOperation(): Observable<TableOperationSnapshot> {
+    return this.fetchOperation(true);
+  }
+
+  refreshOperation(): Observable<TableOperationSnapshot> {
+    return this.fetchOperation(false);
+  }
+
+  private fetchOperation(showLoading: boolean): Observable<TableOperationSnapshot> {
     const tenantId = this.requireTenant();
     if (!tenantId) return EMPTY;
     const version = this.scopeVersion;
-    this.statusState.set('loading');
-    this.errorState.set(null);
+    if (showLoading) {
+      this.statusState.set('loading');
+      this.errorState.set(null);
+    }
     return this.repository.operationSnapshot().pipe(
       tap((snapshot) => {
         if (!this.isCurrent(tenantId, version)) return;
@@ -199,11 +204,13 @@ export class TableStore {
           openShiftExpensesTotal: snapshot.metrics.openShiftExpensesTotal ?? 0,
         });
         this.ensureSelectedArea(snapshot.areas);
-        this.statusState.set('success');
+        if (showLoading) this.statusState.set('success');
         void this.realtime.connect().catch(() => undefined);
       }),
-      catchError((error: unknown) => this.fail(error, 'tables.read')),
-      finalize(() => this.finishLoading(tenantId, version)),
+      catchError((error: unknown) => (showLoading ? this.fail(error, 'tables.read') : EMPTY)),
+      finalize(() => {
+        if (showLoading) this.finishLoading(tenantId, version);
+      }),
     );
   }
 
