@@ -24,7 +24,11 @@ export const imageUrlValidator =
   (control: AbstractControl): ValidationErrors | null => {
     const value = String(control.value ?? '').trim();
     if (!value) return null;
-    if (value.startsWith('data:image/') || value.startsWith('/api/images/')) {
+    if (
+      value.startsWith('data:image/') ||
+      value.startsWith('/api/images/') ||
+      value.startsWith('/pvc/')
+    ) {
       return null;
     }
 
