@@ -24,7 +24,7 @@ export class LoginComponent {
       validators: [Validators.required, Validators.email],
     }),
     password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    rememberMe: new FormControl(false, { nonNullable: true }),
+    rememberMe: new FormControl(true, { nonNullable: true }),
   });
 
   submit(): void {

@@ -1,4 +1,31 @@
-<section class="tables-page">
+<section
+  class="tables-page"
+  (touchstart)="beginPullRefresh($event)"
+  (touchmove)="movePullRefresh($event)"
+  (touchend)="endPullRefresh()"
+  (touchcancel)="cancelPullRefresh()"
+>
+  @if (pullDistance() > 0 || pullRefreshing()) {
+    <div
+      class="pull-refresh"
+      [class.pull-refresh--ready]="pullReady()"
+      [class.pull-refresh--loading]="pullRefreshing()"
+      role="status"
+      aria-live="polite"
+    >
+      <span aria-hidden="true">{{ pullRefreshing() ? '↻' : pullReady() ? '✓' : '↓' }}</span>
+      <strong>
+        {{
+          (pullRefreshing()
+            ? 'tables.refresh.checking'
+            : pullReady()
+              ? 'tables.refresh.release'
+              : 'tables.refresh.pull'
+          ) | translate
+        }}
+      </strong>
+    </div>
+  }
   <header class="page-heading">
     <div class="page-heading__title">
       <span>{{ 'tables.eyebrow' | translate }}</span>

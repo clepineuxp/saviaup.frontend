@@ -55,6 +55,10 @@ describe('LoginComponent', () => {
     expect(component.form.valid).toBe(true);
   });
 
+  it('remembers the session by default so reopening the PWA can refresh it', () => {
+    expect(component.form.controls.rememberMe.value).toBe(true);
+  });
+
   it('does not submit an invalid form', () => {
     component.submit();
     expect(login).not.toHaveBeenCalled();

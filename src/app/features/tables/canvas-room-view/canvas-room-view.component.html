@@ -2,6 +2,32 @@
   @if (area().tables.length === 0) {
     <div class="room-empty">{{ 'tables.emptyArea' | translate }}</div>
   } @else {
+    <div class="zoom-controls" role="group" [attr.aria-label]="'tables.zoom.label' | translate">
+      <button
+        type="button"
+        (click)="zoomOut()"
+        [disabled]="zoom() <= 0.5"
+        [attr.aria-label]="'tables.zoom.out' | translate"
+      >
+        −
+      </button>
+      <button
+        class="zoom-value"
+        type="button"
+        (click)="resetZoom()"
+        [attr.aria-label]="'tables.zoom.reset' | translate"
+      >
+        {{ zoomPercent() }}%
+      </button>
+      <button
+        type="button"
+        (click)="zoomIn()"
+        [disabled]="zoom() >= 1.75"
+        [attr.aria-label]="'tables.zoom.in' | translate"
+      >
+        +
+      </button>
+    </div>
     <div
       #viewport
       class="room-viewport"
@@ -12,14 +38,16 @@
     >
       <div
         class="room-canvas"
-        [style.width.px]="bounds().width"
-        [style.height.px]="bounds().height"
+        [style.width.px]="canvasWidth()"
+        [style.height.px]="canvasHeight()"
+        [style.background-size.px]="24 * zoom()"
       >
         @for (table of area().tables; track table.id) {
           <app-table-card
             class="positioned-table"
             [style.left.px]="left(table)"
             [style.top.px]="top(table)"
+            [style.transform]="'scale(' + zoom() + ')'"
             [table]="table"
             (selected)="tableSelected.emit($event)"
           />
