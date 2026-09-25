@@ -26,6 +26,30 @@ export interface PublicProductVariation {
   readonly sortOrder: number;
 }
 
+export type PublicComboSelectionType = 'SINGLE' | 'MULTIPLE' | 'FIXED';
+
+export interface PublicProductComboOption {
+  readonly id: string;
+  readonly productId: string;
+  readonly productName: string;
+  readonly productQuantity: number;
+  readonly priceAdjustment: number;
+  readonly sortOrder: number;
+  readonly productVariationId?: string | null;
+  readonly productVariationName?: string | null;
+}
+
+export interface PublicProductComboGroup {
+  readonly id: string;
+  readonly name: string;
+  readonly selectionType: PublicComboSelectionType;
+  readonly isRequired: boolean;
+  readonly minSelections: number;
+  readonly maxSelections: number;
+  readonly order: number;
+  readonly options: readonly PublicProductComboOption[];
+}
+
 export interface PublicProduct {
   readonly id: string;
   readonly name: string;
@@ -35,6 +59,7 @@ export interface PublicProduct {
   readonly image?: string | null;
   readonly sortOrder: number;
   readonly variations: readonly PublicProductVariation[];
+  readonly comboGroups: readonly PublicProductComboGroup[];
 }
 
 export interface PublicCategory {

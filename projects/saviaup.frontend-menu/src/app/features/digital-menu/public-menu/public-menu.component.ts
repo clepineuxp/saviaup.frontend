@@ -11,7 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DigitalMenuLayoutComponent } from '../../../layouts/digital-menu-layout/digital-menu-layout.component';
-import { PublicProduct } from '../models/public-digital-menu.model';
+import { PublicProduct, PublicProductComboGroup } from '../models/public-digital-menu.model';
 
 @Component({
   selector: 'app-public-menu',
@@ -95,6 +95,41 @@ export class PublicMenuComponent {
 
   openProduct(product: PublicProduct): void {
     this.selectedProduct.set(product);
+  }
+
+  comboSelectionLabel(group: PublicProductComboGroup): string {
+    switch (group.selectionType) {
+      case 'SINGLE':
+        return 'Selección única';
+      case 'MULTIPLE':
+        return 'Selección múltiple';
+      case 'FIXED':
+        return 'Incluido';
+    }
+  }
+
+  comboGroupInstruction(group: PublicProductComboGroup): string {
+    if (group.selectionType === 'FIXED') {
+      return 'Incluido automáticamente en tu combo.';
+    }
+
+    if (group.selectionType === 'SINGLE') {
+      return group.isRequired ? 'Elige 1 opción.' : 'Puedes elegir 1 opción.';
+    }
+
+    if (!group.isRequired) {
+      return `Puedes elegir hasta ${group.maxSelections} opciones.`;
+    }
+
+    if (group.minSelections === group.maxSelections) {
+      return `Elige ${group.maxSelections} opciones.`;
+    }
+
+    if (group.minSelections > 0) {
+      return `Elige entre ${group.minSelections} y ${group.maxSelections} opciones.`;
+    }
+
+    return `Elige hasta ${group.maxSelections} opciones.`;
   }
 
   closeProduct(): void {
