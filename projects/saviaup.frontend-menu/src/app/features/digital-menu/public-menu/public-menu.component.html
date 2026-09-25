@@ -139,6 +139,12 @@
                           }
                         </span>
                       }
+                      @if (product.comboGroups.length > 0) {
+                        <span class="product-combo-summary">
+                          Combo personalizable · {{ product.comboGroups.length }}
+                          {{ product.comboGroups.length === 1 ? 'grupo' : 'grupos' }}
+                        </span>
+                      }
                       @if (product.description) {
                         <span
                           class="product-description"
@@ -211,6 +217,60 @@
           </section>
         } @else {
           <strong class="modal-product-price">${{ product.salePrice | number: '1.0-0' }}</strong>
+        }
+        @if (product.comboGroups.length > 0) {
+          <section class="modal-combo" aria-label="Opciones del combo">
+            <div class="modal-combo-heading">
+              <h3>Opciones para armar tu combo</h3>
+              <p>Revisa qué debes elegir en cada grupo y si alguna opción cambia el precio.</p>
+            </div>
+            <div class="combo-groups">
+              @for (group of product.comboGroups; track group.id; let groupIndex = $index) {
+                <article class="combo-group">
+                  <header class="combo-group-header">
+                    <div>
+                      <h4 class="combo-group-title">
+                        Grupo {{ groupIndex + 1 }} (<span class="notranslate" translate="no">{{
+                          group.name
+                        }}</span
+                        >)
+                      </h4>
+                      <p>{{ comboGroupInstruction(group) }}</p>
+                    </div>
+                    <span class="combo-selection-badge">{{ comboSelectionLabel(group) }}</span>
+                  </header>
+                  <ul class="combo-options">
+                    @for (option of group.options; track option.id) {
+                      <li class="combo-option">
+                        <span class="combo-option-name">
+                          @if (option.productQuantity > 1) {
+                            <strong>{{ option.productQuantity }} ×&nbsp;</strong>
+                          }
+                          <span class="notranslate" translate="no">{{ option.productName }}</span>
+                          @if (option.productVariationName) {
+                            <span class="combo-option-variation notranslate" translate="no">
+                              · {{ option.productVariationName }}
+                            </span>
+                          }
+                        </span>
+                        @if (option.priceAdjustment > 0) {
+                          <span class="combo-option-adjustment">
+                            Agrega +${{ option.priceAdjustment | number: '1.0-0' }}
+                          </span>
+                        } @else if (option.priceAdjustment < 0) {
+                          <span class="combo-option-adjustment combo-option-adjustment--discount">
+                            Descuenta −${{ -option.priceAdjustment | number: '1.0-0' }}
+                          </span>
+                        } @else {
+                          <span class="combo-option-included">Sin costo adicional</span>
+                        }
+                      </li>
+                    }
+                  </ul>
+                </article>
+              }
+            </div>
+          </section>
         }
       </div>
     </section>
