@@ -14,6 +14,31 @@ import { ORDER_REPOSITORY } from '../data-access/order.repository';
 import { Order, OrderItemReport, OrderQueryRequest } from '../models/order.model';
 import { OrderDetailsDialogComponent } from '../order-details-dialog/order-details-dialog.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { SortDirection, sortByValue } from '../../../shared/utils/sorting';
+
+type OrderSortColumn =
+  | 'orderNumber'
+  | 'tableName'
+  | 'status'
+  | 'itemCount'
+  | 'subtotalAmount'
+  | 'tipAmount'
+  | 'totalAmount'
+  | 'createdBy'
+  | 'createdAt'
+  | 'paidBy'
+  | 'paidAt';
+
+type OrderItemSortColumn =
+  | 'orderNumber'
+  | 'tableName'
+  | 'productName'
+  | 'quantity'
+  | 'unitPrice'
+  | 'subtotal'
+  | 'status'
+  | 'createdBy'
+  | 'createdAt';
 
 export interface ColumnDefinition {
   readonly id: string;
@@ -50,6 +75,64 @@ export class OrderListPageComponent implements OnInit {
   readonly totalPages = signal<number>(1);
   readonly currentPage = signal<number>(1);
   readonly pageSize = signal<number>(25);
+  readonly orderSortColumn = signal<OrderSortColumn>('createdAt');
+  readonly orderSortDirection = signal<SortDirection>('desc');
+  readonly itemSortColumn = signal<OrderItemSortColumn>('createdAt');
+  readonly itemSortDirection = signal<SortDirection>('desc');
+
+  readonly sortedOrders = computed(() =>
+    sortByValue(this.orders(), this.orderSortDirection(), (order) => {
+      switch (this.orderSortColumn()) {
+        case 'orderNumber':
+          return order.orderNumber;
+        case 'tableName':
+          return order.tableName;
+        case 'status':
+          return order.status;
+        case 'itemCount':
+          return order.items.length;
+        case 'subtotalAmount':
+          return order.subtotalAmount;
+        case 'tipAmount':
+          return order.tipAmount;
+        case 'totalAmount':
+          return order.totalAmount;
+        case 'createdBy':
+          return order.createdByUserName;
+        case 'createdAt':
+          return Date.parse(order.createdAt);
+        case 'paidBy':
+          return order.paidByUserName;
+        case 'paidAt':
+          return order.paidAt ? Date.parse(order.paidAt) : null;
+      }
+    }),
+  );
+
+  readonly sortedOrderItems = computed(() =>
+    sortByValue(this.orderItems(), this.itemSortDirection(), (item) => {
+      switch (this.itemSortColumn()) {
+        case 'orderNumber':
+          return item.orderNumber;
+        case 'tableName':
+          return item.tableName;
+        case 'productName':
+          return item.productName;
+        case 'quantity':
+          return item.quantity;
+        case 'unitPrice':
+          return item.unitPrice;
+        case 'subtotal':
+          return item.subtotal;
+        case 'status':
+          return item.status;
+        case 'createdBy':
+          return item.createdByUserName;
+        case 'createdAt':
+          return Date.parse(item.createdAt);
+      }
+    }),
+  );
 
   // Filters state
   readonly searchQuery = signal<string>('');
@@ -252,6 +335,36 @@ export class OrderListPageComponent implements OnInit {
   isColumnVisible(colId: string): boolean {
     const cols = this.activeTab() === 'orders' ? this.orderColumns() : this.itemColumns();
     return cols.find((c) => c.id === colId)?.visible ?? true;
+  }
+
+  sortOrders(column: OrderSortColumn): void {
+    if (this.orderSortColumn() === column) {
+      this.orderSortDirection.update((direction) => (direction === 'asc' ? 'desc' : 'asc'));
+      return;
+    }
+
+    this.orderSortColumn.set(column);
+    this.orderSortDirection.set('asc');
+  }
+
+  sortOrderItems(column: OrderItemSortColumn): void {
+    if (this.itemSortColumn() === column) {
+      this.itemSortDirection.update((direction) => (direction === 'asc' ? 'desc' : 'asc'));
+      return;
+    }
+
+    this.itemSortColumn.set(column);
+    this.itemSortDirection.set('asc');
+  }
+
+  orderSortIndicator(column: OrderSortColumn): string {
+    if (this.orderSortColumn() !== column) return '↕';
+    return this.orderSortDirection() === 'asc' ? '▲' : '▼';
+  }
+
+  itemSortIndicator(column: OrderItemSortColumn): string {
+    if (this.itemSortColumn() !== column) return '↕';
+    return this.itemSortDirection() === 'asc' ? '▲' : '▼';
   }
 
   openOrderDetails(order: Order): void {

@@ -5,6 +5,28 @@ import { OrganizationTime } from '../../../core/tenant/organization-time.service
 import { ExpensePageResult } from './expense.repository';
 import { ExpenseStoreService } from './expense-store.service';
 import { HttpExpenseRepository } from './http-expense.repository';
+import { Expense } from '../models/expense.model';
+
+const expense = (id: string, consecutiveNumber: number, amount: number): Expense => ({
+  id,
+  consecutiveNumber,
+  name: `Gasto ${consecutiveNumber}`,
+  description: null,
+  amount,
+  isCashOut: true,
+  paymentMethod: 'Efectivo',
+  supplier: null,
+  expenseDate: '2026-09-23T12:00:00Z',
+  businessDate: '2026-09-23',
+  status: 'ACTIVE',
+  annulledReason: null,
+  annulledAt: null,
+  annulledByUserName: null,
+  createdByUserName: 'Cajero',
+  lastModifiedByUserName: 'Cajero',
+  createdAt: '2026-09-23T12:00:00Z',
+  updatedAt: '2026-09-23T12:00:00Z',
+});
 
 describe('ExpenseStoreService', () => {
   const emptyPage: ExpensePageResult = {
@@ -67,5 +89,15 @@ describe('ExpenseStoreService', () => {
     store.loadEditingPolicy();
 
     expect(store.lockFinancialFieldsAfterCreation()).toBe(false);
+  });
+
+  it('sorts the current expense page ascending and descending', () => {
+    store.items.set([expense('expense-2', 2, 90_000), expense('expense-1', 1, 30_000)]);
+
+    store.sortBy('amount');
+    expect(store.expenses().map((item) => item.amount)).toEqual([30_000, 90_000]);
+
+    store.sortBy('amount');
+    expect(store.expenses().map((item) => item.amount)).toEqual([90_000, 30_000]);
   });
 });

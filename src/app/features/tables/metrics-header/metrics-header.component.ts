@@ -28,6 +28,7 @@ export class MetricsHeaderComponent {
   private readonly router = inject(Router);
 
   readonly metrics = input.required<TableMetrics>();
+  readonly hasOpenShift = input(false);
   readonly mode = signal<MetricsMode>('day');
   readonly pendingSummary = signal<SummaryCard | null>(null);
 
@@ -44,7 +45,7 @@ export class MetricsHeaderComponent {
 
   readonly salesValue = computed(() => {
     const m = this.metrics();
-    if (this.mode() === 'shift') {
+    if (this.activeMode() === 'shift') {
       return (m.openShiftSalesTotal ?? 0) + m.activeSalesTotal;
     }
     return (m.todaySalesTotal ?? 0) + m.activeSalesTotal;
@@ -52,15 +53,17 @@ export class MetricsHeaderComponent {
 
   readonly expensesValue = computed(() => {
     const m = this.metrics();
-    if (this.mode() === 'shift') {
+    if (this.activeMode() === 'shift') {
       return m.openShiftExpensesTotal ?? 0;
     }
     return m.todayExpensesTotal ?? 0;
   });
 
   readonly balanceValue = computed(() => this.salesValue() - this.expensesValue());
+  readonly activeMode = computed<MetricsMode>(() => (this.hasOpenShift() ? this.mode() : 'day'));
 
   toggleMode(newMode: MetricsMode): void {
+    if (!this.hasOpenShift()) return;
     this.mode.set(newMode);
   }
 

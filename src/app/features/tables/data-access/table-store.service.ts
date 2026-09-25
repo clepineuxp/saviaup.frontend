@@ -60,7 +60,7 @@ export class TableStore {
   private readonly operationAreasState = signal<readonly DiningAreaTables[]>([]);
   private readonly cashRegisterState = signal<TableOperationSnapshot['cashRegister']>({
     requiresOpenShift: false,
-    hasOpenShift: true,
+    hasOpenShift: false,
     isInteractionBlocked: false,
   });
   private readonly areasState = signal<readonly DiningArea[]>([]);

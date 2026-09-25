@@ -72,7 +72,10 @@
     </div>
   }
 
-  <app-metrics-header [metrics]="store.metrics()" />
+  <app-metrics-header
+    [metrics]="store.metrics()"
+    [hasOpenShift]="store.cashRegister().hasOpenShift"
+  />
 
   @if (store.loading()) {
     <div class="loading">{{ 'tables.loading' | translate }}</div>
