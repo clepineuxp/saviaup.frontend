@@ -28,6 +28,7 @@ export class PublicMenuComponent {
   readonly activeCategoryId = signal<string | null>(null);
   readonly expandedCategoryId = signal<string | null>(null);
   readonly selectedProduct = signal<PublicProduct | null>(null);
+  readonly categoriesMenuOpen = signal(false);
   readonly categoryRail = viewChild<ElementRef<HTMLElement>>('categoryRail');
 
   readonly usesCollapsibleCategories = computed(() => {
@@ -93,6 +94,16 @@ export class PublicMenuComponent {
     this.categoryRail()?.nativeElement.scrollBy({ left: direction * 220, behavior: 'smooth' });
   }
 
+  toggleCategoriesMenu(event: MouseEvent): void {
+    event.stopPropagation();
+    this.categoriesMenuOpen.update((open) => !open);
+  }
+
+  selectCategoryFromMenu(categoryId: string): void {
+    this.categoriesMenuOpen.set(false);
+    this.scrollToCategory(categoryId);
+  }
+
   openProduct(product: PublicProduct): void {
     this.selectedProduct.set(product);
   }
@@ -142,6 +153,12 @@ export class PublicMenuComponent {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
+    this.categoriesMenuOpen.set(false);
     this.closeProduct();
+  }
+
+  @HostListener('document:click')
+  closeCategoriesMenu(): void {
+    this.categoriesMenuOpen.set(false);
   }
 }

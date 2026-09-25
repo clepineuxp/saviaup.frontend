@@ -49,6 +49,7 @@ export class TableOperationPageComponent implements OnInit, OnDestroy {
   readonly salesCatalog = inject(TableSalesCatalogCache);
   readonly selectedTable = signal<RestaurantTable | null>(null);
   readonly tableSearchQuery = signal<string>('');
+  readonly roomZoom = signal(1);
   readonly pullDistance = signal(0);
   readonly pullRefreshing = signal(false);
   readonly pullReady = computed(
@@ -168,7 +169,7 @@ export class TableOperationPageComponent implements OnInit, OnDestroy {
   }
 
   reloadOperationState(): void {
-    this.store.initializeOperation().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+    this.store.refreshOperation().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
   beginPullRefresh(event: TouchEvent): void {
@@ -182,7 +183,11 @@ export class TableOperationPageComponent implements OnInit, OnDestroy {
   }
 
   movePullRefresh(event: TouchEvent): void {
-    if (this.pullStartY === null || event.touches.length !== 1) return;
+    if (event.touches.length !== 1) {
+      this.cancelPullRefresh();
+      return;
+    }
+    if (this.pullStartY === null) return;
     const distance = Math.max(0, event.touches[0].clientY - this.pullStartY);
     this.pullDistance.set(Math.min(distance * 0.55, 96));
   }
@@ -195,7 +200,7 @@ export class TableOperationPageComponent implements OnInit, OnDestroy {
 
     this.pullRefreshing.set(true);
     this.store
-      .verifyConnectionAndReload()
+      .verifyRealtimeConnection()
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         catchError(() => EMPTY),

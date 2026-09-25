@@ -25,35 +25,66 @@
   @if (menu()?.categories?.length && !searchQuery()) {
     <nav class="sticky-category-nav" aria-label="Categorías del menú">
       <div class="category-rail-shell">
-        <button
-          type="button"
-          class="rail-control rail-control-left"
-          (click)="scrollCategoryRail(-1)"
-          aria-label="Ver categorías anteriores"
-        >
-          ‹
-        </button>
-        <div #categoryRail class="pills-container">
-          @for (category of menu()?.categories; track category.id) {
-            <button
-              type="button"
-              class="category-pill notranslate"
-              translate="no"
-              [class.active]="activeCategoryId() === category.id"
-              (click)="scrollToCategory(category.id)"
-            >
-              {{ category.name }}
-            </button>
+        <div class="category-scroll">
+          <button
+            type="button"
+            class="rail-control rail-control-left"
+            (click)="scrollCategoryRail(-1)"
+            aria-label="Ver categorías anteriores"
+          >
+            ‹
+          </button>
+          <div #categoryRail class="pills-container">
+            @for (category of menu()?.categories; track category.id) {
+              <button
+                type="button"
+                class="category-pill notranslate"
+                translate="no"
+                [class.active]="activeCategoryId() === category.id"
+                (click)="scrollToCategory(category.id)"
+              >
+                {{ category.name }}
+              </button>
+            }
+          </div>
+          <button
+            type="button"
+            class="rail-control rail-control-right"
+            (click)="scrollCategoryRail(1)"
+            aria-label="Ver más categorías"
+          >
+            ›
+          </button>
+        </div>
+        <div class="category-menu-wrapper">
+          <button
+            type="button"
+            class="category-menu-toggle"
+            aria-label="Mostrar todas las categorías"
+            aria-haspopup="menu"
+            aria-controls="categories-menu"
+            [attr.aria-expanded]="categoriesMenuOpen()"
+            (click)="toggleCategoriesMenu($event)"
+          >
+            ☰
+          </button>
+          @if (categoriesMenuOpen()) {
+            <div id="categories-menu" class="categories-menu" role="menu">
+              @for (category of menu()?.categories; track category.id) {
+                <button
+                  type="button"
+                  role="menuitem"
+                  class="categories-menu-item notranslate"
+                  translate="no"
+                  [class.active]="activeCategoryId() === category.id"
+                  (click)="selectCategoryFromMenu(category.id)"
+                >
+                  {{ category.name }}
+                </button>
+              }
+            </div>
           }
         </div>
-        <button
-          type="button"
-          class="rail-control rail-control-right"
-          (click)="scrollCategoryRail(1)"
-          aria-label="Ver más categorías"
-        >
-          ›
-        </button>
       </div>
     </nav>
   }
@@ -140,10 +171,7 @@
                         </span>
                       }
                       @if (product.comboGroups.length > 0) {
-                        <span class="product-combo-summary">
-                          Combo personalizable · {{ product.comboGroups.length }}
-                          {{ product.comboGroups.length === 1 ? 'grupo' : 'grupos' }}
-                        </span>
+                        <span class="product-combo-summary">Combo personalizable</span>
                       }
                       @if (product.description) {
                         <span
@@ -222,18 +250,15 @@
           <section class="modal-combo" aria-label="Opciones del combo">
             <div class="modal-combo-heading">
               <h3>Opciones para armar tu combo</h3>
-              <p>Revisa qué debes elegir en cada grupo y si alguna opción cambia el precio.</p>
+              <p>Revisa qué debes elegir en cada sección y si alguna opción cambia el precio.</p>
             </div>
             <div class="combo-groups">
-              @for (group of product.comboGroups; track group.id; let groupIndex = $index) {
+              @for (group of product.comboGroups; track group.id) {
                 <article class="combo-group">
                   <header class="combo-group-header">
                     <div>
-                      <h4 class="combo-group-title">
-                        Grupo {{ groupIndex + 1 }} (<span class="notranslate" translate="no">{{
-                          group.name
-                        }}</span
-                        >)
+                      <h4 class="combo-group-title notranslate" translate="no">
+                        {{ group.name }}
                       </h4>
                       <p>{{ comboGroupInstruction(group) }}</p>
                     </div>

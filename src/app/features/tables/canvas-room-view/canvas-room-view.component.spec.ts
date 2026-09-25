@@ -79,4 +79,28 @@ describe('CanvasRoomViewComponent', () => {
     component.resetZoom();
     expect(component.zoom()).toBe(1);
   });
+
+  it('supports two-finger pinch zoom on touch screens', () => {
+    component.beginPinch(
+      touchEvent([
+        [0, 0],
+        [100, 0],
+      ]),
+    );
+    component.pinch(
+      touchEvent([
+        [0, 0],
+        [150, 0],
+      ]),
+    );
+    component.endPinch(touchEvent([[0, 0]]));
+
+    expect(component.zoom()).toBe(1.5);
+  });
 });
+
+function touchEvent(points: [number, number][]): TouchEvent {
+  return {
+    touches: points.map(([clientX, clientY]) => ({ clientX, clientY })),
+  } as unknown as TouchEvent;
+}
