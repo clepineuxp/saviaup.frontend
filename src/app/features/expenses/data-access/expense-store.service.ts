@@ -9,6 +9,17 @@ import {
 } from './expense.contracts';
 import { HttpExpenseRepository } from './http-expense.repository';
 import { ExpenseQueryFilters } from './expense.repository';
+import { SortDirection, sortByValue } from '../../../shared/utils/sorting';
+
+export type ExpenseSortColumn =
+  | 'consecutiveNumber'
+  | 'date'
+  | 'name'
+  | 'supplier'
+  | 'paymentMethod'
+  | 'origin'
+  | 'amount'
+  | 'status';
 
 @Injectable({
   providedIn: 'root',
@@ -37,8 +48,31 @@ export class ExpenseStoreService {
   readonly statusFilter = signal<string>('ALL');
   readonly paymentMethodFilter = signal<string>('ALL');
   readonly isCashOutFilter = signal<boolean | undefined>(undefined);
+  readonly sortColumn = signal<ExpenseSortColumn>('consecutiveNumber');
+  readonly sortDirection = signal<SortDirection>('desc');
 
-  readonly expenses = computed(() => this.items());
+  readonly expenses = computed(() =>
+    sortByValue(this.items(), this.sortDirection(), (expense) => {
+      switch (this.sortColumn()) {
+        case 'consecutiveNumber':
+          return expense.consecutiveNumber;
+        case 'date':
+          return Date.parse(expense.businessDate ?? expense.expenseDate);
+        case 'name':
+          return expense.name;
+        case 'supplier':
+          return expense.supplier?.name;
+        case 'paymentMethod':
+          return expense.paymentMethod;
+        case 'origin':
+          return expense.isCashOut;
+        case 'amount':
+          return expense.amount;
+        case 'status':
+          return expense.status;
+      }
+    }),
+  );
   readonly errorMessage = computed(() => this.error());
   readonly mutating = computed(() => this.loading());
   readonly canCreate = signal<boolean>(true);
@@ -126,6 +160,21 @@ export class ExpenseStoreService {
 
     this.pageSize.set(normalizedPageSize);
     this.loadPage(1);
+  }
+
+  sortBy(column: ExpenseSortColumn): void {
+    if (this.sortColumn() === column) {
+      this.sortDirection.update((direction) => (direction === 'asc' ? 'desc' : 'asc'));
+      return;
+    }
+
+    this.sortColumn.set(column);
+    this.sortDirection.set('asc');
+  }
+
+  sortIndicator(column: ExpenseSortColumn): string {
+    if (this.sortColumn() !== column) return '↕';
+    return this.sortDirection() === 'asc' ? '▲' : '▼';
   }
 
   createExpense(payload: CreateExpensePayload, onSuccess?: () => void): void {

@@ -83,43 +83,99 @@
         <table class="shifts-table">
           <thead>
             <tr>
-              <th>{{ 'cashRegisters.table.name' | translate }}</th>
-              <th>{{ 'cashRegisters.table.status' | translate }}</th>
-              <th>{{ 'orders.cols.createdBy' | translate }}</th>
-              <th>{{ 'orders.cols.createdAt' | translate }}</th>
-              <th>{{ 'orders.cols.paidBy' | translate }}</th>
-              <th>{{ 'orders.cols.paidAt' | translate }}</th>
-              <th>{{ 'cashRegisters.shift.initial' | translate }}</th>
-              <th>{{ 'cashRegisters.shift.totalInCash' | translate }}</th>
+              <th>
+                <button type="button" class="sort-header" (click)="sortShifts('cashRegisterName')">
+                  {{ 'cashRegisters.table.name' | translate }}
+                  <span>{{ shiftSortIndicator('cashRegisterName') }}</span>
+                </button>
+              </th>
+              <th class="status-column">
+                <button type="button" class="sort-header" (click)="sortShifts('status')">
+                  {{ 'cashRegisters.table.status' | translate }}
+                  <span>{{ shiftSortIndicator('status') }}</span>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-header" (click)="sortShifts('openedByUserName')">
+                  {{ 'orders.cols.createdBy' | translate }}
+                  <span>{{ shiftSortIndicator('openedByUserName') }}</span>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-header" (click)="sortShifts('openedAt')">
+                  {{ 'orders.cols.createdAt' | translate }}
+                  <span>{{ shiftSortIndicator('openedAt') }}</span>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-header" (click)="sortShifts('closedByUserName')">
+                  {{ 'orders.cols.paidBy' | translate }}
+                  <span>{{ shiftSortIndicator('closedByUserName') }}</span>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-header" (click)="sortShifts('closedAt')">
+                  {{ 'orders.cols.paidAt' | translate }}
+                  <span>{{ shiftSortIndicator('closedAt') }}</span>
+                </button>
+              </th>
+              <th>
+                <button
+                  type="button"
+                  class="sort-header"
+                  (click)="sortShifts('initialOpeningAmount')"
+                >
+                  {{ 'cashRegisters.shift.initial' | translate }}
+                  <span>{{ shiftSortIndicator('initialOpeningAmount') }}</span>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-header" (click)="sortShifts('totalSalesAmount')">
+                  {{ 'cashRegisters.shift.sales' | translate }}
+                  <span>{{ shiftSortIndicator('totalSalesAmount') }}</span>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-header" (click)="sortShifts('totalInCashAmount')">
+                  {{ 'cashRegisters.shift.totalInCash' | translate }}
+                  <span>{{ shiftSortIndicator('totalInCashAmount') }}</span>
+                </button>
+              </th>
               <th class="text-end">{{ 'cashRegisters.table.actions' | translate }}</th>
             </tr>
           </thead>
           <tbody>
             @if (loadingShifts()) {
               <tr>
-                <td colspan="9" class="loading-cell">{{ 'common.loading' | translate }}</td>
+                <td colspan="10" class="loading-cell">{{ 'common.loading' | translate }}</td>
               </tr>
             } @else if (shiftsPage()?.items?.length === 0) {
               <tr>
-                <td colspan="9" class="empty-cell">
+                <td colspan="10" class="empty-cell">
                   {{ 'cashRegisters.management.emptyState' | translate }}
                 </td>
               </tr>
             } @else {
-              @for (shift of shiftsPage()?.items; track shift.id) {
+              @for (shift of sortedShifts(); track shift.id) {
                 <tr [class.shift-open-row]="shift.status === 'OPEN'">
                   <td>
                     <strong>{{ shift.cashRegisterName }}</strong>
                   </td>
-                  <td>
+                  <td class="status-column">
                     @if (shift.status === 'OPEN') {
-                      <span class="status-tag open">{{
-                        'cashRegisters.shift.activeShiftBadge' | translate
-                      }}</span>
+                      <span
+                        class="status-tag open"
+                        title="Abierta / Open"
+                        aria-label="Abierta / Open"
+                        >A/O</span
+                      >
                     } @else {
-                      <span class="status-tag closed">{{
-                        'cashRegisters.status.inactive' | translate
-                      }}</span>
+                      <span
+                        class="status-tag closed"
+                        title="Cerrada / Closed"
+                        aria-label="Cerrada / Closed"
+                        >C</span
+                      >
                     }
                   </td>
                   <td>
@@ -149,6 +205,11 @@
                   <td>
                     <strong class="initial-text">{{
                       shift.initialOpeningAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                    }}</strong>
+                  </td>
+                  <td>
+                    <strong class="sales-text">{{
+                      shift.totalSalesAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
                     }}</strong>
                   </td>
                   <td>
@@ -380,6 +441,45 @@
                     </tr>
                   }
                 </tbody>
+                <tfoot>
+                  <tr class="audit-total-row">
+                    <th>{{ 'cashRegisters.shift.total' | translate }}</th>
+                    <td>
+                      <strong>{{
+                        state.summary.initialOpeningAmount
+                          | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                      }}</strong>
+                    </td>
+                    <td>
+                      <strong>{{
+                        state.summary.totalSalesAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                      }}</strong>
+                    </td>
+                    <td>
+                      <strong>{{
+                        state.summary.totalTipsAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                      }}</strong>
+                    </td>
+                    <td>
+                      <strong>{{
+                        state.summary.totalExpensesAmount
+                          | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                      }}</strong>
+                    </td>
+                    <td>
+                      <strong>{{
+                        state.summary.totalCollectedAmount
+                          | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                      }}</strong>
+                    </td>
+                    <td>
+                      <strong>{{
+                        state.summary.totalInCashAmount
+                          | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                      }}</strong>
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </section>

@@ -23,30 +23,32 @@
     }
   </article>
 
-  <div class="metric metric--toggle-group">
-    <div class="mode-toggle" role="tablist">
-      <button
-        type="button"
-        role="tab"
-        class="mode-btn"
-        [class.mode-btn--active]="mode() === 'day'"
-        [attr.aria-selected]="mode() === 'day'"
-        (click)="toggleMode('day')"
-      >
-        {{ 'tables.metrics.modeDay' | translate }}
-      </button>
-      <button
-        type="button"
-        role="tab"
-        class="mode-btn"
-        [class.mode-btn--active]="mode() === 'shift'"
-        [attr.aria-selected]="mode() === 'shift'"
-        (click)="toggleMode('shift')"
-      >
-        {{ 'tables.metrics.modeShift' | translate }}
-      </button>
+  @if (hasOpenShift()) {
+    <div class="metric metric--toggle-group">
+      <div class="mode-toggle" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          class="mode-btn"
+          [class.mode-btn--active]="activeMode() === 'day'"
+          [attr.aria-selected]="activeMode() === 'day'"
+          (click)="toggleMode('day')"
+        >
+          {{ 'tables.metrics.modeDay' | translate }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="mode-btn"
+          [class.mode-btn--active]="activeMode() === 'shift'"
+          [attr.aria-selected]="activeMode() === 'shift'"
+          (click)="toggleMode('shift')"
+        >
+          {{ 'tables.metrics.modeShift' | translate }}
+        </button>
+      </div>
     </div>
-  </div>
+  }
 
   <article
     class="metric metric--dynamic-sales"
@@ -59,7 +61,7 @@
     (keydown.space)="onSummaryCardClick('period-sales', $event)"
   >
     <span>{{
-      (mode() === 'day' ? 'tables.metrics.salesDay' : 'tables.metrics.salesShift') | translate
+      (activeMode() === 'day' ? 'tables.metrics.salesDay' : 'tables.metrics.salesShift') | translate
     }}</span>
     <strong>{{ salesValue() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
     @if (pendingSummary() === 'period-sales') {
@@ -78,7 +80,7 @@
       (keydown.space)="onSummaryCardClick('expenses', $event)"
     >
       <span>{{
-        (mode() === 'day' ? 'tables.metrics.expensesDay' : 'tables.metrics.expensesShift')
+        (activeMode() === 'day' ? 'tables.metrics.expensesDay' : 'tables.metrics.expensesShift')
           | translate
       }}</span>
       <strong>{{ expensesValue() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
@@ -98,7 +100,8 @@
       (keydown.space)="onSummaryCardClick('balance', $event)"
     >
       <span>{{
-        (mode() === 'day' ? 'tables.metrics.balanceDay' : 'tables.metrics.balanceShift') | translate
+        (activeMode() === 'day' ? 'tables.metrics.balanceDay' : 'tables.metrics.balanceShift')
+          | translate
       }}</span>
       <strong
         [class.metric-value--positive]="balanceValue() > 0"

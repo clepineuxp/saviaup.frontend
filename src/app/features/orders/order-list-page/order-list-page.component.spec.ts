@@ -171,4 +171,31 @@ describe('OrderListPageComponent', () => {
     component.closeOrderDetails();
     expect(component.selectedOrder()).toBeNull();
   });
+
+  it('should sort orders in both directions by a selected column', () => {
+    component.orders.set([
+      dummyOrder,
+      { ...dummyOrder, id: 'ord-2', orderNumber: 99, totalAmount: 25_000 },
+    ]);
+
+    component.sortOrders('orderNumber');
+    expect(component.sortedOrders().map((order) => order.orderNumber)).toEqual([99, 101]);
+
+    component.sortOrders('orderNumber');
+    expect(component.sortedOrders().map((order) => order.orderNumber)).toEqual([101, 99]);
+  });
+
+  it('should sort item rows by product name', () => {
+    component.orderItems.set([
+      dummyOrderItem,
+      { ...dummyOrderItem, itemId: 'item-2', productName: 'Agua' },
+    ]);
+
+    component.sortOrderItems('productName');
+
+    expect(component.sortedOrderItems().map((item) => item.productName)).toEqual([
+      'Agua',
+      'Hamburguesa Especial',
+    ]);
+  });
 });

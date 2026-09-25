@@ -270,6 +270,28 @@
     white-space: nowrap;
   }
 
+  .sort-header {
+    display: inline-flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+
+    span {
+      color: var(--color-savia-600, #2f7950);
+      font-size: 0.7rem;
+    }
+
+    &--end {
+      justify-content: flex-end;
+    }
+  }
+
   td {
     padding: 0.85rem 1rem;
     border-bottom: 1px solid #f1f5f9;

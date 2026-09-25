@@ -1,6 +1,13 @@
 import { OrganizationDatePipe } from '../../../shared/pipes/organization-date.pipe';
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PagedResponse } from '../../../shared/models/paged-response.model';
 import { UiAlertComponent } from '../../../shared/components/ui-alert/ui-alert.component';
@@ -20,6 +27,18 @@ import {
 } from '../models/cash-register.model';
 
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { SortDirection, sortByValue } from '../../../shared/utils/sorting';
+
+type ShiftSortColumn =
+  | 'cashRegisterName'
+  | 'status'
+  | 'openedByUserName'
+  | 'openedAt'
+  | 'closedByUserName'
+  | 'closedAt'
+  | 'initialOpeningAmount'
+  | 'totalSalesAmount'
+  | 'totalInCashAmount';
 
 @Component({
   selector: 'app-cash-register-page',
@@ -48,6 +67,34 @@ export class CashRegisterPageComponent implements OnInit {
   // Shift Management Signals
   readonly shiftsPage = signal<PagedResponse<CashRegisterShift> | null>(null);
   readonly loadingShifts = signal<boolean>(false);
+  readonly shiftSortColumn = signal<ShiftSortColumn>('openedAt');
+  readonly shiftSortDirection = signal<SortDirection>('desc');
+  readonly sortedShifts = computed(() => {
+    const items = this.shiftsPage()?.items ?? [];
+    const column = this.shiftSortColumn();
+    return sortByValue(items, this.shiftSortDirection(), (shift) => {
+      switch (column) {
+        case 'cashRegisterName':
+          return shift.cashRegisterName;
+        case 'status':
+          return shift.status;
+        case 'openedByUserName':
+          return shift.openedByUserName;
+        case 'openedAt':
+          return Date.parse(shift.openedAt);
+        case 'closedByUserName':
+          return shift.closedByUserName;
+        case 'closedAt':
+          return shift.closedAt ? Date.parse(shift.closedAt) : null;
+        case 'initialOpeningAmount':
+          return shift.initialOpeningAmount;
+        case 'totalSalesAmount':
+          return shift.totalSalesAmount;
+        case 'totalInCashAmount':
+          return shift.totalInCashAmount;
+      }
+    });
+  });
 
   // Open Shift Modal State
   readonly openShiftModalRegister = signal<CashRegister | null>(null);
@@ -85,6 +132,20 @@ export class CashRegisterPageComponent implements OnInit {
         this.loadingShifts.set(false);
       },
     });
+  }
+
+  sortShifts(column: ShiftSortColumn): void {
+    if (this.shiftSortColumn() === column) {
+      this.shiftSortDirection.update((direction) => (direction === 'asc' ? 'desc' : 'asc'));
+      return;
+    }
+    this.shiftSortColumn.set(column);
+    this.shiftSortDirection.set('asc');
+  }
+
+  shiftSortIndicator(column: ShiftSortColumn): string {
+    if (this.shiftSortColumn() !== column) return '↕';
+    return this.shiftSortDirection() === 'asc' ? '▲' : '▼';
   }
 
   // --- OPEN SHIFT LOGIC ---

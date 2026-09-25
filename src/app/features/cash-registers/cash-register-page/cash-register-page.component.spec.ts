@@ -109,6 +109,84 @@ describe('CashRegisterPageComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.initial-text').textContent).toContain('125,000');
+    expect(fixture.nativeElement.querySelector('.sales-text').textContent).toContain('450,000');
     expect(fixture.nativeElement.querySelector('.total-text').textContent).toContain('525,000');
+    expect(fixture.nativeElement.querySelector('.status-tag.closed').textContent.trim()).toBe('C');
+  });
+
+  it('sorts the cash shift history by the selected column', () => {
+    const shift = (id: string, sales: number): CashRegisterShift => ({
+      id,
+      cashRegisterId: 'reg-1',
+      cashRegisterName: 'Caja Principal',
+      status: 'CLOSED',
+      openedByUserId: 'user-1',
+      openedByUserName: 'Cajero',
+      openedAt: '2026-09-23T13:00:00Z',
+      totalSalesAmount: sales,
+      totalTipsAmount: 0,
+      totalCollectedAmount: sales,
+      totalExpensesAmount: 0,
+      initialOpeningAmount: 100_000,
+      totalInCashAmount: 100_000 + sales,
+      openingBalancesJson: '[]',
+    });
+    fixture.componentInstance.shiftsPage.set({
+      items: [shift('shift-2', 200_000), shift('shift-1', 50_000)],
+      pageNumber: 1,
+      pageSize: 15,
+      totalItems: 2,
+      totalPages: 1,
+    });
+
+    fixture.componentInstance.sortShifts('totalSalesAmount');
+    expect(fixture.componentInstance.sortedShifts().map((item) => item.totalSalesAmount)).toEqual([
+      50_000, 200_000,
+    ]);
+
+    fixture.componentInstance.sortShifts('totalSalesAmount');
+    expect(fixture.componentInstance.sortedShifts().map((item) => item.totalSalesAmount)).toEqual([
+      200_000, 50_000,
+    ]);
+  });
+
+  it('shows the totals row in the close shift payment-method table', () => {
+    fixture.componentInstance.closingShiftState.set({
+      shiftId: 'shift-1',
+      isReadOnly: false,
+      actualAmounts: { Efectivo: 145_750 },
+      summary: {
+        shiftId: 'shift-1',
+        cashRegisterId: 'reg-1',
+        cashRegisterName: 'Caja Principal',
+        status: 'OPEN',
+        openedByUserName: 'Cajero',
+        openedAt: '2026-09-23T13:00:00Z',
+        totalSalesAmount: 41_600,
+        totalTipsAmount: 4_150,
+        totalCollectedAmount: 45_750,
+        totalExpensesAmount: 0,
+        initialOpeningAmount: 100_000,
+        totalInCashAmount: 145_750,
+        methodSummaries: [
+          {
+            methodName: 'Efectivo',
+            initialOpeningAmount: 100_000,
+            salesCollectedAmount: 41_600,
+            tipsCollectedAmount: 4_150,
+            expensesAmount: 0,
+            totalCollectedAmount: 45_750,
+            expectedTotalAmount: 145_750,
+          },
+        ],
+      },
+    });
+    fixture.detectChanges();
+
+    const totalsRow = fixture.nativeElement.querySelector('.audit-total-row') as HTMLElement;
+    expect(totalsRow).not.toBeNull();
+    expect(totalsRow.textContent).toContain('100,000');
+    expect(totalsRow.textContent).toContain('41,600');
+    expect(totalsRow.textContent).toContain('145,750');
   });
 });
