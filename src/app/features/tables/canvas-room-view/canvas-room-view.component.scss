@@ -95,6 +95,12 @@
   font-size: 0.82rem;
 }
 
+@media (max-width: 1023px) {
+  .zoom-controls {
+    display: none;
+  }
+}
+
 @media (max-width: 767px) {
   .room-viewport {
     height: clamp(26rem, calc(100dvh - 22rem), 40rem);

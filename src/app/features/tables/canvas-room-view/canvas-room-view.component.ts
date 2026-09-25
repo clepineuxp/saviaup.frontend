@@ -3,8 +3,8 @@ import {
   Component,
   ElementRef,
   computed,
-  signal,
   input,
+  model,
   output,
   viewChild,
 } from '@angular/core';
@@ -28,9 +28,18 @@ const ZOOM_STEP = 0.1;
 export class CanvasRoomViewComponent {
   readonly area = input.required<DiningAreaTables>();
   readonly tableSelected = output<RestaurantTable>();
+  readonly zoom = model(1);
   private readonly viewport = viewChild<ElementRef<HTMLElement>>('viewport');
   private panStart: { x: number; y: number; left: number; top: number } | null = null;
-  readonly zoom = signal(1);
+  private pinchStart:
+    | {
+        distance: number;
+        zoom: number;
+        contentX: number;
+        contentY: number;
+      }
+    | undefined;
+  private pinching = false;
   readonly zoomPercent = computed(() => Math.round(this.zoom() * 100));
 
   readonly bounds = computed(() => {
@@ -76,8 +85,46 @@ export class CanvasRoomViewComponent {
     this.setZoom(1);
   }
 
+  beginPinch(event: TouchEvent): void {
+    if (event.touches.length !== 2) return;
+    const viewport = this.viewport()?.nativeElement;
+    if (!viewport) return;
+    const gesture = this.touchGesture(event, viewport);
+    this.pinching = true;
+    this.panStart = null;
+    this.pinchStart = {
+      distance: gesture.distance,
+      zoom: this.zoom(),
+      contentX: (viewport.scrollLeft + gesture.viewportX) / this.zoom(),
+      contentY: (viewport.scrollTop + gesture.viewportY) / this.zoom(),
+    };
+  }
+
+  pinch(event: TouchEvent): void {
+    const viewport = this.viewport()?.nativeElement;
+    if (!viewport || !this.pinchStart || event.touches.length !== 2) return;
+    const gesture = this.touchGesture(event, viewport);
+    const next = this.pinchStart.zoom * (gesture.distance / this.pinchStart.distance);
+    this.setZoom(
+      next,
+      {
+        viewportX: gesture.viewportX,
+        viewportY: gesture.viewportY,
+        contentX: this.pinchStart.contentX,
+        contentY: this.pinchStart.contentY,
+      },
+      false,
+    );
+  }
+
+  endPinch(event: TouchEvent): void {
+    if (event.touches.length >= 2) return;
+    this.pinchStart = undefined;
+    this.pinching = false;
+  }
+
   beginPan(event: PointerEvent): void {
-    if ((event.target as Element).closest('button')) return;
+    if (this.pinching || (event.target as Element).closest('button')) return;
     const viewport = this.viewport()?.nativeElement;
     if (!viewport) return;
     this.panStart = {
@@ -91,7 +138,7 @@ export class CanvasRoomViewComponent {
 
   pan(event: PointerEvent): void {
     const viewport = this.viewport()?.nativeElement;
-    if (!viewport || !this.panStart) return;
+    if (!viewport || !this.panStart || this.pinching) return;
     viewport.scrollLeft = this.panStart.left - (event.clientX - this.panStart.x);
     viewport.scrollTop = this.panStart.top - (event.clientY - this.panStart.y);
   }
@@ -100,18 +147,46 @@ export class CanvasRoomViewComponent {
     this.panStart = null;
   }
 
-  private setZoom(value: number): void {
+  private setZoom(
+    value: number,
+    anchor?: {
+      viewportX: number;
+      viewportY: number;
+      contentX: number;
+      contentY: number;
+    },
+    snap = true,
+  ): void {
     const previous = this.zoom();
-    const next = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.round(value * 10) / 10));
+    const precision = snap ? 10 : 100;
+    const next = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.round(value * precision) / precision));
     if (next === previous) return;
     const viewport = this.viewport()?.nativeElement;
-    const centerX = viewport ? viewport.scrollLeft + viewport.clientWidth / 2 : 0;
-    const centerY = viewport ? viewport.scrollTop + viewport.clientHeight / 2 : 0;
+    const viewportX = anchor?.viewportX ?? (viewport?.clientWidth ?? 0) / 2;
+    const viewportY = anchor?.viewportY ?? (viewport?.clientHeight ?? 0) / 2;
+    const contentX = anchor?.contentX ?? ((viewport?.scrollLeft ?? 0) + viewportX) / previous;
+    const contentY = anchor?.contentY ?? ((viewport?.scrollTop ?? 0) + viewportY) / previous;
     this.zoom.set(next);
     if (!viewport) return;
     queueMicrotask(() => {
-      viewport.scrollLeft = centerX * (next / previous) - viewport.clientWidth / 2;
-      viewport.scrollTop = centerY * (next / previous) - viewport.clientHeight / 2;
+      viewport.scrollLeft = contentX * next - viewportX;
+      viewport.scrollTop = contentY * next - viewportY;
     });
+  }
+
+  private touchGesture(
+    event: TouchEvent,
+    viewport: HTMLElement,
+  ): { distance: number; viewportX: number; viewportY: number } {
+    const [first, second] = [event.touches[0], event.touches[1]];
+    const rect = viewport.getBoundingClientRect();
+    return {
+      distance: Math.max(
+        1,
+        Math.hypot(second.clientX - first.clientX, second.clientY - first.clientY),
+      ),
+      viewportX: (first.clientX + second.clientX) / 2 - rect.left,
+      viewportY: (first.clientY + second.clientY) / 2 - rect.top,
+    };
   }
 }

@@ -18,6 +18,7 @@ export class TableRealtimeClient {
   private readonly document = inject(DOCUMENT);
   private connection: HubConnection | null = null;
   private connectRequest: Promise<void> | null = null;
+  private verifyRequest: Promise<boolean> | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private shouldBeConnected = false;
   private lifecycleListenersAttached = false;
@@ -50,11 +51,13 @@ export class TableRealtimeClient {
     return this.connectRequest;
   }
 
-  async verifyConnection(): Promise<boolean> {
-    if (this.isConnected()) return true;
-    if (this.connection?.state === HubConnectionState.Reconnecting) return false;
-    await this.connect();
-    return this.isConnected();
+  verifyConnection(): Promise<boolean> {
+    if (this.verifyRequest) return this.verifyRequest;
+    const request = this.performConnectionVerification().finally(() => {
+      if (this.verifyRequest === request) this.verifyRequest = null;
+    });
+    this.verifyRequest = request;
+    return request;
   }
 
   async disconnect(): Promise<void> {
@@ -64,6 +67,7 @@ export class TableRealtimeClient {
     const connection = this.connection;
     this.connection = null;
     this.connectRequest = null;
+    this.verifyRequest = null;
     this.hasConnected = false;
     this.resyncOnNextConnect = false;
     if (connection) await connection.stop();
@@ -139,6 +143,45 @@ export class TableRealtimeClient {
     return this.connection?.state === HubConnectionState.Connected;
   }
 
+  private async performConnectionVerification(): Promise<boolean> {
+    const connection = this.connection;
+    if (connection?.state === HubConnectionState.Connected) {
+      try {
+        await connection.invoke<boolean>('Ping');
+        return this.isConnected();
+      } catch {
+        return this.reconnectNow();
+      }
+    }
+
+    if (connection?.state === HubConnectionState.Reconnecting) return false;
+
+    try {
+      await this.connect();
+      return this.isConnected();
+    } catch {
+      return false;
+    }
+  }
+
+  private async reconnectNow(): Promise<boolean> {
+    const connection = this.connection;
+    if (connection && connection.state !== HubConnectionState.Disconnected) {
+      try {
+        await connection.stop();
+      } catch {
+        // Starting the same connection below remains the recovery path.
+      }
+    }
+    this.clearReconnectTimer();
+    try {
+      await this.connect();
+      return this.isConnected();
+    } catch {
+      return false;
+    }
+  }
+
   private readonly handleWake = (): void => {
     const window = this.document.defaultView;
     if (
@@ -149,13 +192,7 @@ export class TableRealtimeClient {
     )
       return;
 
-    if (this.connection?.state === HubConnectionState.Connected) {
-      this.resyncRequiredSubject.next();
-      return;
-    }
-    if (this.connection?.state === HubConnectionState.Reconnecting) return;
-    this.resyncOnNextConnect = true;
-    void this.connect().catch(() => undefined);
+    void this.verifyConnection();
   };
 
   private attachLifecycleListeners(): void {
