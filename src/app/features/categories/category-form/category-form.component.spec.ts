@@ -49,6 +49,8 @@ describe('CategoryFormComponent', () => {
     expect(component.form.controls.image.hasError('imageUrl')).toBe(true);
     component.form.controls.image.setValue('ftp://example.com/image.webp');
     expect(component.form.controls.image.hasError('imageUrl')).toBe(true);
+    component.form.controls.image.setValue('/pvc/tenant/categories/category/image.webp');
+    expect(component.form.controls.image.valid).toBe(true);
     component.form.controls.image.setValue('https://example.com/image.webp');
     component.form.controls.isInventoryTracked.setValue(false);
     expect(component.form.valid).toBe(true);
