@@ -2,8 +2,10 @@ import { computed, DestroyRef, effect, inject, Injectable, signal, untracked } f
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import {
+  auditTime,
   catchError,
   EMPTY,
+  exhaustMap,
   finalize,
   forkJoin,
   map,
@@ -127,6 +129,16 @@ export class TableStore {
           this.loadOperation().subscribe({ error: () => undefined });
         }
       });
+    this.realtime.resyncRequired$
+      .pipe(
+        auditTime(100),
+        exhaustMap(() =>
+          this.scopedTenantId ? this.loadOperation().pipe(catchError(() => EMPTY)) : EMPTY,
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
+    this.destroyRef.onDestroy(() => void this.realtime.disconnect());
   }
 
   hasPermission(permission: TablePermission): boolean {

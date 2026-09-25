@@ -16,7 +16,12 @@ export class RealtimeService {
         accessTokenFactory: async () =>
           (await firstValueFrom(this.refresh.ensureFreshTokens()))?.accessToken ?? '',
       })
-      .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+      .withAutomaticReconnect({
+        nextRetryDelayInMilliseconds: ({ previousRetryCount }) => {
+          const delays = [0, 2000, 5000, 10000, 30000];
+          return delays[Math.min(previousRetryCount, delays.length - 1)];
+        },
+      })
       .build();
   }
 }

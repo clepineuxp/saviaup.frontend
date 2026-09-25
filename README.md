@@ -361,7 +361,7 @@ El archivo de Figma “Savia Up · Web App” fue creado como espacio de diseño
 - El área útil se concentra en la sala seleccionada. El encabezado de la sala permite cambiarla y alternar entre plano e iconos; sus KPIs son compactos y la barra lateral de escritorio puede ocultarse y recuperarse durante la operación.
 - **Rediseño de métricas con toggle Día / Turno**: el encabezado agrupa las ventas (Día/Turno) y egresos (Día/Turno) en una sola métrica dinámica conmutada por botón, muestra las mesas disponibles en formato "X de Y" y enlaza con los totales de turnos de caja en tiempo real.
 - `/app/configuration/tables/manage` administra salas y mesas, reordena salas y edita capacidad, flags, estado y forma (`SQUARE`, `ROUND`, `RECTANGLE_HORIZONTAL`, `RECTANGLE_VERTICAL`). La posición se define arrastrando la misma tarjeta y con las mismas dimensiones que usa la operación (`100×100`, `150×100` o `100×150`); doble clic abre la edición y el modal permite eliminar con confirmación. El estado se comunica por color y su etiqueta aparece solo con `hover`/foco.
-- `TableRealtimeClient` conecta únicamente durante el ciclo de vida de la feature, envía el JWT vigente y aplica reconexión automática para `OnTableStatusChanged` y `OnTableOrderUpdated`.
+- `TableRealtimeClient` conecta únicamente durante el ciclo de vida de la feature, obtiene un JWT vigente en cada reconexión y mantiene reintentos con espera máxima de 30 segundos. Al recuperar foco, visibilidad o conectividad, y después de cada reconexión, vuelve a consultar el snapshot REST para cubrir eventos que pudieron perderse mientras la PWA estuvo suspendida.
 - El bloqueo de caja abierta se deriva del backend y deshabilita todas las acciones de `tables.operate` sin ocultar el estado actual.
 - Los productos `COMBO` abren un configurador dentro del flujo de venta. La UI muestra los productos o variaciones fijas, exige las selecciones obligatorias, limita cantidades múltiples, recalcula el precio visible y envía `comboSelections` solo para grupos seleccionables. La pestaña de observaciones resume productos/variaciones fijos o seleccionados y separa la nota adicional; el backend vuelve a construir el texto definitivo antes de guardar.
 
@@ -373,7 +373,7 @@ La sesión se conserva hasta el vencimiento del refresh token informado por la A
 
 Los fallos de red, límites de peticiones y errores de servidor conservan las credenciales para reintentar. Una respuesta 401 del refresh o su expiración conocida limpia la sesión. Una respuesta tardía no puede restaurar una sesión cerrada ni sobrescribir una sesión nueva. No se recarga la página para renovar tokens.
 
-Se conserva la opción **Recordarme**: activada usa almacenamiento persistente; desactivada usa el almacenamiento de la sesión del navegador. Para recuperar la sesión incluso después de cerrar por completo la PWA o de que el sistema descarte su instancia, se debe activar esta opción al ingresar. La renovación funciona al volver a la app; no requiere que el sistema operativo permita ejecutar JavaScript en segundo plano.
+Se conserva la opción **Recordarme** y aparece activada de forma predeterminada: activada usa almacenamiento persistente; si el usuario la desactiva, usa el almacenamiento de la sesión del navegador. Así, la PWA puede recuperar la sesión después de cerrarse por completo o de que el sistema descarte su instancia. La renovación funciona al volver a la app; no requiere que el sistema operativo permita ejecutar JavaScript en segundo plano.
 
 ## Módulos operativos adicionales
 
