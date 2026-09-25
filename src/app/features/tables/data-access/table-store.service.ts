@@ -11,6 +11,7 @@ import {
   map,
   Observable,
   of,
+  from,
   shareReplay,
   switchMap,
   tap,
@@ -171,6 +172,13 @@ export class TableStore {
 
   initializeOperation(): Observable<TableOperationSnapshot> {
     return this.ensurePermissions().pipe(switchMap(() => this.loadOperation()));
+  }
+
+  verifyConnectionAndReload(): Observable<TableOperationSnapshot> {
+    return from(this.realtime.verifyConnection()).pipe(
+      catchError(() => of(false)),
+      switchMap(() => this.initializeOperation()),
+    );
   }
 
   loadOperation(): Observable<TableOperationSnapshot> {

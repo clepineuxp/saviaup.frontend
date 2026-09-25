@@ -50,6 +50,13 @@ export class TableRealtimeClient {
     return this.connectRequest;
   }
 
+  async verifyConnection(): Promise<boolean> {
+    if (this.isConnected()) return true;
+    if (this.connection?.state === HubConnectionState.Reconnecting) return false;
+    await this.connect();
+    return this.isConnected();
+  }
+
   async disconnect(): Promise<void> {
     this.shouldBeConnected = false;
     this.detachLifecycleListeners();
@@ -126,6 +133,10 @@ export class TableRealtimeClient {
     if (!this.reconnectTimer) return;
     clearTimeout(this.reconnectTimer);
     this.reconnectTimer = null;
+  }
+
+  private isConnected(): boolean {
+    return this.connection?.state === HubConnectionState.Connected;
   }
 
   private readonly handleWake = (): void => {
