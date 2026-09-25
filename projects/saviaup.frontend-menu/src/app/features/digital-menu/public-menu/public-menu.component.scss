@@ -299,6 +299,16 @@
 .product-description--with-variations {
   -webkit-line-clamp: 1;
 }
+.product-combo-summary {
+  align-self: flex-start;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--menu-primary) 13%, transparent);
+  color: var(--menu-primary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
 
 .no-results {
   padding: 3rem 1rem;
@@ -391,6 +401,104 @@
   color: var(--menu-accent);
   white-space: nowrap;
 }
+.modal-combo {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--menu-text) 14%, transparent);
+}
+.modal-combo-heading h3 {
+  margin: 0;
+  font-size: 1.08rem;
+}
+.modal-combo-heading p {
+  margin: 0.35rem 0 0;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  opacity: 0.72;
+}
+.combo-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+.combo-group {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--menu-text) 13%, transparent);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--menu-text) 3%, transparent);
+}
+.combo-group-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--menu-text) 10%, transparent);
+}
+.combo-group-title {
+  margin: 0;
+  font-size: 0.96rem;
+  line-height: 1.35;
+}
+.combo-group-header p {
+  margin: 0.22rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  opacity: 0.72;
+}
+.combo-selection-badge {
+  flex: 0 0 auto;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--menu-primary) 14%, transparent);
+  color: var(--menu-primary);
+  font-size: 0.7rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+.combo-options {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.combo-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.72rem 1rem;
+}
+.combo-option + .combo-option {
+  border-top: 1px solid color-mix(in srgb, var(--menu-text) 9%, transparent);
+}
+.combo-option-name {
+  min-width: 0;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+.combo-option-name strong {
+  margin-right: 0.25rem;
+}
+.combo-option-variation {
+  opacity: 0.72;
+}
+.combo-option-adjustment,
+.combo-option-included {
+  flex: 0 0 auto;
+  font-size: 0.76rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.combo-option-adjustment {
+  color: var(--menu-accent);
+}
+.combo-option-adjustment--discount {
+  color: var(--menu-primary);
+}
+.combo-option-included {
+  opacity: 0.62;
+}
 @keyframes modal-backdrop-in {
   from {
     opacity: 0;
@@ -470,6 +578,15 @@
   }
   .rail-control {
     width: 2.7rem;
+  }
+  .combo-group-header,
+  .combo-option {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+  .combo-selection-badge {
+    order: -1;
   }
   .pills-container {
     padding: 0 2.1rem;

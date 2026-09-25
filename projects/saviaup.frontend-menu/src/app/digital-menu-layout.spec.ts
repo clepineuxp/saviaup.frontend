@@ -89,6 +89,7 @@ function createMenu(): PublicDigitalMenu {
             salePrice: 10000,
             sortOrder: 1,
             variations: [],
+            comboGroups: [],
           },
         ],
       },
