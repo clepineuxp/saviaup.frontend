@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   inject,
   OnDestroy,
@@ -8,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { EMPTY, catchError } from 'rxjs';
+import { EMPTY, catchError, finalize } from 'rxjs';
 import { Router } from '@angular/router';
 import { ToastService } from '../../../shared/services/toast.service';
 import { LocalizationService } from '../../../shared/i18n/localization.service';
@@ -41,16 +42,23 @@ import { SalesCatalogSyncModalComponent } from '../sales-catalog-sync-modal/sale
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableOperationPageComponent implements OnInit, OnDestroy {
+  private static readonly PullRefreshThreshold = 72;
   readonly store = inject(TableStore);
   readonly shellState = inject(AppShellState);
   readonly authContextStore = inject(AuthenticatedContextStore);
   readonly salesCatalog = inject(TableSalesCatalogCache);
   readonly selectedTable = signal<RestaurantTable | null>(null);
   readonly tableSearchQuery = signal<string>('');
+  readonly pullDistance = signal(0);
+  readonly pullRefreshing = signal(false);
+  readonly pullReady = computed(
+    () => this.pullDistance() >= TableOperationPageComponent.PullRefreshThreshold,
+  );
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   private readonly localization = inject(LocalizationService);
   private readonly destroyRef = inject(DestroyRef);
+  private pullStartY: number | null = null;
 
   ngOnInit(): void {
     this.salesCatalog
@@ -161,5 +169,43 @@ export class TableOperationPageComponent implements OnInit, OnDestroy {
 
   reloadOperationState(): void {
     this.store.initializeOperation().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+  }
+
+  beginPullRefresh(event: TouchEvent): void {
+    if (event.touches.length !== 1 || this.pullRefreshing()) return;
+    const target = event.target instanceof Element ? event.target : null;
+    const roomViewport = target?.closest<HTMLElement>('.room-viewport');
+    if (roomViewport && roomViewport.scrollTop > 0) return;
+    const scrollContainer = (event.currentTarget as HTMLElement).closest('.app-content');
+    if (scrollContainer && scrollContainer.scrollTop > 0) return;
+    this.pullStartY = event.touches[0].clientY;
+  }
+
+  movePullRefresh(event: TouchEvent): void {
+    if (this.pullStartY === null || event.touches.length !== 1) return;
+    const distance = Math.max(0, event.touches[0].clientY - this.pullStartY);
+    this.pullDistance.set(Math.min(distance * 0.55, 96));
+  }
+
+  endPullRefresh(): void {
+    const shouldRefresh = this.pullReady();
+    this.pullStartY = null;
+    this.pullDistance.set(0);
+    if (!shouldRefresh || this.pullRefreshing()) return;
+
+    this.pullRefreshing.set(true);
+    this.store
+      .verifyConnectionAndReload()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => EMPTY),
+        finalize(() => this.pullRefreshing.set(false)),
+      )
+      .subscribe();
+  }
+
+  cancelPullRefresh(): void {
+    this.pullStartY = null;
+    this.pullDistance.set(0);
   }
 }
