@@ -137,14 +137,62 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>{{ 'expenses.column.consecutive' | translate }}</th>
-              <th>{{ 'expenses.column.date' | translate }}</th>
-              <th>{{ 'expenses.column.name' | translate }}</th>
-              <th>{{ 'expenses.column.supplier' | translate }}</th>
-              <th>{{ 'expenses.column.paymentMethod' | translate }}</th>
-              <th>{{ 'expenses.column.origin' | translate }}</th>
-              <th>{{ 'expenses.column.amount' | translate }}</th>
-              <th>{{ 'expenses.column.status' | translate }}</th>
+              <th>
+                <button
+                  type="button"
+                  class="sort-header"
+                  (click)="store.sortBy('consecutiveNumber')"
+                >
+                  {{ 'expenses.column.consecutive' | translate }}
+                  <span>{{ store.sortIndicator('consecutiveNumber') }}</span>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-header" (click)="store.sortBy('date')">
+                  {{ 'expenses.column.date' | translate }}
+                  <span>{{ store.sortIndicator('date') }}</span>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-header" (click)="store.sortBy('name')">
+                  {{ 'expenses.column.name' | translate }}
+                  <span>{{ store.sortIndicator('name') }}</span>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-header" (click)="store.sortBy('supplier')">
+                  {{ 'expenses.column.supplier' | translate }}
+                  <span>{{ store.sortIndicator('supplier') }}</span>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-header" (click)="store.sortBy('paymentMethod')">
+                  {{ 'expenses.column.paymentMethod' | translate }}
+                  <span>{{ store.sortIndicator('paymentMethod') }}</span>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-header" (click)="store.sortBy('origin')">
+                  {{ 'expenses.column.origin' | translate }}
+                  <span>{{ store.sortIndicator('origin') }}</span>
+                </button>
+              </th>
+              <th>
+                <button
+                  type="button"
+                  class="sort-header sort-header--end"
+                  (click)="store.sortBy('amount')"
+                >
+                  {{ 'expenses.column.amount' | translate }}
+                  <span>{{ store.sortIndicator('amount') }}</span>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-header" (click)="store.sortBy('status')">
+                  {{ 'expenses.column.status' | translate }}
+                  <span>{{ store.sortIndicator('status') }}</span>
+                </button>
+              </th>
               <th class="text-right">{{ 'expenses.column.actions' | translate }}</th>
             </tr>
           </thead>

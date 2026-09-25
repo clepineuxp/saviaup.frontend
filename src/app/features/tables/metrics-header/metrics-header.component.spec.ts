@@ -109,4 +109,19 @@ describe('MetricsHeaderComponent', () => {
     expect(salesCard.getAttribute('role')).toBeNull();
     expect(navigate).not.toHaveBeenCalled();
   });
+
+  it('hides the day and shift selector when there is no open cash register', () => {
+    expect(fixture.nativeElement.querySelector('.mode-toggle')).toBeNull();
+
+    fixture.componentInstance.toggleMode('shift');
+
+    expect(fixture.componentInstance.activeMode()).toBe('day');
+  });
+
+  it('shows the day and shift selector when there is an open cash register', () => {
+    fixture.componentRef.setInput('hasOpenShift', true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.mode-toggle')).not.toBeNull();
+  });
 });

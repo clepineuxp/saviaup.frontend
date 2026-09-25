@@ -259,6 +259,34 @@
     white-space: nowrap;
   }
 
+  .sort-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    font-weight: inherit;
+
+    span {
+      color: var(--color-savia-600, #16a34a);
+      font-size: 0.68rem;
+    }
+  }
+
+  .status-column {
+    width: 4.5rem;
+    min-width: 4.5rem;
+    text-align: center;
+
+    .sort-header {
+      justify-content: center;
+    }
+  }
+
   td {
     padding: 0.85rem 1rem;
     border-bottom: 1px solid #f1f5f9;
@@ -281,9 +309,14 @@
     }
 
     &.closed {
-      background: #f1f5f9;
-      color: #475569;
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
     }
+  }
+
+  .sales-text {
+    color: #1d4ed8;
   }
 
   .user-email-tag {
@@ -510,6 +543,18 @@
     padding: 0.65rem 0.85rem;
     border-bottom: 1px solid #e2e8f0;
     white-space: nowrap;
+  }
+
+  .audit-total-row {
+    background: #f8fafc;
+    border-top: 2px solid #cbd5e1;
+
+    th,
+    td {
+      border-bottom: 0;
+      color: var(--color-ink, #0f172a);
+      font-weight: 800;
+    }
   }
 
   .actual-input {

@@ -132,7 +132,9 @@
           [attr.aria-expanded]="showColumnPicker()"
           [title]="'orders.customizeColumns' | translate"
           (click)="toggleColumnPicker()"
-        >⚙</button>
+        >
+          ⚙
+        </button>
         <div class="column-picker-menu" *ngIf="showColumnPicker()">
           <div class="picker-header">
             <span>{{ 'orders.toggleColumnsHeader' | translate }}</span>
@@ -157,31 +159,94 @@
         <thead>
           <tr>
             <th *ngIf="isColumnVisible('orderNumber')">
-              {{ 'orders.cols.orderNumber' | translate }}
+              <button type="button" class="sort-header" (click)="sortOrders('orderNumber')">
+                {{ 'orders.cols.orderNumber' | translate }}
+                <span>{{ orderSortIndicator('orderNumber') }}</span>
+              </button>
             </th>
-            <th *ngIf="isColumnVisible('tableName')">{{ 'orders.cols.tableName' | translate }}</th>
-            <th *ngIf="isColumnVisible('status')">{{ 'orders.cols.status' | translate }}</th>
-            <th *ngIf="isColumnVisible('itemCount')">{{ 'orders.cols.itemCount' | translate }}</th>
+            <th *ngIf="isColumnVisible('tableName')">
+              <button type="button" class="sort-header" (click)="sortOrders('tableName')">
+                {{ 'orders.cols.tableName' | translate }}
+                <span>{{ orderSortIndicator('tableName') }}</span>
+              </button>
+            </th>
+            <th *ngIf="isColumnVisible('status')">
+              <button type="button" class="sort-header" (click)="sortOrders('status')">
+                {{ 'orders.cols.status' | translate }}
+                <span>{{ orderSortIndicator('status') }}</span>
+              </button>
+            </th>
+            <th *ngIf="isColumnVisible('itemCount')">
+              <button type="button" class="sort-header" (click)="sortOrders('itemCount')">
+                {{ 'orders.cols.itemCount' | translate }}
+                <span>{{ orderSortIndicator('itemCount') }}</span>
+              </button>
+            </th>
             <th *ngIf="isColumnVisible('subtotalAmount')" class="text-right">
-              {{ 'orders.cols.subtotalAmount' | translate }}
+              <button
+                type="button"
+                class="sort-header sort-header--end"
+                (click)="sortOrders('subtotalAmount')"
+              >
+                {{ 'orders.cols.subtotalAmount' | translate }}
+                <span>{{ orderSortIndicator('subtotalAmount') }}</span>
+              </button>
             </th>
             <th *ngIf="isColumnVisible('tipAmount')" class="text-right">
-              {{ 'orders.cols.tipAmount' | translate }}
+              <button
+                type="button"
+                class="sort-header sort-header--end"
+                (click)="sortOrders('tipAmount')"
+              >
+                {{ 'orders.cols.tipAmount' | translate }}
+                <span>{{ orderSortIndicator('tipAmount') }}</span>
+              </button>
             </th>
             <th *ngIf="isColumnVisible('totalAmount')" class="text-right">
-              {{ 'orders.cols.totalAmount' | translate }}
+              <button
+                type="button"
+                class="sort-header sort-header--end"
+                (click)="sortOrders('totalAmount')"
+              >
+                {{ 'orders.cols.totalAmount' | translate }}
+                <span>{{ orderSortIndicator('totalAmount') }}</span>
+              </button>
             </th>
-            <th *ngIf="isColumnVisible('createdBy')">{{ 'orders.cols.createdBy' | translate }}</th>
-            <th *ngIf="isColumnVisible('createdAt')">{{ 'orders.cols.createdAt' | translate }}</th>
-            <th *ngIf="isColumnVisible('paidBy')">{{ 'orders.cols.paidBy' | translate }}</th>
-            <th *ngIf="isColumnVisible('paidAt')">{{ 'orders.cols.paidAt' | translate }}</th>
+            <th *ngIf="isColumnVisible('createdBy')">
+              <button type="button" class="sort-header" (click)="sortOrders('createdBy')">
+                {{ 'orders.cols.createdBy' | translate }}
+                <span>{{ orderSortIndicator('createdBy') }}</span>
+              </button>
+            </th>
+            <th *ngIf="isColumnVisible('createdAt')">
+              <button type="button" class="sort-header" (click)="sortOrders('createdAt')">
+                {{ 'orders.cols.createdAt' | translate }}
+                <span>{{ orderSortIndicator('createdAt') }}</span>
+              </button>
+            </th>
+            <th *ngIf="isColumnVisible('paidBy')">
+              <button type="button" class="sort-header" (click)="sortOrders('paidBy')">
+                {{ 'orders.cols.paidBy' | translate }}
+                <span>{{ orderSortIndicator('paidBy') }}</span>
+              </button>
+            </th>
+            <th *ngIf="isColumnVisible('paidAt')">
+              <button type="button" class="sort-header" (click)="sortOrders('paidAt')">
+                {{ 'orders.cols.paidAt' | translate }}
+                <span>{{ orderSortIndicator('paidAt') }}</span>
+              </button>
+            </th>
             <th *ngIf="isColumnVisible('actions')" class="text-center">
               {{ 'orders.cols.actions' | translate }}
             </th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let order of orders()" (click)="openOrderDetails(order)" class="order-row">
+          <tr
+            *ngFor="let order of sortedOrders()"
+            (click)="openOrderDetails(order)"
+            class="order-row"
+          >
             <td *ngIf="isColumnVisible('orderNumber')">
               <span class="order-number-badge">#{{ order.orderNumber }}</span>
             </td>
@@ -355,7 +420,9 @@
           [attr.aria-expanded]="showColumnPicker()"
           [title]="'orders.customizeColumns' | translate"
           (click)="toggleColumnPicker()"
-        >⚙</button>
+        >
+          ⚙
+        </button>
         <div class="column-picker-menu" *ngIf="showColumnPicker()">
           <div class="picker-header">
             <span>{{ 'orders.toggleColumnsHeader' | translate }}</span>
@@ -380,22 +447,67 @@
         <thead>
           <tr>
             <th *ngIf="isColumnVisible('orderNumber')">
-              {{ 'orders.cols.orderNumber' | translate }}
+              <button type="button" class="sort-header" (click)="sortOrderItems('orderNumber')">
+                {{ 'orders.cols.orderNumber' | translate }}
+                <span>{{ itemSortIndicator('orderNumber') }}</span>
+              </button>
             </th>
-            <th *ngIf="isColumnVisible('tableName')">{{ 'orders.cols.tableName' | translate }}</th>
+            <th *ngIf="isColumnVisible('tableName')">
+              <button type="button" class="sort-header" (click)="sortOrderItems('tableName')">
+                {{ 'orders.cols.tableName' | translate }}
+                <span>{{ itemSortIndicator('tableName') }}</span>
+              </button>
+            </th>
             <th *ngIf="isColumnVisible('productName')">
-              {{ 'orders.cols.productName' | translate }}
+              <button type="button" class="sort-header" (click)="sortOrderItems('productName')">
+                {{ 'orders.cols.productName' | translate }}
+                <span>{{ itemSortIndicator('productName') }}</span>
+              </button>
             </th>
-            <th *ngIf="isColumnVisible('quantity')">{{ 'orders.cols.quantity' | translate }}</th>
+            <th *ngIf="isColumnVisible('quantity')">
+              <button type="button" class="sort-header" (click)="sortOrderItems('quantity')">
+                {{ 'orders.cols.quantity' | translate }}
+                <span>{{ itemSortIndicator('quantity') }}</span>
+              </button>
+            </th>
             <th *ngIf="isColumnVisible('unitPrice')" class="text-right">
-              {{ 'orders.cols.unitPrice' | translate }}
+              <button
+                type="button"
+                class="sort-header sort-header--end"
+                (click)="sortOrderItems('unitPrice')"
+              >
+                {{ 'orders.cols.unitPrice' | translate }}
+                <span>{{ itemSortIndicator('unitPrice') }}</span>
+              </button>
             </th>
             <th *ngIf="isColumnVisible('subtotal')" class="text-right">
-              {{ 'orders.cols.subtotal' | translate }}
+              <button
+                type="button"
+                class="sort-header sort-header--end"
+                (click)="sortOrderItems('subtotal')"
+              >
+                {{ 'orders.cols.subtotal' | translate }}
+                <span>{{ itemSortIndicator('subtotal') }}</span>
+              </button>
             </th>
-            <th *ngIf="isColumnVisible('status')">{{ 'orders.cols.status' | translate }}</th>
-            <th *ngIf="isColumnVisible('createdBy')">{{ 'orders.cols.createdBy' | translate }}</th>
-            <th *ngIf="isColumnVisible('createdAt')">{{ 'orders.cols.createdAt' | translate }}</th>
+            <th *ngIf="isColumnVisible('status')">
+              <button type="button" class="sort-header" (click)="sortOrderItems('status')">
+                {{ 'orders.cols.status' | translate }}
+                <span>{{ itemSortIndicator('status') }}</span>
+              </button>
+            </th>
+            <th *ngIf="isColumnVisible('createdBy')">
+              <button type="button" class="sort-header" (click)="sortOrderItems('createdBy')">
+                {{ 'orders.cols.createdBy' | translate }}
+                <span>{{ itemSortIndicator('createdBy') }}</span>
+              </button>
+            </th>
+            <th *ngIf="isColumnVisible('createdAt')">
+              <button type="button" class="sort-header" (click)="sortOrderItems('createdAt')">
+                {{ 'orders.cols.createdAt' | translate }}
+                <span>{{ itemSortIndicator('createdAt') }}</span>
+              </button>
+            </th>
             <th *ngIf="isColumnVisible('actions')" class="text-center">
               {{ 'orders.cols.viewOrder' | translate }}
             </th>
@@ -403,7 +515,7 @@
         </thead>
         <tbody>
           <tr
-            *ngFor="let itemRow of orderItems()"
+            *ngFor="let itemRow of sortedOrderItems()"
             (click)="openOrderItemDetails(itemRow)"
             class="order-row"
             [class.cancelled-row]="itemRow.status === 'CANCELLED'"
