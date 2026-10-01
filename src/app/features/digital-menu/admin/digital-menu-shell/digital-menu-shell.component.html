@@ -182,6 +182,24 @@
             />
             <span>{{ 'digitalMenu.qr.includeLogo' | translate }}</span>
           </label>
+          @if (logoAvailable() && includeLogoInQr()) {
+            <label class="qr-logo-size">
+              <span class="qr-logo-size__header">
+                <span>{{ 'digitalMenu.qr.logoSize' | translate }}</span>
+                <strong>{{ qrLogoSizePercent() }}%</strong>
+              </span>
+              <input
+                type="range"
+                min="12"
+                max="28"
+                step="1"
+                [ngModel]="qrLogoSizePercent()"
+                (ngModelChange)="setQrLogoSize($event)"
+                [attr.aria-label]="'digitalMenu.qr.logoSize' | translate"
+              />
+              <small>{{ 'digitalMenu.qr.logoSizeHint' | translate }}</small>
+            </label>
+          }
           @if (!logoAvailable()) {
             <small>{{ 'digitalMenu.qr.logoHint' | translate }}</small>
           }
@@ -193,7 +211,9 @@
           }
         </div>
         <div class="qr-preview">
-          <canvas #qrCanvas [attr.aria-label]="'digitalMenu.qr.ariaLabel' | translate"></canvas>
+          <div class="qr-canvas-frame">
+            <canvas #qrCanvas [attr.aria-label]="'digitalMenu.qr.ariaLabel' | translate"></canvas>
+          </div>
           <span class="notranslate" translate="no">{{ store.publicMenuUrl() }}</span>
         </div>
       </div>

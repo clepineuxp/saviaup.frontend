@@ -38,6 +38,7 @@ export class DigitalMenuShellComponent implements OnInit, OnDestroy {
   readonly copied = signal<boolean>(false);
   readonly validationError = signal<string | null>(null);
   readonly includeLogoInQr = signal(false);
+  readonly qrLogoSizePercent = signal(18);
   readonly logoAvailable = signal(false);
   readonly qrErrorKey = signal<string | null>(null);
   private organizationLogo: HTMLImageElement | null = null;
@@ -72,7 +73,8 @@ export class DigitalMenuShellComponent implements OnInit, OnDestroy {
       const url = this.store.publicMenuUrl();
       const canvas = this.qrCanvas()?.nativeElement;
       const includeLogo = this.includeLogoInQr();
-      if (url && canvas) void this.renderQr(canvas, url, includeLogo);
+      const logoSizePercent = this.qrLogoSizePercent();
+      if (url && canvas) void this.renderQr(canvas, url, includeLogo, logoSizePercent);
     });
   }
 
@@ -157,6 +159,11 @@ export class DigitalMenuShellComponent implements OnInit, OnDestroy {
     this.includeLogoInQr.update((value) => !value);
   }
 
+  setQrLogoSize(value: number): void {
+    const normalizedValue = Math.min(28, Math.max(12, Number(value)));
+    this.qrLogoSizePercent.set(normalizedValue);
+  }
+
   downloadQr(): void {
     const canvas = this.qrCanvas()?.nativeElement;
     const slug = this.store.slug();
@@ -171,6 +178,7 @@ export class DigitalMenuShellComponent implements OnInit, OnDestroy {
     canvas: HTMLCanvasElement,
     url: string,
     includeLogo: boolean,
+    logoSizePercent: number,
   ): Promise<void> {
     try {
       this.qrErrorKey.set(null);
@@ -180,17 +188,23 @@ export class DigitalMenuShellComponent implements OnInit, OnDestroy {
         errorCorrectionLevel: 'H',
         color: { dark: '#0f172a', light: '#ffffff' },
       });
-      if (includeLogo && this.organizationLogo) this.drawLogo(canvas, this.organizationLogo);
+      if (includeLogo && this.organizationLogo) {
+        this.drawLogo(canvas, this.organizationLogo, logoSizePercent);
+      }
     } catch {
       this.qrErrorKey.set('digitalMenu.qr.error');
     }
   }
 
-  private drawLogo(canvas: HTMLCanvasElement, logo: HTMLImageElement): void {
+  private drawLogo(
+    canvas: HTMLCanvasElement,
+    logo: HTMLImageElement,
+    logoSizePercent: number,
+  ): void {
     const context = canvas.getContext('2d');
     if (!context) return;
-    const boxSize = Math.round(canvas.width * 0.2);
-    const logoSize = Math.round(boxSize * 0.74);
+    const logoSize = Math.round(canvas.width * (logoSizePercent / 100));
+    const boxSize = Math.round(canvas.width * ((logoSizePercent + 5) / 100));
     const x = Math.round((canvas.width - boxSize) / 2);
     const y = Math.round((canvas.height - boxSize) / 2);
     context.fillStyle = '#ffffff';

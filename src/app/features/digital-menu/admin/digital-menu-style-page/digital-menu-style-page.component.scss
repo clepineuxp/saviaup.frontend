@@ -1,8 +1,16 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
 .style-config-layout {
   display: grid;
   grid-template-columns: minmax(360px, 480px) 1fr;
   gap: 2rem;
   align-items: start;
+  width: 100%;
+  min-width: 0;
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
@@ -13,6 +21,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  min-width: 0;
 }
 
 .panel-section {
@@ -23,6 +32,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  min-width: 0;
 }
 
 .section-title {
@@ -121,6 +131,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.15rem;
+      min-width: 0;
 
       strong {
         font-size: 0.95rem;
@@ -194,6 +205,7 @@
 
       .hex-input {
         flex: 1;
+        min-width: 0;
         height: 38px;
         padding: 0.25rem 0.5rem;
         border: 1px solid #cbd5e1;
@@ -321,6 +333,7 @@
   gap: 1rem;
   position: sticky;
   top: 1.5rem;
+  min-width: 0;
 }
 
 .preview-header {
@@ -370,6 +383,8 @@
   padding: 1.5rem;
   border-radius: 1rem;
   border: 1px solid #e2e8f0;
+  min-width: 0;
+  overflow: hidden;
 
   &.is-mobile {
     .preview-device-frame {
@@ -391,6 +406,7 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   border: 1px solid color-mix(in srgb, var(--preview-text, #0f172a) 14%, transparent);
   transition: all 0.3s ease;
+  min-width: 0;
 }
 
 .preview-mockup-header {
@@ -764,5 +780,130 @@
     border-radius: 50%;
     background: var(--guide-color);
     content: '';
+  }
+}
+
+@media (max-width: 760px) {
+  .style-config-layout {
+    gap: 1rem;
+  }
+
+  .style-controls-panel {
+    gap: 0.75rem;
+  }
+
+  .panel-section-toggle {
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.85rem;
+
+    span:first-child {
+      min-width: 0;
+    }
+
+    small {
+      line-height: 1.35;
+    }
+  }
+
+  .panel-section-content {
+    padding: 0 0.85rem 0.85rem;
+  }
+
+  .template-selector .template-card {
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.75rem;
+
+    .template-info strong,
+    .template-info small {
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .color-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  .toggle-row {
+    align-items: flex-start;
+  }
+
+  .preview-panel {
+    position: static;
+    gap: 0.75rem;
+  }
+
+  .preview-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .device-switcher {
+    width: 100%;
+
+    button {
+      min-width: 0;
+    }
+  }
+
+  .preview-color-guide {
+    flex-wrap: nowrap;
+    padding-bottom: 0.25rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+
+    span {
+      flex: 0 0 auto;
+    }
+  }
+
+  .preview-viewport-container {
+    min-height: 0;
+    padding: 0.65rem;
+
+    &.is-mobile .preview-device-frame {
+      max-width: 100%;
+      border-width: 4px;
+      border-radius: 1.4rem;
+    }
+  }
+
+  .preview-mockup-header,
+  .mockup-menu-body,
+  .preview-mockup-footer {
+    padding-right: 0.85rem;
+    padding-left: 0.85rem;
+  }
+
+  .mockup-prod-card {
+    min-width: 0;
+
+    .mockup-prod-content {
+      min-width: 0;
+    }
+  }
+}
+
+@media (max-width: 420px) {
+  .header-alignment-selector button {
+    padding-right: 0.2rem;
+    padding-left: 0.2rem;
+    font-size: 0.72rem;
+  }
+
+  .preview-viewport-container {
+    padding: 0.4rem;
+  }
+
+  .mockup-prod-card {
+    gap: 0.55rem;
+    padding: 0.6rem;
+
+    .mockup-prod-img {
+      width: 40px;
+      height: 40px;
+    }
   }
 }
