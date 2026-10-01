@@ -78,16 +78,17 @@ export class SettingsStore {
           can('orders.create') || can('tables.operate') || can('orders.read') || can('tables.read');
         const canConsumePrintingSettings =
           canOperateOrRead || can('billing.read') || can('billing.manage');
+        const canReadReceiptContext =
+          canConsumePrintingSettings ||
+          can(SETTINGS_PERMISSIONS.businessRead) ||
+          can(SETTINGS_PERMISSIONS.businessManage);
         return forkJoin({
           organization:
-            can(SETTINGS_PERMISSIONS.organizationRead) || canOperateOrRead
+            can(SETTINGS_PERMISSIONS.organizationRead) || canReadReceiptContext
               ? this.repository.getOrganization()
               : of(null),
           business:
-            can(SETTINGS_PERMISSIONS.businessRead) ||
-            can(SETTINGS_PERMISSIONS.businessManage) ||
-            can(SETTINGS_PERMISSIONS.expenseFinancialFieldsManage) ||
-            canOperateOrRead
+            canReadReceiptContext || can(SETTINGS_PERMISSIONS.expenseFinancialFieldsManage)
               ? this.repository.getBusiness()
               : of(null),
           printing:

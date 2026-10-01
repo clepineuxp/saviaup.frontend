@@ -92,64 +92,17 @@
             'settings.printing.showLogo' | translate
           }}</span></label
         >
-        @if (receiptForm.controls.showLogo.value) {
-          <label
-            ><span>{{ 'settings.printing.logoWidth' | translate }}</span
-            ><input type="range" min="20" max="72" formControlName="logoWidthMm" /><output
-              >{{ receiptForm.controls.logoWidthMm.value }} mm</output
-            ></label
-          >
-        }
       </form>
 
       <div class="preview-column">
-        <div
-          #receiptPreview
-          class="receipt-preview"
-          [style.width.mm]="receipt().paperWidthMm"
-          [style.font-size.px]="receipt().baseFontSize"
-        >
-          @if (receipt().showLogo) {
-            <div class="sample-logo" [style.width.mm]="receipt().logoWidthMm">LOGO</div>
-          }
-          <div class="receipt-header" [style.font-size.px]="receipt().headerFontSize">
-            SAVIA GASTROBAR
-          </div>
-          <div>NIT 900.000.000-1</div>
-          <div>Comprobante #1042 · Mesa 8</div>
-          <div class="dash"></div>
-          <div class="receipt-item" [style.font-size.px]="receipt().itemFontSize">
-            <span class="receipt-item-name" [class.wrap]="receipt().wrapLongItemNames"
-              >2x Hamburguesa artesanal especial con queso y tocineta</span
-            ><strong>$42.000</strong>
-          </div>
-          <div class="receipt-item" [style.font-size.px]="receipt().itemFontSize">
-            <span>1x Limonada</span><strong>$8.000</strong>
-          </div>
-          <div class="dash"></div>
-          @if (receipt().voluntaryTipPosition === 'BEFORE_TOTAL') {
-            <div
-              class="receipt-tip"
-              [style.font-size.px]="receipt().voluntaryTipFontSize"
-              [style.text-align]="receipt().voluntaryTipAlignment.toLowerCase()"
-            >
-              Servicio voluntario (10%): $5.000
-            </div>
-          }
-          <div class="receipt-total" [style.font-size.px]="receipt().totalFontSize">
-            <strong>TOTAL</strong><strong>$55.000</strong>
-          </div>
-          @if (receipt().voluntaryTipPosition === 'AFTER_TOTAL') {
-            <div
-              class="receipt-tip"
-              [style.font-size.px]="receipt().voluntaryTipFontSize"
-              [style.text-align]="receipt().voluntaryTipAlignment.toLowerCase()"
-            >
-              Servicio voluntario (10%): $5.000
-            </div>
-          }
-          <div class="dash"></div>
-          <div class="thanks">¡Gracias por su visita!</div>
+        <div #receiptPreview class="receipt-preview-host">
+          <app-thermal-ticket-content
+            [receipt]="sampleReceipt"
+            [template]="receipt()"
+            [organization]="store.organization()"
+            [business]="store.business()"
+            [logoUrl]="logoUrl()"
+          />
         </div>
         <button type="button" class="secondary" (click)="testReceipt()">
           {{ 'settings.printing.testReceipt' | translate }}

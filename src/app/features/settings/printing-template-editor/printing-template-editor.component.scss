@@ -115,59 +115,12 @@ button:disabled {
   background: var(--color-canvas);
   border: 1px solid var(--color-border);
 }
-.receipt-preview {
-  box-sizing: border-box;
-  max-width: 100%;
-  padding: 16px;
-  background: #fff;
-  color: #000;
-  font-family: 'Courier New', monospace;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
-  line-height: 1.35;
-  overflow: hidden;
-}
-.sample-logo {
-  max-width: 100%;
-  margin: 0 auto 0.5rem;
-  border: 1px dashed #64748b;
-  padding: 0.3rem;
-  text-align: center;
-  font-size: 10px;
-}
-.receipt-header {
-  text-align: center;
-  font-weight: 900;
-  margin-bottom: 0.35rem;
-}
-.dash {
-  border-top: 1px dashed #000;
-  margin: 0.45rem 0;
-}
-.receipt-item,
-.receipt-total {
+.receipt-preview-host {
   display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  align-items: flex-start;
-}
-.receipt-item-name {
-  min-width: 0;
-  white-space: nowrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
   overflow: hidden;
-  text-overflow: ellipsis;
-  &.wrap {
-    white-space: normal;
-    overflow-wrap: anywhere;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-  }
-}
-.receipt-total {
-  font-weight: 900;
-}
-.thanks {
-  text-align: center;
 }
 .kitchen-preview {
   box-sizing: border-box;

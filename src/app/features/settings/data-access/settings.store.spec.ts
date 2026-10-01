@@ -99,6 +99,7 @@ describe('SettingsStore', () => {
         permissions: [SETTINGS_PERMISSIONS.businessRead, SETTINGS_PERMISSIONS.businessManage],
       }),
     );
+    repositoryMock.getOrganization.mockReturnValue(of(null));
     repositoryMock.getBusiness.mockReturnValue(of(null));
     repositoryMock.getPrintingTemplates.mockReturnValue(of(DEFAULT_PRINTING_TEMPLATES));
     repositoryMock.listPrintingPrinters.mockReturnValue(of([]));
@@ -119,5 +120,20 @@ describe('SettingsStore', () => {
       }),
     );
     expect(store.printingTemplates()?.receipt.itemFontSize).toBe(15);
+  });
+
+  it('loads the same receipt context for billing reprints', async () => {
+    authStoreMock.loadCurrentUser.mockReturnValue(
+      of({ id: 'u2', email: 'cashier@saviaup.local', permissions: ['billing.read'] }),
+    );
+    repositoryMock.getOrganization.mockReturnValue(of(null));
+    repositoryMock.getBusiness.mockReturnValue(of(null));
+    repositoryMock.getPrintingTemplates.mockReturnValue(of(DEFAULT_PRINTING_TEMPLATES));
+
+    await firstValueFrom(store.load());
+
+    expect(repositoryMock.getOrganization).toHaveBeenCalledOnce();
+    expect(repositoryMock.getBusiness).toHaveBeenCalledOnce();
+    expect(repositoryMock.getPrintingTemplates).toHaveBeenCalledOnce();
   });
 });

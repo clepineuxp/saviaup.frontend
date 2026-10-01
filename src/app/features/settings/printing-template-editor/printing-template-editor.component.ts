@@ -5,12 +5,16 @@ import {
   ElementRef,
   effect,
   inject,
+  OnInit,
   signal,
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { switchMap } from 'rxjs';
+import { catchError, of, switchMap } from 'rxjs';
+import { OrderReceipt } from '../../billing/models/billing.model';
+import { ThermalTicketContentComponent } from '../../../shared/components/thermal-ticket-content/thermal-ticket-content.component';
+import { ThermalTicketPrintService } from '../../../shared/components/thermal-ticket-modal/thermal-ticket-print.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { SettingsStore } from '../data-access/settings-store.service';
 import {
@@ -25,21 +29,54 @@ import {
 
 @Component({
   selector: 'app-printing-template-editor',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [ReactiveFormsModule, TranslatePipe, ThermalTicketContentComponent],
   templateUrl: './printing-template-editor.component.html',
   styleUrl: './printing-template-editor.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PrintingTemplateEditorComponent {
+export class PrintingTemplateEditorComponent implements OnInit {
   readonly store = inject(SettingsStore);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly printer = inject(ThermalTicketPrintService);
   private readonly receiptPreviewElement = viewChild<ElementRef<HTMLElement>>('receiptPreview');
 
   readonly editor = signal<'receipt' | 'kitchen'>('receipt');
   readonly selectedPrinterId = signal('');
   readonly feedbackKey = signal<string | null>(null);
+  readonly logoUrl = signal<string | null>(null);
   readonly localTemplates = signal<PrintingTemplateSettings>(DEFAULT_PRINTING_TEMPLATES);
+  readonly sampleReceipt: OrderReceipt = {
+    id: 'printing-template-preview',
+    tenantId: 'printing-template-preview',
+    orderId: 'printing-template-preview',
+    receiptNumber: 1458,
+    receiptType: 'PAYMENT',
+    title: 'COMPROBANTE DE PAGO',
+    subtotalAmount: 54600,
+    taxAmount: 0,
+    tipAmount: 5460,
+    totalAmount: 60060,
+    paymentMethod: 'Efectivo',
+    paymentDetails: [{ method: 'Efectivo', amount: 60060 }],
+    items: [
+      { productName: 'AMERICANO', quantity: 1, unitPrice: 6900, subtotal: 6900 },
+      { productName: 'CAPPUCCINO', quantity: 1, unitPrice: 10900, subtotal: 10900 },
+      { productName: 'LIMONADA DE COCO', quantity: 1, unitPrice: 12900, subtotal: 12900 },
+      {
+        productName: 'BOHEMIAN BIANCA CON NOMBRE LARGO DE PRUEBA',
+        quantity: 1,
+        unitPrice: 23900,
+        subtotal: 23900,
+      },
+    ],
+    issuedByUserId: 'printing-template-preview',
+    issuedByUserName: 'Marisol Chica',
+    paidByUserName: 'Marisol Chica',
+    createdAt: new Date().toISOString(),
+    orderNumber: 321,
+    tableName: 'Mesa 8',
+  };
 
   readonly receiptForm = this.fb.nonNullable.group({
     paperWidthMm: [80, [Validators.required]],
@@ -52,7 +89,6 @@ export class PrintingTemplateEditorComponent {
     voluntaryTipPosition: ['BEFORE_TOTAL'],
     wrapLongItemNames: [true],
     showLogo: [true],
-    logoWidthMm: [48, [Validators.required, Validators.min(20), Validators.max(72)]],
   });
 
   readonly kitchenForm = this.fb.nonNullable.group({
@@ -82,6 +118,21 @@ export class PrintingTemplateEditorComponent {
     this.kitchenForm.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.syncLocal());
   }
 
+  ngOnInit(): void {
+    this.store
+      .getLogo()
+      .pipe(
+        catchError(() => of(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((blob) => {
+        if (!blob) return;
+        const reader = new FileReader();
+        reader.onloadend = () => this.logoUrl.set(String(reader.result));
+        reader.readAsDataURL(blob);
+      });
+  }
+
   save(): void {
     if (!this.store.hasPermission('settings.business.manage')) return;
     if (this.receiptForm.invalid || this.kitchenForm.invalid) {
@@ -99,26 +150,9 @@ export class PrintingTemplateEditorComponent {
   }
 
   testReceipt(): void {
-    const preview = this.receiptPreviewElement()?.nativeElement;
-    if (!preview) return;
-    const template = this.currentValue().receipt;
-    const frame = document.createElement('iframe');
-    frame.style.cssText = 'position:fixed;width:0;height:0;border:0;right:0;bottom:0';
-    document.body.appendChild(frame);
-    const doc = frame.contentDocument;
-    if (!doc) return frame.remove();
-    doc.open();
-    doc.write(`<!doctype html><html><head><title>Prueba de comprobante</title><style>
-      @page{margin:0;size:${template.paperWidthMm}mm auto}body{margin:0;padding:4mm 2mm;font-family:monospace;color:#000;background:#fff}
-      .receipt-preview{box-sizing:border-box;width:100%!important;max-width:none!important;box-shadow:none!important;border:0!important;padding:0!important}
-      ${this.receiptPrintCss(template)}
-    </style></head><body>${preview.outerHTML}</body></html>`);
-    doc.close();
-    setTimeout(() => {
-      frame.contentWindow?.focus();
-      frame.contentWindow?.print();
-      setTimeout(() => frame.remove(), 1000);
-    }, 200);
+    const host = this.receiptPreviewElement()?.nativeElement;
+    if (!host) return;
+    this.printer.print(host, this.currentValue().receipt, 'Prueba de comprobante');
   }
 
   testKitchen(): void {
@@ -178,9 +212,5 @@ export class PrintingTemplateEditorComponent {
         layout: kitchen.layout as KitchenPrintLayout,
       },
     };
-  }
-
-  private receiptPrintCss(template: ReceiptPrintTemplate): string {
-    return `.receipt-preview{font-size:${template.baseFontSize}px}.receipt-header{font-size:${template.headerFontSize}px}.receipt-item{font-size:${template.itemFontSize}px}.receipt-total{font-size:${template.totalFontSize}px}.receipt-tip{font-size:${template.voluntaryTipFontSize}px;text-align:${template.voluntaryTipAlignment.toLowerCase()}}.receipt-item-name{${template.wrapLongItemNames ? 'white-space:normal;overflow-wrap:anywhere' : 'white-space:nowrap;overflow:hidden'}}`;
   }
 }

@@ -15,7 +15,6 @@ export interface ReceiptPrintTemplate {
   readonly voluntaryTipPosition: VoluntaryTipPosition;
   readonly wrapLongItemNames: boolean;
   readonly showLogo: boolean;
-  readonly logoWidthMm: number;
 }
 
 export interface KitchenPrintTemplate {
@@ -58,7 +57,6 @@ export const DEFAULT_PRINTING_TEMPLATES: PrintingTemplateSettings = {
     voluntaryTipPosition: 'BEFORE_TOTAL',
     wrapLongItemNames: true,
     showLogo: true,
-    logoWidthMm: 48,
   },
   kitchen: {
     headerFontScale: 2,
