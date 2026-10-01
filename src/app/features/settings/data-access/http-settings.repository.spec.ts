@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { API_ENDPOINTS } from '../../../core/config/api-endpoints';
 import { ApiClient } from '../../../shared/api/api-client.service';
 import { HttpSettingsRepository } from './http-settings.repository';
+import { DEFAULT_PRINTING_TEMPLATES } from '../models/settings.model';
 
 describe('HttpSettingsRepository', () => {
   const get = vi.fn();
@@ -80,5 +81,23 @@ describe('HttpSettingsRepository', () => {
     expect(put).toHaveBeenCalledWith(API_ENDPOINTS.settings.expenseEditingPolicy, {
       lockFinancialFieldsAfterCreation: false,
     });
+  });
+
+  it('uses the dedicated printing template endpoint and queues an agent test', async () => {
+    get.mockReturnValueOnce(of(DEFAULT_PRINTING_TEMPLATES));
+    put.mockReturnValueOnce(of(DEFAULT_PRINTING_TEMPLATES));
+    post.mockReturnValueOnce(of(undefined));
+
+    await firstValueFrom(repository.getPrintingTemplates());
+    await firstValueFrom(repository.updatePrintingTemplates(DEFAULT_PRINTING_TEMPLATES));
+    await firstValueFrom(repository.testKitchenPrint('agent-1', 'printer-1'));
+
+    expect(get).toHaveBeenCalledWith(API_ENDPOINTS.settings.printing);
+    expect(put).toHaveBeenCalledWith(API_ENDPOINTS.settings.printing, DEFAULT_PRINTING_TEMPLATES);
+    expect(post).toHaveBeenCalledWith(
+      API_ENDPOINTS.printing.testPrint('agent-1'),
+      {},
+      { params: { printerId: 'printer-1' } },
+    );
   });
 });

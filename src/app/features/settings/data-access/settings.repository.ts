@@ -7,6 +7,8 @@ import {
   OrganizationSettings,
   OrganizationUser,
   PaymentMethod,
+  PrintingPrinter,
+  PrintingTemplateSettings,
   SavePaymentMethod,
   SaveSettingsRole,
   SettingsRole,
@@ -24,6 +26,10 @@ export interface SettingsRepository {
   updateBusiness(
     request: Omit<BusinessSettings, 'lockExpenseFinancialFieldsAfterCreation'>,
   ): Observable<BusinessSettings>;
+  getPrintingTemplates(): Observable<PrintingTemplateSettings>;
+  updatePrintingTemplates(request: PrintingTemplateSettings): Observable<PrintingTemplateSettings>;
+  listPrintingPrinters(): Observable<readonly PrintingPrinter[]>;
+  testKitchenPrint(agentId: string, printerId: string): Observable<void>;
   updateExpenseEditingPolicy(
     lockFinancialFieldsAfterCreation: boolean,
   ): Observable<ExpenseEditingPolicy>;

@@ -25,6 +25,12 @@
       }
     </nav>
 
+    @if (activeTab() === 'printing') {
+      <div class="panel">
+        <app-printing-template-editor />
+      </div>
+    }
+
     @if (activeTab() === 'organization' && store.organization(); as organization) {
       <form class="panel" [formGroup]="organizationForm" (ngSubmit)="saveOrganization()">
         <div class="section-heading">

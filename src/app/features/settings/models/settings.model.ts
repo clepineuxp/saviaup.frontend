@@ -1,4 +1,78 @@
-export type SettingsTab = 'organization' | 'business' | 'payments' | 'users' | 'roles';
+export type SettingsTab = 'organization' | 'business' | 'printing' | 'payments' | 'users' | 'roles';
+
+export type PrintAlignment = 'LEFT' | 'CENTER' | 'RIGHT';
+export type VoluntaryTipPosition = 'BEFORE_TOTAL' | 'AFTER_TOTAL';
+export type KitchenPrintLayout = 'COMPACT' | 'STANDARD' | 'SPACIOUS';
+
+export interface ReceiptPrintTemplate {
+  readonly paperWidthMm: 58 | 80;
+  readonly baseFontSize: number;
+  readonly headerFontSize: number;
+  readonly itemFontSize: number;
+  readonly totalFontSize: number;
+  readonly voluntaryTipFontSize: number;
+  readonly voluntaryTipAlignment: PrintAlignment;
+  readonly voluntaryTipPosition: VoluntaryTipPosition;
+  readonly wrapLongItemNames: boolean;
+  readonly showLogo: boolean;
+}
+
+export interface KitchenPrintTemplate {
+  readonly headerFontScale: 1 | 2;
+  readonly metadataFontScale: 1 | 2;
+  readonly itemFontScale: 1 | 2;
+  readonly notesFontScale: 1 | 2;
+  readonly headerAlignment: PrintAlignment;
+  readonly layout: KitchenPrintLayout;
+  readonly wrapLongItemNames: boolean;
+  readonly maxItemNameLines: 1 | 2 | 3;
+  readonly showTable: boolean;
+  readonly showWaiter: boolean;
+  readonly showTimestamp: boolean;
+  readonly uppercaseItemNames: boolean;
+}
+
+export interface PrintingTemplateSettings {
+  readonly receipt: ReceiptPrintTemplate;
+  readonly kitchen: KitchenPrintTemplate;
+}
+
+export interface PrintingPrinter {
+  readonly id: string;
+  readonly printAgentId: string;
+  readonly name: string;
+  readonly paperWidth: number;
+  readonly enabled: boolean;
+}
+
+export const DEFAULT_PRINTING_TEMPLATES: PrintingTemplateSettings = {
+  receipt: {
+    paperWidthMm: 80,
+    baseFontSize: 11,
+    headerFontSize: 13,
+    itemFontSize: 11,
+    totalFontSize: 13,
+    voluntaryTipFontSize: 11,
+    voluntaryTipAlignment: 'LEFT',
+    voluntaryTipPosition: 'BEFORE_TOTAL',
+    wrapLongItemNames: true,
+    showLogo: true,
+  },
+  kitchen: {
+    headerFontScale: 2,
+    metadataFontScale: 1,
+    itemFontScale: 1,
+    notesFontScale: 1,
+    headerAlignment: 'CENTER',
+    layout: 'STANDARD',
+    wrapLongItemNames: true,
+    maxItemNameLines: 2,
+    showTable: true,
+    showWaiter: true,
+    showTimestamp: true,
+    uppercaseItemNames: false,
+  },
+};
 
 export interface OrganizationSettings {
   readonly timeZoneId?: string;

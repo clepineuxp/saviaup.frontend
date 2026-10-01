@@ -13,6 +13,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { LocalizationService } from '../../../shared/i18n/localization.service';
 import { SettingsStore } from '../data-access/settings-store.service';
+import { PrintingTemplateEditorComponent } from '../printing-template-editor/printing-template-editor.component';
 import {
   OrganizationUser,
   PaymentMethod,
@@ -25,7 +26,7 @@ import {
 
 @Component({
   selector: 'app-settings-page',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [ReactiveFormsModule, TranslatePipe, PrintingTemplateEditorComponent],
   templateUrl: './settings-page.component.html',
   styleUrl: './settings-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -55,6 +56,10 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
       this.store.hasPermission(SETTINGS_PERMISSIONS.businessRead) ||
       this.store.hasPermission(SETTINGS_PERMISSIONS.expenseFinancialFieldsManage)
         ? ('business' as const)
+        : null,
+      this.store.hasPermission(SETTINGS_PERMISSIONS.businessRead) ||
+      this.store.hasPermission(SETTINGS_PERMISSIONS.businessManage)
+        ? ('printing' as const)
         : null,
       this.store.hasPermission(SETTINGS_PERMISSIONS.paymentsRead) ? ('payments' as const) : null,
       this.store.hasPermission(SETTINGS_PERMISSIONS.usersRead) ? ('users' as const) : null,
