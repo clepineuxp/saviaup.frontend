@@ -1,7 +1,20 @@
+.digital-menu-shell,
+.digital-menu-shell * {
+  box-sizing: border-box;
+}
+
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
 .digital-menu-shell {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  width: 100%;
+  min-width: 0;
   padding: 1.75rem;
   max-width: 1400px;
   margin: 0 auto;
@@ -79,6 +92,8 @@
 
 /* --- Top Configuration Card --- */
 .top-config-card {
+  width: 100%;
+  min-width: 0;
   background: var(--color-surface, #ffffff);
   border: 1px solid var(--color-border, #e2e8f0);
   border-radius: 1rem;
@@ -177,6 +192,7 @@
 .config-column {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .setting-item {
@@ -308,6 +324,7 @@
 
   .slug-input {
     flex: 1;
+    min-width: 0;
     border: none;
     outline: none;
     padding: 0.65rem 0.85rem;
@@ -431,7 +448,8 @@
 
 .qr-builder {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 340px);
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  min-width: 0;
   gap: 1.5rem;
   align-items: center;
   border-top: 1px solid var(--color-border, #e2e8f0);
@@ -456,6 +474,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  min-width: 0;
   gap: 0.75rem;
 }
 .qr-logo-toggle {
@@ -489,7 +508,10 @@
 }
 .qr-preview {
   justify-self: center;
-  width: min(100%, 320px);
+  width: 100%;
+  max-width: 280px;
+  min-width: 0;
+  overflow: hidden;
   padding: 1rem;
   border: 1px solid var(--color-border, #e2e8f0);
   border-radius: 1rem;
@@ -499,6 +521,7 @@
   canvas {
     display: block;
     width: 100%;
+    max-width: 100%;
     height: auto;
     image-rendering: pixelated;
   }
@@ -516,12 +539,144 @@
 }
 
 @media (max-width: 760px) {
+  .digital-menu-shell {
+    gap: 1rem;
+    padding: 0.75rem;
+    overflow-x: hidden;
+  }
+
+  .page-header {
+    gap: 0.75rem;
+    padding-bottom: 0.9rem;
+
+    .title-row {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 0.65rem;
+
+      h1 {
+        font-size: 1.4rem;
+      }
+    }
+
+    .description {
+      font-size: 0.86rem;
+    }
+  }
+
+  .top-config-card {
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .card-header {
+    align-items: stretch;
+    flex-direction: column;
+
+    .card-title-group h2 {
+      font-size: 1.05rem;
+    }
+  }
+
+  .button-save-config {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .config-grid {
+    gap: 1rem;
+  }
+
+  .slug-input-wrapper {
+    align-items: stretch;
+    flex-direction: column;
+
+    .slug-prefix {
+      overflow: hidden;
+      border-right: 0;
+      border-bottom: 1px solid var(--color-border, #e2e8f0);
+      text-overflow: ellipsis;
+    }
+  }
+
+  .public-link-banner {
+    align-items: stretch;
+    padding: 0.85rem;
+
+    .link-info {
+      min-width: 0;
+    }
+
+    .link-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+
+      .btn-copy-link,
+      .btn-open-link {
+        justify-content: center;
+        min-width: 0;
+        text-align: center;
+      }
+    }
+  }
+
   .qr-builder {
     grid-template-columns: 1fr;
+    gap: 1rem;
+    padding-top: 1rem;
   }
+
+  .qr-copy {
+    align-items: stretch;
+  }
+
+  .qr-logo-toggle {
+    align-items: flex-start;
+  }
+
+  .button-download-qr {
+    justify-content: center;
+    width: 100%;
+  }
+
   .qr-preview {
-    justify-self: stretch;
+    justify-self: center;
+    max-width: 260px;
     margin: 0 auto;
+    padding: 0.75rem;
+  }
+
+  .subnav-tabs {
+    width: 100%;
+    gap: 0.35rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+
+    .tab-link {
+      flex: 0 0 auto;
+      padding: 0.75rem 0.55rem;
+      font-size: 0.84rem;
+      white-space: nowrap;
+    }
+  }
+}
+
+@media (max-width: 420px) {
+  .digital-menu-shell {
+    padding: 0.5rem;
+  }
+
+  .top-config-card {
+    padding: 0.8rem;
+  }
+
+  .public-link-banner .link-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .qr-preview {
+    max-width: 230px;
   }
 }
 
@@ -562,6 +717,8 @@
 
 .shell-content {
   display: block;
+  width: 100%;
+  min-width: 0;
 }
 
 .alert {
