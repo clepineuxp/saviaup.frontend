@@ -1095,6 +1095,9 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'digitalMenu.qr.description':
       'El código abre exactamente el enlace público con el slug de SaviaUp. Puedes incluir el logo de la organización en el centro sin perder legibilidad.',
     'digitalMenu.qr.includeLogo': 'Agregar logo de la organización',
+    'digitalMenu.qr.logoSize': 'Tamaño del logo',
+    'digitalMenu.qr.logoSizeHint':
+      'Puedes ampliarlo hasta el límite seguro para conservar la lectura del QR.',
     'digitalMenu.qr.logoHint':
       'Sube un logo en Configuración → Organización para habilitar esta opción.',
     'digitalMenu.qr.download': 'Descargar QR en PNG',
@@ -2317,6 +2320,9 @@ export const LOCAL_TRANSLATIONS: Readonly<Record<SupportedLanguage, TranslationD
     'digitalMenu.qr.description':
       'The code opens the exact SaviaUp public link containing your slug. You can place the organization logo in the center while preserving readability.',
     'digitalMenu.qr.includeLogo': 'Add organization logo',
+    'digitalMenu.qr.logoSize': 'Logo size',
+    'digitalMenu.qr.logoSizeHint':
+      'You can enlarge it up to the safe limit while keeping the QR readable.',
     'digitalMenu.qr.logoHint': 'Upload a logo under Settings → Organization to enable this option.',
     'digitalMenu.qr.download': 'Download QR as PNG',
     'digitalMenu.qr.error': 'The QR code could not be generated.',
