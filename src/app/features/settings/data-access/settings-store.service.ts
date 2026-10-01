@@ -20,6 +20,8 @@ import {
   OrganizationSettings,
   OrganizationUser,
   PaymentMethod,
+  PrintingPrinter,
+  PrintingTemplateSettings,
   SavePaymentMethod,
   SaveSettingsRole,
   SETTINGS_PERMISSIONS,
@@ -37,6 +39,8 @@ export class SettingsStore {
   private readonly tenant = inject(TenantContext);
   private readonly organizationState = signal<OrganizationSettings | null>(null);
   private readonly businessState = signal<BusinessSettings | null>(null);
+  private readonly printingTemplatesState = signal<PrintingTemplateSettings | null>(null);
+  private readonly printingPrintersState = signal<readonly PrintingPrinter[]>([]);
   private readonly paymentMethodsState = signal<readonly PaymentMethod[]>([]);
   private readonly rolesState = signal<readonly SettingsRole[]>([]);
   private readonly usersState = signal<readonly OrganizationUser[]>([]);
@@ -48,6 +52,8 @@ export class SettingsStore {
 
   readonly organization = this.organizationState.asReadonly();
   readonly business = this.businessState.asReadonly();
+  readonly printingTemplates = this.printingTemplatesState.asReadonly();
+  readonly printingPrinters = this.printingPrintersState.asReadonly();
   readonly paymentMethods = this.paymentMethodsState.asReadonly();
   readonly roles = this.rolesState.asReadonly();
   readonly users = this.usersState.asReadonly();
@@ -70,6 +76,8 @@ export class SettingsStore {
         const can = (permission: string) => user.permissions.includes(permission);
         const canOperateOrRead =
           can('orders.create') || can('tables.operate') || can('orders.read') || can('tables.read');
+        const canConsumePrintingSettings =
+          canOperateOrRead || can('billing.read') || can('billing.manage');
         return forkJoin({
           organization:
             can(SETTINGS_PERMISSIONS.organizationRead) || canOperateOrRead
@@ -77,10 +85,21 @@ export class SettingsStore {
               : of(null),
           business:
             can(SETTINGS_PERMISSIONS.businessRead) ||
+            can(SETTINGS_PERMISSIONS.businessManage) ||
             can(SETTINGS_PERMISSIONS.expenseFinancialFieldsManage) ||
             canOperateOrRead
               ? this.repository.getBusiness()
               : of(null),
+          printing:
+            can(SETTINGS_PERMISSIONS.businessRead) ||
+            can(SETTINGS_PERMISSIONS.businessManage) ||
+            canConsumePrintingSettings
+              ? this.repository.getPrintingTemplates()
+              : of(null),
+          printingPrinters:
+            can(SETTINGS_PERMISSIONS.businessRead) || can(SETTINGS_PERMISSIONS.businessManage)
+              ? this.repository.listPrintingPrinters()
+              : of([]),
           payments:
             can(SETTINGS_PERMISSIONS.paymentsRead) || canOperateOrRead
               ? this.repository.listPaymentMethods()
@@ -93,6 +112,8 @@ export class SettingsStore {
       tap((data) => {
         this.organizationState.set(data.organization);
         this.businessState.set(data.business);
+        this.printingTemplatesState.set(data.printing);
+        this.printingPrintersState.set(data.printingPrinters);
         this.paymentMethodsState.set(data.payments);
         this.rolesState.set(data.roles);
         this.permissionCatalogState.set(data.catalog);
@@ -146,6 +167,14 @@ export class SettingsStore {
     return this.mutate(this.repository.updateBusiness(request)).pipe(
       tap((value) => this.businessState.set(value)),
     );
+  }
+  updatePrintingTemplates(request: PrintingTemplateSettings): Observable<PrintingTemplateSettings> {
+    return this.mutate(this.repository.updatePrintingTemplates(request)).pipe(
+      tap((value) => this.printingTemplatesState.set(value)),
+    );
+  }
+  testKitchenPrint(agentId: string, printerId: string): Observable<void> {
+    return this.mutate(this.repository.testKitchenPrint(agentId, printerId));
   }
   updateExpenseEditingPolicy(lockFinancialFieldsAfterCreation: boolean): Observable<void> {
     return this.mutate(

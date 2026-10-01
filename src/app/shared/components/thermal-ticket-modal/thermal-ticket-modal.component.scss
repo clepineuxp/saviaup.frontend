@@ -193,6 +193,18 @@
         flex: 1;
         font-weight: 700;
         padding-right: 0.5rem;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.wrap-item-name {
+          white-space: normal;
+          overflow-wrap: anywhere;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+        }
       }
 
       .t-item-val {

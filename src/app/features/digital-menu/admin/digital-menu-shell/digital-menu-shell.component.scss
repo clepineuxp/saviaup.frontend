@@ -270,7 +270,9 @@
   border-radius: 0.6rem;
   overflow: hidden;
   background: #ffffff;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 
   &:focus-within:not(.disabled) {
     border-color: var(--color-primary, #0f766e);
@@ -424,6 +426,102 @@
     strong {
       color: var(--color-text-main, #0f172a);
     }
+  }
+}
+
+.qr-builder {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 340px);
+  gap: 1.5rem;
+  align-items: center;
+  border-top: 1px solid var(--color-border, #e2e8f0);
+  padding-top: 1.5rem;
+
+  h3 {
+    margin: 0.25rem 0 0.4rem;
+    color: var(--color-text-main, #0f172a);
+    font-size: 1.08rem;
+  }
+  p {
+    margin: 0;
+    color: var(--color-text-muted, #64748b);
+    line-height: 1.5;
+  }
+  small {
+    color: var(--color-text-muted, #64748b);
+  }
+}
+
+.qr-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+.qr-logo-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 650;
+  color: var(--color-text-main, #0f172a);
+  cursor: pointer;
+  &.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-primary, #0f766e);
+  }
+}
+.button-download-qr {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 0;
+  border-radius: 0.6rem;
+  padding: 0.65rem 1rem;
+  background: #0f766e;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+.qr-preview {
+  justify-self: center;
+  width: min(100%, 320px);
+  padding: 1rem;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  text-align: center;
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+  }
+  span {
+    display: block;
+    margin-top: 0.65rem;
+    color: #475569;
+    font-size: 0.72rem;
+    overflow-wrap: anywhere;
+  }
+}
+.qr-error {
+  color: #991b1b;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 760px) {
+  .qr-builder {
+    grid-template-columns: 1fr;
+  }
+  .qr-preview {
+    justify-self: stretch;
+    margin: 0 auto;
   }
 }
 

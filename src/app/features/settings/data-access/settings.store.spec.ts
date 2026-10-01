@@ -3,7 +3,11 @@ import { firstValueFrom, of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthStore } from '../../../core/auth/auth-store.service';
 import { TenantContext } from '../../../core/tenant/tenant-context.service';
-import { SETTINGS_PERMISSIONS, SettingsRole } from '../models/settings.model';
+import {
+  DEFAULT_PRINTING_TEMPLATES,
+  SETTINGS_PERMISSIONS,
+  SettingsRole,
+} from '../models/settings.model';
 import { SETTINGS_REPOSITORY } from './settings.repository';
 import { SettingsStore } from './settings-store.service';
 
@@ -17,6 +21,10 @@ describe('SettingsStore', () => {
     deleteLogo: vi.fn(),
     getBusiness: vi.fn(),
     updateBusiness: vi.fn(),
+    getPrintingTemplates: vi.fn(),
+    updatePrintingTemplates: vi.fn(),
+    listPrintingPrinters: vi.fn(),
+    testKitchenPrint: vi.fn(),
     updateExpenseEditingPolicy: vi.fn(),
     listPaymentMethods: vi.fn(),
     createPaymentMethod: vi.fn(),
@@ -81,5 +89,35 @@ describe('SettingsStore', () => {
 
     await firstValueFrom(store.toggleRole(role));
     expect(store.roles()[0]?.isActive).toBe(false);
+  });
+
+  it('loads and updates tenant printing templates for business settings users', async () => {
+    authStoreMock.loadCurrentUser.mockReturnValue(
+      of({
+        id: 'u1',
+        email: 'admin@saviaup.local',
+        permissions: [SETTINGS_PERMISSIONS.businessRead, SETTINGS_PERMISSIONS.businessManage],
+      }),
+    );
+    repositoryMock.getBusiness.mockReturnValue(of(null));
+    repositoryMock.getPrintingTemplates.mockReturnValue(of(DEFAULT_PRINTING_TEMPLATES));
+    repositoryMock.listPrintingPrinters.mockReturnValue(of([]));
+    repositoryMock.updatePrintingTemplates.mockReturnValue(
+      of({
+        ...DEFAULT_PRINTING_TEMPLATES,
+        receipt: { ...DEFAULT_PRINTING_TEMPLATES.receipt, itemFontSize: 15 },
+      }),
+    );
+
+    await firstValueFrom(store.load());
+    expect(store.printingTemplates()?.receipt.itemFontSize).toBe(11);
+
+    await firstValueFrom(
+      store.updatePrintingTemplates({
+        ...DEFAULT_PRINTING_TEMPLATES,
+        receipt: { ...DEFAULT_PRINTING_TEMPLATES.receipt, itemFontSize: 15 },
+      }),
+    );
+    expect(store.printingTemplates()?.receipt.itemFontSize).toBe(15);
   });
 });

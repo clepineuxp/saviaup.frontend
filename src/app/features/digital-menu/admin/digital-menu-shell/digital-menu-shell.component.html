@@ -168,6 +168,35 @@
           </a>
         </div>
       </div>
+      <div class="qr-builder">
+        <div class="qr-copy">
+          <span class="card-badge">{{ 'digitalMenu.qr.badge' | translate }}</span>
+          <h3>{{ 'digitalMenu.qr.title' | translate }}</h3>
+          <p>{{ 'digitalMenu.qr.description' | translate }}</p>
+          <label class="qr-logo-toggle" [class.disabled]="!logoAvailable()">
+            <input
+              type="checkbox"
+              [checked]="includeLogoInQr()"
+              [disabled]="!logoAvailable()"
+              (change)="toggleQrLogo()"
+            />
+            <span>{{ 'digitalMenu.qr.includeLogo' | translate }}</span>
+          </label>
+          @if (!logoAvailable()) {
+            <small>{{ 'digitalMenu.qr.logoHint' | translate }}</small>
+          }
+          <button type="button" class="button-download-qr" (click)="downloadQr()">
+            <span>↓</span> {{ 'digitalMenu.qr.download' | translate }}
+          </button>
+          @if (qrErrorKey()) {
+            <div class="qr-error" role="alert">{{ qrErrorKey()! | translate }}</div>
+          }
+        </div>
+        <div class="qr-preview">
+          <canvas #qrCanvas [attr.aria-label]="'digitalMenu.qr.ariaLabel' | translate"></canvas>
+          <span class="notranslate" translate="no">{{ store.publicMenuUrl() }}</span>
+        </div>
+      </div>
     } @else if (!store.isEnabled()) {
       <div class="disabled-menu-banner">
         <span class="banner-icon">ℹ️</span>

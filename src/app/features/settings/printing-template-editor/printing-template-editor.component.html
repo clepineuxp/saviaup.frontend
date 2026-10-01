@@ -1,0 +1,314 @@
+<section class="printing-editor">
+  <div class="editor-heading">
+    <div>
+      <h2>{{ 'settings.printing.title' | translate }}</h2>
+      <p>{{ 'settings.printing.description' | translate }}</p>
+    </div>
+    <button
+      type="button"
+      class="primary"
+      [disabled]="store.mutating() || !store.hasPermission('settings.business.manage')"
+      (click)="save()"
+    >
+      {{ 'settings.printing.save' | translate }}
+    </button>
+  </div>
+
+  @if (feedbackKey()) {
+    <div class="editor-feedback" role="status">{{ feedbackKey()! | translate }}</div>
+  }
+
+  <nav class="document-tabs" [attr.aria-label]="'settings.printing.documents' | translate">
+    <button type="button" [class.active]="editor() === 'receipt'" (click)="editor.set('receipt')">
+      {{ 'settings.printing.receipt' | translate }}
+    </button>
+    <button type="button" [class.active]="editor() === 'kitchen'" (click)="editor.set('kitchen')">
+      {{ 'settings.printing.kitchen' | translate }}
+    </button>
+  </nav>
+
+  @if (editor() === 'receipt') {
+    <div class="editor-grid">
+      <form class="controls" [formGroup]="receiptForm">
+        <label
+          ><span>{{ 'settings.printing.paperWidth' | translate }}</span
+          ><select formControlName="paperWidthMm">
+            <option [ngValue]="58">58 mm</option>
+            <option [ngValue]="80">80 mm</option>
+          </select></label
+        >
+        <label
+          ><span>{{ 'settings.printing.baseSize' | translate }}</span
+          ><input type="range" min="8" max="18" formControlName="baseFontSize" /><output
+            >{{ receiptForm.controls.baseFontSize.value }} px</output
+          ></label
+        >
+        <label
+          ><span>{{ 'settings.printing.headerSize' | translate }}</span
+          ><input type="range" min="10" max="28" formControlName="headerFontSize" /><output
+            >{{ receiptForm.controls.headerFontSize.value }} px</output
+          ></label
+        >
+        <label
+          ><span>{{ 'settings.printing.itemSize' | translate }}</span
+          ><input type="range" min="8" max="22" formControlName="itemFontSize" /><output
+            >{{ receiptForm.controls.itemFontSize.value }} px</output
+          ></label
+        >
+        <label
+          ><span>{{ 'settings.printing.totalSize' | translate }}</span
+          ><input type="range" min="10" max="28" formControlName="totalFontSize" /><output
+            >{{ receiptForm.controls.totalFontSize.value }} px</output
+          ></label
+        >
+        <label
+          ><span>{{ 'settings.printing.tipSize' | translate }}</span
+          ><input type="range" min="8" max="24" formControlName="voluntaryTipFontSize" /><output
+            >{{ receiptForm.controls.voluntaryTipFontSize.value }} px</output
+          ></label
+        >
+        <label
+          ><span>{{ 'settings.printing.tipAlignment' | translate }}</span
+          ><select formControlName="voluntaryTipAlignment">
+            <option value="LEFT">{{ 'settings.printing.left' | translate }}</option>
+            <option value="CENTER">{{ 'settings.printing.center' | translate }}</option>
+            <option value="RIGHT">{{ 'settings.printing.right' | translate }}</option>
+          </select></label
+        >
+        <label
+          ><span>{{ 'settings.printing.tipPosition' | translate }}</span
+          ><select formControlName="voluntaryTipPosition">
+            <option value="BEFORE_TOTAL">{{ 'settings.printing.beforeTotal' | translate }}</option>
+            <option value="AFTER_TOTAL">{{ 'settings.printing.afterTotal' | translate }}</option>
+          </select></label
+        >
+        <label class="check"
+          ><input type="checkbox" formControlName="wrapLongItemNames" /><span>{{
+            'settings.printing.wrapItems' | translate
+          }}</span></label
+        >
+        <label class="check"
+          ><input type="checkbox" formControlName="showLogo" /><span>{{
+            'settings.printing.showLogo' | translate
+          }}</span></label
+        >
+        @if (receiptForm.controls.showLogo.value) {
+          <label
+            ><span>{{ 'settings.printing.logoWidth' | translate }}</span
+            ><input type="range" min="20" max="72" formControlName="logoWidthMm" /><output
+              >{{ receiptForm.controls.logoWidthMm.value }} mm</output
+            ></label
+          >
+        }
+      </form>
+
+      <div class="preview-column">
+        <div
+          #receiptPreview
+          class="receipt-preview"
+          [style.width.mm]="receipt().paperWidthMm"
+          [style.font-size.px]="receipt().baseFontSize"
+        >
+          @if (receipt().showLogo) {
+            <div class="sample-logo" [style.width.mm]="receipt().logoWidthMm">LOGO</div>
+          }
+          <div class="receipt-header" [style.font-size.px]="receipt().headerFontSize">
+            SAVIA GASTROBAR
+          </div>
+          <div>NIT 900.000.000-1</div>
+          <div>Comprobante #1042 · Mesa 8</div>
+          <div class="dash"></div>
+          <div class="receipt-item" [style.font-size.px]="receipt().itemFontSize">
+            <span class="receipt-item-name" [class.wrap]="receipt().wrapLongItemNames"
+              >2x Hamburguesa artesanal especial con queso y tocineta</span
+            ><strong>$42.000</strong>
+          </div>
+          <div class="receipt-item" [style.font-size.px]="receipt().itemFontSize">
+            <span>1x Limonada</span><strong>$8.000</strong>
+          </div>
+          <div class="dash"></div>
+          @if (receipt().voluntaryTipPosition === 'BEFORE_TOTAL') {
+            <div
+              class="receipt-tip"
+              [style.font-size.px]="receipt().voluntaryTipFontSize"
+              [style.text-align]="receipt().voluntaryTipAlignment.toLowerCase()"
+            >
+              Servicio voluntario (10%): $5.000
+            </div>
+          }
+          <div class="receipt-total" [style.font-size.px]="receipt().totalFontSize">
+            <strong>TOTAL</strong><strong>$55.000</strong>
+          </div>
+          @if (receipt().voluntaryTipPosition === 'AFTER_TOTAL') {
+            <div
+              class="receipt-tip"
+              [style.font-size.px]="receipt().voluntaryTipFontSize"
+              [style.text-align]="receipt().voluntaryTipAlignment.toLowerCase()"
+            >
+              Servicio voluntario (10%): $5.000
+            </div>
+          }
+          <div class="dash"></div>
+          <div class="thanks">¡Gracias por su visita!</div>
+        </div>
+        <button type="button" class="secondary" (click)="testReceipt()">
+          {{ 'settings.printing.testReceipt' | translate }}
+        </button>
+      </div>
+    </div>
+  } @else {
+    <div class="editor-grid">
+      <form class="controls" [formGroup]="kitchenForm">
+        <label
+          ><span>{{ 'settings.printing.headerScale' | translate }}</span
+          ><select formControlName="headerFontScale">
+            <option [ngValue]="1">1×</option>
+            <option [ngValue]="2">2×</option>
+          </select></label
+        >
+        <label
+          ><span>{{ 'settings.printing.metadataScale' | translate }}</span
+          ><select formControlName="metadataFontScale">
+            <option [ngValue]="1">1×</option>
+            <option [ngValue]="2">2×</option>
+          </select></label
+        >
+        <label
+          ><span>{{ 'settings.printing.itemScale' | translate }}</span
+          ><select formControlName="itemFontScale">
+            <option [ngValue]="1">1×</option>
+            <option [ngValue]="2">2×</option>
+          </select></label
+        >
+        <label
+          ><span>{{ 'settings.printing.notesScale' | translate }}</span
+          ><select formControlName="notesFontScale">
+            <option [ngValue]="1">1×</option>
+            <option [ngValue]="2">2×</option>
+          </select></label
+        >
+        <label
+          ><span>{{ 'settings.printing.headerAlignment' | translate }}</span
+          ><select formControlName="headerAlignment">
+            <option value="LEFT">{{ 'settings.printing.left' | translate }}</option>
+            <option value="CENTER">{{ 'settings.printing.center' | translate }}</option>
+            <option value="RIGHT">{{ 'settings.printing.right' | translate }}</option>
+          </select></label
+        >
+        <label
+          ><span>{{ 'settings.printing.layout' | translate }}</span
+          ><select formControlName="layout">
+            <option value="COMPACT">{{ 'settings.printing.compact' | translate }}</option>
+            <option value="STANDARD">{{ 'settings.printing.standard' | translate }}</option>
+            <option value="SPACIOUS">{{ 'settings.printing.spacious' | translate }}</option>
+          </select></label
+        >
+        <label class="check"
+          ><input type="checkbox" formControlName="wrapLongItemNames" /><span>{{
+            'settings.printing.wrapItems' | translate
+          }}</span></label
+        >
+        @if (kitchenForm.controls.wrapLongItemNames.value) {
+          <label
+            ><span>{{ 'settings.printing.maxLines' | translate }}</span
+            ><select formControlName="maxItemNameLines">
+              <option [ngValue]="1">1</option>
+              <option [ngValue]="2">2</option>
+              <option [ngValue]="3">3</option>
+            </select></label
+          >
+        }
+        <label class="check"
+          ><input type="checkbox" formControlName="showTable" /><span>{{
+            'settings.printing.showTable' | translate
+          }}</span></label
+        >
+        <label class="check"
+          ><input type="checkbox" formControlName="showWaiter" /><span>{{
+            'settings.printing.showWaiter' | translate
+          }}</span></label
+        >
+        <label class="check"
+          ><input type="checkbox" formControlName="showTimestamp" /><span>{{
+            'settings.printing.showTime' | translate
+          }}</span></label
+        >
+        <label class="check"
+          ><input type="checkbox" formControlName="uppercaseItemNames" /><span>{{
+            'settings.printing.uppercaseItems' | translate
+          }}</span></label
+        >
+      </form>
+      <div class="preview-column">
+        <div
+          class="kitchen-preview"
+          [class.compact]="kitchen().layout === 'COMPACT'"
+          [class.spacious]="kitchen().layout === 'SPACIOUS'"
+        >
+          <div
+            class="kitchen-title"
+            [style.font-size.em]="kitchen().headerFontScale"
+            [style.text-align]="kitchen().headerAlignment.toLowerCase()"
+          >
+            COMANDA CMD-001042
+          </div>
+          <div [style.font-size.em]="kitchen().metadataFontScale">
+            @if (kitchen().showTable) {
+              Mesa: 8<br />
+            }
+            @if (kitchen().showWaiter) {
+              Mesero: Andrea<br />
+            }
+            @if (kitchen().showTimestamp) {
+              Hora: 19:42
+            }
+          </div>
+          <div class="dash"></div>
+          <div
+            class="kitchen-item"
+            [style.font-size.em]="kitchen().itemFontScale"
+            [class.wrap]="kitchen().wrapLongItemNames"
+            [class.lines-1]="kitchen().maxItemNameLines === 1"
+            [class.lines-2]="kitchen().maxItemNameLines === 2"
+            [class.lines-3]="kitchen().maxItemNameLines === 3"
+          >
+            2 x
+            {{
+              kitchen().uppercaseItemNames
+                ? 'HAMBURGUESA ARTESANAL ESPECIAL'
+                : 'Hamburguesa artesanal especial'
+            }}
+          </div>
+          <div>- Sin cebolla</div>
+          <div class="kitchen-note" [style.font-size.em]="kitchen().notesFontScale">
+            Nota: término 3/4
+          </div>
+        </div>
+        <div class="test-agent">
+          <select [value]="selectedPrinterId()" (change)="selectPrinter($event)">
+            <option value="">{{ 'settings.printing.selectPrinter' | translate }}</option>
+            @for (printer of store.printingPrinters(); track printer.id) {
+              @if (printer.enabled) {
+                <option [value]="printer.id">
+                  {{ printer.name }} · {{ printer.paperWidth }} mm
+                </option>
+              }
+            }
+          </select>
+          <button
+            type="button"
+            class="secondary"
+            [disabled]="
+              !selectedPrinterId() ||
+              store.mutating() ||
+              !store.hasPermission('settings.business.manage')
+            "
+            (click)="testKitchen()"
+          >
+            {{ 'settings.printing.testKitchen' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</section>
