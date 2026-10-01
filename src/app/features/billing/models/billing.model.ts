@@ -49,6 +49,8 @@ export interface OrderReceipt {
   readonly issuedByUserName: string;
   readonly paidByUserName?: string | null;
   readonly createdAt: string;
+  readonly orderNumber?: number | null;
+  readonly tableName?: string | null;
 }
 
 export interface BillingOrder {

@@ -9,6 +9,8 @@ import {
   OrganizationSettings,
   OrganizationUser,
   PaymentMethod,
+  PrintingPrinter,
+  PrintingTemplateSettings,
   SavePaymentMethod,
   SaveSettingsRole,
   SettingsRole,
@@ -43,6 +45,18 @@ export class HttpSettingsRepository implements SettingsRepository {
   }
   updateBusiness(request: UpdateBusinessSettings): Observable<BusinessSettings> {
     return this.api.put(API_ENDPOINTS.settings.business, request);
+  }
+  getPrintingTemplates(): Observable<PrintingTemplateSettings> {
+    return this.api.get(API_ENDPOINTS.settings.printing);
+  }
+  updatePrintingTemplates(request: PrintingTemplateSettings): Observable<PrintingTemplateSettings> {
+    return this.api.put(API_ENDPOINTS.settings.printing, request);
+  }
+  listPrintingPrinters(): Observable<readonly PrintingPrinter[]> {
+    return this.api.get(API_ENDPOINTS.printing.printers);
+  }
+  testKitchenPrint(agentId: string, printerId: string): Observable<void> {
+    return this.api.post(API_ENDPOINTS.printing.testPrint(agentId), {}, { params: { printerId } });
   }
   updateExpenseEditingPolicy(
     lockFinancialFieldsAfterCreation: boolean,
