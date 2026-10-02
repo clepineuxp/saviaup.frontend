@@ -4,6 +4,8 @@ Frontend de **Savia Up**, una plataforma SaaS multi-tenant para restaurantes y g
 
 Configuración incluye un editor visual independiente para comprobantes de pago y etiquetas automáticas de comanda. El menú digital genera además un QR descargable hacia el slug público, con logo de organización opcional y corrección de errores alta.
 
+La pestaña **Imprimir menú** de la configuración del menú digital prepara un menú A4 con el estilo guardado, descripciones resumidas, fotos completas ajustadas sin recorte y todas las variaciones con su precio. Omite categorías y productos ocultos; los productos sin foto disponible se imprimen sin espacio de imagen. Consulta las fotos de todos los productos visibles, incluso si el resumen no trae `imageRef`. Permite distribuir las fichas en una, dos o tres columnas y ajustar la letra entre 75 % y 125 %; el total de páginas se recalcula al cambiar estos controles y se vuelve exacto tras cargar las fotos. Exige confirmar esa cantidad antes de descargar un PDF o un ZIP de imágenes PNG. La vista previa navegable y las descargas comparten el mismo maquetador.
+
 > Control de versiones: no se crean commits ni se hace push salvo solicitud explícita del usuario en el mensaje actual.
 
 ## Stack

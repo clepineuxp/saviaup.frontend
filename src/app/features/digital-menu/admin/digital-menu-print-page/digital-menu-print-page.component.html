@@ -1,0 +1,221 @@
+<section class="print-menu-page">
+  <header class="print-menu-header">
+    <div>
+      <span class="eyebrow">{{ 'digitalMenu.print.eyebrow' | translate }}</span>
+      <h2>{{ 'digitalMenu.print.title' | translate }}</h2>
+      <p>{{ 'digitalMenu.print.description' | translate }}</p>
+    </div>
+  </header>
+
+  @if (store.loading()) {
+    <p class="notice">{{ 'digitalMenu.print.loading' | translate }}</p>
+  } @else if (pages().length === 0) {
+    <p class="notice">{{ 'digitalMenu.print.empty' | translate }}</p>
+  } @else {
+    <div class="print-menu-layout">
+      <div class="print-menu-controls">
+        <section class="print-card">
+          <h3>{{ 'digitalMenu.print.review' | translate }}</h3>
+          <div class="count-grid">
+            <div>
+              <strong>{{ menu()?.categories?.length }}</strong
+              ><span>{{ 'digitalMenu.print.categories' | translate }}</span>
+            </div>
+            <div>
+              <strong>{{ productCount() }}</strong
+              ><span>{{ 'digitalMenu.print.products' | translate }}</span>
+            </div>
+            <div>
+              <strong>{{ variationCount() }}</strong
+              ><span>{{ 'digitalMenu.print.variations' | translate }}</span>
+            </div>
+            <div>
+              <strong>{{ pages().length }}</strong
+              ><span>{{
+                (prepared() ? 'digitalMenu.print.a4Pages' : 'digitalMenu.print.estimatedA4Pages')
+                  | translate
+              }}</span>
+            </div>
+          </div>
+          <p class="helper">
+            {{
+              (prepared() ? 'digitalMenu.print.exactCountHint' : 'digitalMenu.print.countHint')
+                | translate
+            }}
+          </p>
+          @if (prepared() && menu()?.style?.showImages) {
+            <p class="helper">
+              {{ 'digitalMenu.print.includedPhotos' | translate }}: {{ loadedImageCount() }}
+            </p>
+          }
+        </section>
+
+        <section class="print-card">
+          <h3>{{ 'digitalMenu.print.layout' | translate }}</h3>
+          <div
+            class="column-options"
+            role="group"
+            [attr.aria-label]="'digitalMenu.print.columns' | translate"
+          >
+            @for (count of columnOptions; track count) {
+              <button
+                type="button"
+                [class.selected]="columns() === count"
+                [attr.aria-pressed]="columns() === count"
+                [disabled]="preparing() || generating()"
+                (click)="chooseColumns(count)"
+              >
+                {{ count }}
+                {{
+                  (count === 1 ? 'digitalMenu.print.column' : 'digitalMenu.print.columnsShort')
+                    | translate
+                }}
+              </button>
+            }
+          </div>
+          <label class="font-control" for="print-menu-font-size">
+            <span>{{ 'digitalMenu.print.fontSize' | translate }}</span>
+            <strong>{{ fontPercent() }}%</strong>
+          </label>
+          <input
+            id="print-menu-font-size"
+            class="font-slider"
+            type="range"
+            min="75"
+            max="125"
+            step="5"
+            [value]="fontPercent()"
+            [disabled]="preparing() || generating()"
+            (input)="setFontPercent($event)"
+          />
+          <p class="helper">{{ 'digitalMenu.print.layoutHint' | translate }}</p>
+        </section>
+
+        <section class="print-card">
+          <h3>{{ 'digitalMenu.print.format' | translate }}</h3>
+          <div
+            class="format-options"
+            role="group"
+            [attr.aria-label]="'digitalMenu.print.formatLabel' | translate"
+          >
+            <button
+              type="button"
+              [class.selected]="format() === 'pdf'"
+              [attr.aria-pressed]="format() === 'pdf'"
+              (click)="chooseFormat('pdf')"
+            >
+              <strong>PDF</strong><small>{{ 'digitalMenu.print.pdfHint' | translate }}</small>
+            </button>
+            <button
+              type="button"
+              [class.selected]="format() === 'images'"
+              [attr.aria-pressed]="format() === 'images'"
+              (click)="chooseFormat('images')"
+            >
+              <strong>{{ 'digitalMenu.print.images' | translate }}</strong
+              ><small
+                >{{ pages().length }}
+                {{
+                  pages().length === 1
+                    ? ('digitalMenu.print.image' | translate)
+                    : ('digitalMenu.print.imagesCount' | translate)
+                }}
+                {{ 'digitalMenu.print.imagesHint' | translate }}</small
+              >
+            </button>
+          </div>
+        </section>
+
+        <section class="print-card">
+          <h3>{{ 'digitalMenu.print.previewStep' | translate }}</h3>
+          <button
+            type="button"
+            class="prepare-button"
+            [disabled]="preparing() || generating()"
+            (click)="prepare()"
+          >
+            {{
+              (preparing()
+                ? 'digitalMenu.print.preparing'
+                : prepared()
+                  ? 'digitalMenu.print.refreshPreview'
+                  : 'digitalMenu.print.preparePreview'
+              ) | translate
+            }}
+          </button>
+          @if (prepared()) {
+            <label class="confirm-row">
+              <input
+                type="checkbox"
+                [checked]="confirmed()"
+                (change)="confirmed.set($any($event.target).checked)"
+              />
+              <span
+                >{{ 'digitalMenu.print.confirmPrefix' | translate }} {{ pages().length }}
+                {{
+                  (pages().length === 1 ? 'digitalMenu.print.page' : 'digitalMenu.print.pages')
+                    | translate
+                }}
+                A4
+                {{
+                  (format() === 'images'
+                    ? 'digitalMenu.print.confirmImages'
+                    : 'digitalMenu.print.confirmPdf'
+                  ) | translate
+                }}</span
+              >
+            </label>
+            <button
+              type="button"
+              class="download-button"
+              [disabled]="!confirmed() || generating()"
+              (click)="download()"
+            >
+              {{
+                (generating()
+                  ? 'digitalMenu.print.generating'
+                  : format() === 'pdf'
+                    ? 'digitalMenu.print.downloadPdf'
+                    : 'digitalMenu.print.downloadImages'
+                ) | translate
+              }}
+            </button>
+          }
+          @if (error()) {
+            <p class="error" role="alert">{{ error() }}</p>
+          }
+        </section>
+      </div>
+
+      <aside class="preview-panel">
+        <h3>
+          {{ 'digitalMenu.print.preview' | translate }} {{ previewPageIndex() + 1 }} /
+          {{ pages().length }}
+        </h3>
+        @if (previewUrl()) {
+          <img [src]="previewUrl()" [alt]="'digitalMenu.print.previewAlt' | translate" />
+          <div class="preview-navigation">
+            <button
+              type="button"
+              [disabled]="previewPageIndex() === 0"
+              (click)="showPreviewPage(previewPageIndex() - 1)"
+            >
+              {{ 'digitalMenu.print.previousPage' | translate }}
+            </button>
+            <button
+              type="button"
+              [disabled]="previewPageIndex() >= pages().length - 1"
+              (click)="showPreviewPage(previewPageIndex() + 1)"
+            >
+              {{ 'digitalMenu.print.nextPage' | translate }}
+            </button>
+          </div>
+        } @else {
+          <div class="preview-placeholder">
+            {{ 'digitalMenu.print.previewPlaceholder' | translate }}
+          </div>
+        }
+      </aside>
+    </div>
+  }
+</section>

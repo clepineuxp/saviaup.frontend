@@ -19,9 +19,9 @@ export const DIGITAL_MENU_ROUTES: Routes = [
         canActivate: [digitalMenuItemsGuard],
         title: 'Administrar menú · Productos · Savia Up',
         loadComponent: () =>
-          import(
-            './admin/digital-menu-products-page/digital-menu-products-page.component'
-          ).then((m) => m.DigitalMenuProductsPageComponent),
+          import('./admin/digital-menu-products-page/digital-menu-products-page.component').then(
+            (m) => m.DigitalMenuProductsPageComponent,
+          ),
       },
       {
         path: 'style',
@@ -30,6 +30,14 @@ export const DIGITAL_MENU_ROUTES: Routes = [
         loadComponent: () =>
           import('./admin/digital-menu-style-page/digital-menu-style-page.component').then(
             (m) => m.DigitalMenuStylePageComponent,
+          ),
+      },
+      {
+        path: 'print',
+        title: 'Administrar menú · Imprimir · Savia Up',
+        loadComponent: () =>
+          import('./admin/digital-menu-print-page/digital-menu-print-page.component').then(
+            (m) => m.DigitalMenuPrintPageComponent,
           ),
       },
     ],

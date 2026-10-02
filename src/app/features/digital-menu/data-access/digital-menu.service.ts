@@ -4,6 +4,7 @@ import { API_ENDPOINTS } from '../../../core/config/api-endpoints';
 import { ApiClient } from '../../../shared/api/api-client.service';
 import {
   DigitalMenuConfig,
+  DigitalMenuCategoryImages,
   DigitalMenuStyle,
   SaveDigitalMenuItemsRequest,
   UpdateDigitalMenuParametersRequest,
@@ -17,6 +18,12 @@ export class DigitalMenuService {
     return this.api.get<DigitalMenuConfig>(API_ENDPOINTS.digitalMenu.config);
   }
 
+  getPrintCategoryImages(categoryId: string): Observable<DigitalMenuCategoryImages> {
+    return this.api.get<DigitalMenuCategoryImages>(
+      API_ENDPOINTS.digitalMenu.printCategoryImages(categoryId),
+    );
+  }
+
   updateParameters(request: UpdateDigitalMenuParametersRequest): Observable<void> {
     return this.api.put<void, UpdateDigitalMenuParametersRequest>(
       API_ENDPOINTS.digitalMenu.parameters,
@@ -25,7 +32,10 @@ export class DigitalMenuService {
   }
 
   updateItems(request: SaveDigitalMenuItemsRequest): Observable<void> {
-    return this.api.put<void, SaveDigitalMenuItemsRequest>(API_ENDPOINTS.digitalMenu.items, request);
+    return this.api.put<void, SaveDigitalMenuItemsRequest>(
+      API_ENDPOINTS.digitalMenu.items,
+      request,
+    );
   }
 
   updateStyle(request: DigitalMenuStyle): Observable<void> {

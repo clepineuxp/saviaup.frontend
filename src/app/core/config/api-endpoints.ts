@@ -112,6 +112,8 @@ export const API_ENDPOINTS = {
   },
   digitalMenu: {
     config: '/api/digital-menu/config',
+    printCategoryImages: (categoryId: string) =>
+      `/api/digital-menu/print/categories/${encodeURIComponent(categoryId)}/images`,
     parameters: '/api/digital-menu/parameters',
     items: '/api/digital-menu/items',
     style: '/api/digital-menu/style',
