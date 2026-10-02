@@ -30,6 +30,20 @@ export interface DigitalMenuItemSummary {
   imageRef?: string | null;
   sortOrder: number;
   isActive: boolean;
+  variations?: readonly DigitalMenuVariation[] | null;
+}
+
+export interface DigitalMenuVariation {
+  id: string;
+  name: string;
+  salePrice: number;
+  sortOrder: number;
+}
+
+export interface DigitalMenuCategoryImages {
+  categoryId: string;
+  categoryImage?: string | null;
+  products: readonly { productId: string; image?: string | null }[];
 }
 
 export interface DigitalMenuConfig {
