@@ -3,6 +3,9 @@ export type DigitalMenuHeaderAlignment = 'left' | 'center' | 'right';
 export type DigitalMenuInfoPlacement = 'header' | 'footer';
 export type DigitalMenuLogoPlacement = 'none' | 'header' | 'footer' | 'both';
 
+export type PublicMenuPromotionType = 'GENERAL' | 'QUANTITY';
+export type PublicMenuPromotionValueType = 'PERCENTAGE' | 'FIXEDPRICE';
+
 export interface DigitalMenuStyle {
   readonly templateId: DigitalMenuTemplateId;
   readonly primaryColor: string;
@@ -24,6 +27,22 @@ export interface PublicProductVariation {
   readonly name: string;
   readonly salePrice: number;
   readonly sortOrder: number;
+  readonly promotions?: readonly PublicMenuPromotion[] | null;
+}
+
+export interface PublicMenuPromotion {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string | null;
+  readonly type: PublicMenuPromotionType;
+  readonly valueType: PublicMenuPromotionValueType;
+  readonly value: number;
+  readonly requiredQuantity?: number | null;
+  readonly discountedQuantity?: number | null;
+  readonly originalPrice?: number | null;
+  readonly finalPrice?: number | null;
+  readonly discountAmount?: number | null;
+  readonly discountPercentage?: number | null;
 }
 
 export type PublicComboSelectionType = 'SINGLE' | 'MULTIPLE' | 'FIXED';
@@ -60,6 +79,7 @@ export interface PublicProduct {
   readonly sortOrder: number;
   readonly variations: readonly PublicProductVariation[];
   readonly comboGroups: readonly PublicProductComboGroup[];
+  readonly promotions?: readonly PublicMenuPromotion[] | null;
 }
 
 export interface PublicCategory {

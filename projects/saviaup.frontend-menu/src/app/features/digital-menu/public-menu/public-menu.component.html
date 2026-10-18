@@ -155,18 +155,73 @@
                           product.name
                         }}</strong>
                         @if (product.variations.length === 0) {
-                          <span class="product-price"
-                            >${{ product.salePrice | number: '1.0-0' }}</span
-                          >
+                          @if (generalPromotion(product.promotions); as promotion) {
+                            <span class="product-price-stack">
+                              <span class="product-price product-price--original"
+                                >${{
+                                  promotion.originalPrice ?? product.salePrice | number: '1.0-0'
+                                }}</span
+                              >
+                              <strong class="product-price product-price--final"
+                                >${{
+                                  promotion.finalPrice ?? product.salePrice | number: '1.0-0'
+                                }}</strong
+                              >
+                            </span>
+                          } @else {
+                            <span class="product-price"
+                              >${{ product.salePrice | number: '1.0-0' }}</span
+                            >
+                          }
                         }
                       </span>
+                      @if (promotionsFor(product.promotions).length > 0) {
+                        <span class="product-promotions" aria-label="Promociones disponibles">
+                          @for (
+                            promotion of promotionsFor(product.promotions);
+                            track promotion.id
+                          ) {
+                            <span class="promotion-badge">
+                              {{ promotion.name }} · {{ promotionLabel(promotion) }}
+                            </span>
+                          }
+                        </span>
+                      }
                       @if (product.variations.length > 0) {
                         <span class="product-variations" aria-label="Variaciones disponibles">
                           @for (variation of product.variations; track variation.id) {
                             <span class="product-variation"
                               ><span class="notranslate" translate="no">{{ variation.name }}</span
-                              ><strong>${{ variation.salePrice | number: '1.0-0' }}</strong></span
+                              ><span class="variation-price-stack">
+                                @if (generalPromotion(variation.promotions); as promotion) {
+                                  <span class="product-price product-price--original"
+                                    >${{
+                                      promotion.originalPrice ?? variation.salePrice
+                                        | number: '1.0-0'
+                                    }}</span
+                                  >
+                                  <strong class="product-price product-price--final"
+                                    >${{
+                                      promotion.finalPrice ?? variation.salePrice | number: '1.0-0'
+                                    }}</strong
+                                  >
+                                } @else {
+                                  <strong>${{ variation.salePrice | number: '1.0-0' }}</strong>
+                                }
+                              </span></span
                             >
+                            @if (promotionsFor(variation.promotions).length > 0) {
+                              <span class="variation-promotions">
+                                @for (
+                                  promotion of promotionsFor(variation.promotions);
+                                  track promotion.id
+                                ) {
+                                  <span class="promotion-badge promotion-badge--small">
+                                    {{ promotion.name }} · {{ promotionLabel(promotion) }}
+                                  </span>
+                                }
+                              </span>
+                            }
                           }
                         </span>
                       }
@@ -231,6 +286,19 @@
         @if (product.description) {
           <p>{{ product.description }}</p>
         }
+        @if (promotionsFor(product.promotions).length > 0) {
+          <section class="modal-promotions" aria-label="Promociones disponibles">
+            @for (promotion of promotionsFor(product.promotions); track promotion.id) {
+              <article class="modal-promotion">
+                <strong>{{ promotion.name }}</strong>
+                <span>{{ promotionLabel(promotion) }}</span>
+                @if (promotion.description) {
+                  <small>{{ promotion.description }}</small>
+                }
+              </article>
+            }
+          </section>
+        }
         @if (product.variations.length > 0) {
           <section class="modal-variations" aria-label="Variaciones disponibles">
             <h3>Presentaciones disponibles</h3>
@@ -238,13 +306,48 @@
               @for (variation of product.variations; track variation.id) {
                 <div class="modal-variation">
                   <span class="notranslate" translate="no">{{ variation.name }}</span
-                  ><strong>${{ variation.salePrice | number: '1.0-0' }}</strong>
+                  ><span class="variation-price-stack">
+                    @if (generalPromotion(variation.promotions); as promotion) {
+                      <span class="product-price product-price--original"
+                        >${{
+                          promotion.originalPrice ?? variation.salePrice | number: '1.0-0'
+                        }}</span
+                      >
+                      <strong class="product-price product-price--final"
+                        >${{
+                          promotion.finalPrice ?? variation.salePrice | number: '1.0-0'
+                        }}</strong
+                      >
+                    } @else {
+                      <strong>${{ variation.salePrice | number: '1.0-0' }}</strong>
+                    }
+                  </span>
                 </div>
+                @if (promotionsFor(variation.promotions).length > 0) {
+                  <div class="variation-promotions variation-promotions--modal">
+                    @for (promotion of promotionsFor(variation.promotions); track promotion.id) {
+                      <span class="promotion-badge promotion-badge--small">
+                        {{ promotion.name }} · {{ promotionLabel(promotion) }}
+                      </span>
+                    }
+                  </div>
+                }
               }
             </div>
           </section>
         } @else {
-          <strong class="modal-product-price">${{ product.salePrice | number: '1.0-0' }}</strong>
+          @if (generalPromotion(product.promotions); as promotion) {
+            <span class="modal-price-stack">
+              <span class="product-price product-price--original"
+                >${{ promotion.originalPrice ?? product.salePrice | number: '1.0-0' }}</span
+              >
+              <strong class="modal-product-price product-price--final"
+                >${{ promotion.finalPrice ?? product.salePrice | number: '1.0-0' }}</strong
+              >
+            </span>
+          } @else {
+            <strong class="modal-product-price">${{ product.salePrice | number: '1.0-0' }}</strong>
+          }
         }
         @if (product.comboGroups.length > 0) {
           <section class="modal-combo" aria-label="Opciones del combo">
