@@ -12,6 +12,8 @@ export interface BillingReceiptItem {
   readonly paidByUserName?: string;
   readonly paymentMethod?: string;
   readonly subtotalAmount: number;
+  readonly originalSubtotalAmount?: number;
+  readonly discountAmount?: number;
   readonly taxAmount: number;
   readonly tipAmount: number;
   readonly totalAmount: number;
@@ -29,6 +31,9 @@ export interface OrderReceiptItem {
   readonly quantity: number;
   readonly unitPrice: number;
   readonly subtotal: number;
+  readonly originalUnitPrice?: number;
+  readonly discountAmount?: number;
+  readonly promotionName?: string | null;
 }
 
 export interface OrderReceipt {
@@ -39,6 +44,8 @@ export interface OrderReceipt {
   readonly receiptType: string;
   readonly title: string;
   readonly subtotalAmount: number;
+  readonly originalSubtotalAmount?: number;
+  readonly discountAmount?: number;
   readonly taxAmount: number;
   readonly tipAmount: number;
   readonly totalAmount: number;
@@ -70,6 +77,8 @@ export interface BillingOrder {
   readonly createdAt: string;
   readonly receiptsCount: number;
   readonly receipts: readonly OrderReceipt[];
+  readonly originalSubtotalAmount?: number;
+  readonly discountAmount?: number;
 }
 
 export interface BillingReceiptQuery {

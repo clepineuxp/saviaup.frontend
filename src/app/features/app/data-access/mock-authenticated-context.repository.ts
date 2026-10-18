@@ -27,6 +27,7 @@ export class MockAuthenticatedContextRepository implements AuthenticatedContextR
             orders: 'Orders',
             tables: 'Tables',
             reports: 'Reports',
+            promotions: 'Promotions',
           }
         : {
             sales: 'Ventas',
@@ -34,6 +35,7 @@ export class MockAuthenticatedContextRepository implements AuthenticatedContextR
             orders: 'Pedidos',
             tables: 'Mesas',
             reports: 'Reportes',
+            promotions: 'Promociones',
           };
 
     return of({
@@ -54,6 +56,7 @@ export class MockAuthenticatedContextRepository implements AuthenticatedContextR
           modules: [
             { id: 'module-orders', code: 'orders', name: copy.orders, order: 1 },
             { id: 'module-reports', code: 'reports', name: copy.reports, order: 2 },
+            { id: 'module-promotions', code: 'promotions', name: copy.promotions, order: 3 },
           ],
           options: [],
         },

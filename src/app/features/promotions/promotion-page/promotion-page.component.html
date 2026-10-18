@@ -1,0 +1,245 @@
+<section class="promotions-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">{{ 'promotions.eyebrow' | translate }}</p>
+      <h1 class="page-title">{{ 'promotions.title' | translate }}</h1>
+      <p class="page-subtitle">{{ 'promotions.subtitle' | translate }}</p>
+    </div>
+    @if (store.canManage()) {
+      <app-ui-button type="button" (click)="openCreate()"
+        >＋ {{ 'promotions.create' | translate }}</app-ui-button
+      >
+    }
+  </header>
+
+  @if (store.error(); as error) {
+    <app-ui-alert [message]="error" />
+  }
+
+  <div class="toolbar">
+    <input
+      type="search"
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+      [placeholder]="'promotions.search' | translate"
+    />
+    <label
+      ><input
+        type="checkbox"
+        [checked]="showInactive()"
+        (change)="showInactive.set($any($event.target).checked)"
+      />
+      {{ 'promotions.showInactive' | translate }}</label
+    >
+  </div>
+
+  @if (store.loading() && store.items().length === 0) {
+    <div class="empty-state">{{ 'promotions.loading' | translate }}</div>
+  } @else if (filteredItems().length === 0) {
+    <div class="empty-state">
+      <strong>{{ 'promotions.empty.title' | translate }}</strong>
+      <p>{{ 'promotions.empty.description' | translate }}</p>
+    </div>
+  } @else {
+    <div class="promotion-grid">
+      @for (item of filteredItems(); track item.id) {
+        <article class="promotion-card" [class.inactive]="!item.isActive">
+          <div class="card-head">
+            <div>
+              <span class="promotion-badge">{{
+                item.type === 'QUANTITY' ? '2×1' : 'DESCUENTO'
+              }}</span>
+              <h2>{{ item.name }}</h2>
+            </div>
+            <span class="status">{{
+              item.isActive
+                ? ('promotions.active' | translate)
+                : ('promotions.inactive' | translate)
+            }}</span>
+          </div>
+          @if (item.description) {
+            <p class="description">{{ item.description }}</p>
+          }
+          <div class="promotion-value">{{ valueLabel(item) }}</div>
+          <p class="targets">
+            <strong>{{ 'promotions.appliesTo' | translate }}:</strong> {{ formatTargets(item) }}
+          </p>
+          <p class="schedule">
+            <strong>{{ 'promotions.schedule' | translate }}:</strong>
+            {{
+              item.specificDate ||
+                (item.startTime
+                  ? item.startTime.slice(0, 5) + ' – ' + item.endTime?.slice(0, 5)
+                  : ('promotions.allDay' | translate))
+            }}
+          </p>
+          @if (store.canManage()) {
+            <div class="card-actions">
+              <button type="button" (click)="openEdit(item)">
+                {{ 'common.edit' | translate }}
+              </button>
+              <button type="button" (click)="toggleStatus(item)">
+                {{
+                  item.isActive
+                    ? ('promotions.disable' | translate)
+                    : ('promotions.enable' | translate)
+                }}
+              </button>
+              <button type="button" class="danger" (click)="delete(item)">
+                {{ 'common.delete' | translate }}
+              </button>
+            </div>
+          }
+        </article>
+      }
+    </div>
+  }
+</section>
+
+@if (formOpen()) {
+  <div class="dialog-backdrop">
+    <form class="promotion-form" [formGroup]="form" (ngSubmit)="save()">
+      <div class="form-head">
+        <div>
+          <p class="eyebrow">{{ 'promotions.form.eyebrow' | translate }}</p>
+          <h2>
+            {{
+              editing()
+                ? ('promotions.form.edit' | translate)
+                : ('promotions.form.create' | translate)
+            }}
+          </h2>
+        </div>
+        <button type="button" (click)="closeForm()">×</button>
+      </div>
+      <div class="form-grid">
+        <label>{{ 'promotions.form.name' | translate }}<input formControlName="name" /></label>
+        <label
+          >{{ 'promotions.form.description' | translate
+          }}<textarea formControlName="description"></textarea>
+        </label>
+        <label
+          >{{ 'promotions.form.type' | translate
+          }}<select formControlName="type">
+            <option value="GENERAL">{{ 'promotions.form.general' | translate }}</option>
+            <option value="QUANTITY">{{ 'promotions.form.quantity' | translate }}</option>
+          </select></label
+        >
+        <label
+          >{{ 'promotions.form.valueType' | translate
+          }}<select formControlName="valueType">
+            <option value="PERCENTAGE">{{ 'promotions.form.percentage' | translate }}</option>
+            <option value="FIXEDPRICE">{{ 'promotions.form.fixedPrice' | translate }}</option>
+          </select></label
+        >
+        <label
+          >{{ 'promotions.form.value' | translate
+          }}<input type="number" min="0.01" formControlName="value"
+        /></label>
+        @if (form.controls.type.value === 'QUANTITY') {
+          <label
+            >{{ 'promotions.form.requiredQuantity' | translate
+            }}<input type="number" min="2" formControlName="requiredQuantity"
+          /></label>
+          <label
+            >{{ 'promotions.form.discountedQuantity' | translate
+            }}<input type="number" min="1" formControlName="discountedQuantity"
+          /></label>
+        }
+        <label
+          >{{ 'promotions.form.startTime' | translate
+          }}<input type="time" formControlName="startTime"
+        /></label>
+        <label
+          >{{ 'promotions.form.endTime' | translate }}<input type="time" formControlName="endTime"
+        /></label>
+        <label
+          >{{ 'promotions.form.date' | translate
+          }}<input type="date" formControlName="specificDate"
+        /></label>
+        <label
+          >{{ 'promotions.form.month' | translate
+          }}<input type="number" min="1" max="12" formControlName="monthOfYear"
+        /></label>
+        <div class="week-days-field">
+          <span>{{ 'promotions.form.weekDays' | translate }}</span>
+          <div class="week-days">
+            @for (day of weekDays; track day.value) {
+              <button
+                type="button"
+                [class.selected]="weekDaySelected(day.value)"
+                (click)="toggleWeekDay(day.value)"
+              >
+                {{ day.label }}
+              </button>
+            }
+          </div>
+          <small>{{ 'promotions.form.weekDaysHint' | translate }}</small>
+        </div>
+        <label class="check"
+          ><input type="checkbox" formControlName="isActive" />
+          {{ 'promotions.form.active' | translate }}</label
+        >
+      </div>
+
+      <div class="targets-editor">
+        <h3>{{ 'promotions.form.targets' | translate }}</h3>
+        <div class="target-entry">
+          <select [value]="targetType()" (change)="targetType.set($any($event.target).value)">
+            <option value="MENU">{{ 'promotions.target.menu' | translate }}</option>
+            <option value="PRODUCT">{{ 'promotions.target.product' | translate }}</option>
+            <option value="VARIATION">{{ 'promotions.target.variation' | translate }}</option>
+            <option value="CATEGORY">{{ 'promotions.target.category' | translate }}</option>
+          </select>
+          @if (targetType() !== 'MENU') {
+            <select
+              [value]="targetProductId()"
+              (change)="targetProductId.set($any($event.target).value)"
+            >
+              <option value="">{{ 'promotions.target.choose' | translate }}</option>
+              @if (targetType() === 'CATEGORY') {
+                @for (category of categories(); track category.id) {
+                  <option [value]="category.id">{{ category.name }}</option>
+                }
+              } @else {
+                @for (product of products(); track product.id) {
+                  <option [value]="product.id">{{ product.name }}</option>
+                }
+              }
+            </select>
+          }
+          @if (targetType() === 'VARIATION') {
+            <select
+              [value]="targetVariationId()"
+              (change)="targetVariationId.set($any($event.target).value)"
+            >
+              <option value="">{{ 'promotions.target.chooseVariation' | translate }}</option>
+              @for (variation of selectedProduct()?.variations ?? []; track variation.id) {
+                <option [value]="variation.id">{{ variation.name }}</option>
+              }
+            </select>
+          }
+          <button type="button" (click)="addTarget()">
+            {{ 'promotions.form.addTarget' | translate }}
+          </button>
+        </div>
+        <div class="target-list">
+          @for (target of targets(); track $index) {
+            <span
+              >{{ targetLabel(target) }}
+              <button type="button" (click)="removeTarget($index)">×</button></span
+            >
+          }
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="secondary" (click)="closeForm()">
+          {{ 'common.cancel' | translate }}</button
+        ><app-ui-button type="submit" [disabled]="store.loading()">{{
+          'common.save' | translate
+        }}</app-ui-button>
+      </div>
+    </form>
+  </div>
+}

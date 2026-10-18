@@ -107,6 +107,12 @@
           -webkit-box-orient: vertical;
           -webkit-line-clamp: 2;
         }
+
+        .ticket-promotion {
+          display: block;
+          font-size: 0.85em;
+          font-weight: 400;
+        }
       }
 
       .t-item-val {
@@ -138,6 +144,10 @@
         strong {
           font-size: inherit;
         }
+      }
+
+      &.discount-line {
+        color: #a44a31;
       }
     }
   }

@@ -1,5 +1,18 @@
 export type ProductType = 'NORMAL' | 'COMBO';
 
+export interface ProductPromotion {
+  readonly id: string;
+  readonly name: string;
+  readonly type: 'GENERAL' | 'QUANTITY';
+  readonly valueType: 'PERCENTAGE' | 'FIXEDPRICE' | 'FIXED_PRICE';
+  readonly value: number;
+  readonly originalUnitPrice: number;
+  readonly finalUnitPrice: number;
+  readonly discountAmount: number;
+  readonly requiredQuantity?: number | null;
+  readonly discountedQuantity?: number | null;
+}
+
 export interface ProductCategory {
   readonly id: string;
   readonly name: string;
@@ -33,6 +46,7 @@ export interface ProductVariation {
   readonly salePrice: number;
   readonly order: number;
   readonly isActive: boolean;
+  readonly promotion?: ProductPromotion | null;
 }
 
 export interface ProductVariationRequest {
@@ -116,6 +130,7 @@ export interface Product {
   readonly recipe: readonly ProductRecipeItem[];
   readonly variations: readonly ProductVariation[];
   readonly comboGroups?: readonly ProductComboGroup[];
+  readonly promotion?: ProductPromotion | null;
 }
 
 export interface ProductPage {

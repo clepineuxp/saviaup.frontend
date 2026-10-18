@@ -7,6 +7,7 @@ import {
   ProductRecipeItem,
   ProductType,
   ProductVariation,
+  ProductPromotion,
 } from '../models/product.model';
 import {
   ProductCategoryDto,
@@ -17,7 +18,19 @@ import {
   ProductPageDto,
   ProductRecipeItemDto,
   ProductVariationDto,
+  ProductPromotionDto,
 } from './product.contracts';
+
+const mapProductPromotion = (
+  dto: ProductPromotionDto | null | undefined,
+): ProductPromotion | null =>
+  dto
+    ? {
+        ...dto,
+        type: dto.type.toUpperCase() as ProductPromotion['type'],
+        valueType: dto.valueType.toUpperCase() as ProductPromotion['valueType'],
+      }
+    : null;
 
 export const mapProductCategory = (
   dto: ProductCategoryDto | ProductCategoryLookupDto,
@@ -42,6 +55,7 @@ export const mapProductVariation = (dto: ProductVariationDto): ProductVariation 
   salePrice: dto.salePrice,
   order: dto.order ?? 0,
   isActive: dto.isActive ?? true,
+  promotion: mapProductPromotion(dto.promotion),
 });
 
 export const mapProductComboGroup = (dto: ProductComboGroupDto): ProductComboGroup => ({
@@ -76,6 +90,7 @@ export const mapProduct = (dto: ProductDto): Product => ({
   recipe: dto.recipe?.map(mapProductRecipeItem) ?? [],
   variations: dto.variations?.map(mapProductVariation) ?? [],
   comboGroups: dto.comboGroups?.map(mapProductComboGroup) ?? [],
+  promotion: mapProductPromotion(dto.promotion),
 });
 
 export const mapProductPage = (dto: ProductPageDto): ProductPage => ({
