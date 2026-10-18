@@ -54,6 +54,14 @@ describe('PublicMenuComponent combo details', () => {
     expect(badge?.textContent?.trim()).toBe('Combo personalizable');
   });
 
+  it('shows the original and final prices for a general promotion', () => {
+    const card = fixture.nativeElement.querySelector('.product-card') as HTMLElement;
+
+    expect(card.querySelector('.product-price--original')?.textContent).toContain('$25,000');
+    expect(card.querySelector('.product-price--final')?.textContent).toContain('$22,500');
+    expect(card.querySelector('.promotion-badge')?.textContent).toContain('10%');
+  });
+
   it('opens a menu containing all categories from the category rail', () => {
     const toggle = fixture.nativeElement.querySelector(
       '.category-menu-toggle',
@@ -101,6 +109,19 @@ function menuWithCombo(): PublicDigitalMenu {
             salePrice: 25000,
             sortOrder: 1,
             variations: [],
+            promotions: [
+              {
+                id: 'promotion-1',
+                name: 'Hora feliz',
+                type: 'GENERAL',
+                valueType: 'PERCENTAGE',
+                value: 10,
+                originalPrice: 25000,
+                finalPrice: 22500,
+                discountAmount: 2500,
+                discountPercentage: 10,
+              },
+            ],
             comboGroups: [
               {
                 id: 'group-1',

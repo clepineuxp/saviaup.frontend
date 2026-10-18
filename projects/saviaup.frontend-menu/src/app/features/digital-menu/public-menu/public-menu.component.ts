@@ -11,7 +11,11 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DigitalMenuLayoutComponent } from '../../../layouts/digital-menu-layout/digital-menu-layout.component';
-import { PublicProduct, PublicProductComboGroup } from '../models/public-digital-menu.model';
+import {
+  PublicMenuPromotion,
+  PublicProduct,
+  PublicProductComboGroup,
+} from '../models/public-digital-menu.model';
 
 @Component({
   selector: 'app-public-menu',
@@ -106,6 +110,41 @@ export class PublicMenuComponent {
 
   openProduct(product: PublicProduct): void {
     this.selectedProduct.set(product);
+  }
+
+  promotionsFor(
+    promotions: readonly PublicMenuPromotion[] | null | undefined,
+  ): readonly PublicMenuPromotion[] {
+    return promotions ?? [];
+  }
+
+  generalPromotion(
+    promotions: readonly PublicMenuPromotion[] | null | undefined,
+  ): PublicMenuPromotion | null {
+    return (
+      this.promotionsFor(promotions).find(
+        (promotion) =>
+          promotion.type === 'GENERAL' &&
+          promotion.originalPrice != null &&
+          promotion.finalPrice != null,
+      ) ?? null
+    );
+  }
+
+  promotionLabel(promotion: PublicMenuPromotion): string {
+    if (
+      promotion.type === 'QUANTITY' &&
+      promotion.requiredQuantity != null &&
+      promotion.discountedQuantity != null
+    ) {
+      return `${promotion.requiredQuantity} × ${promotion.discountedQuantity}`;
+    }
+
+    if (promotion.valueType === 'PERCENTAGE') {
+      return `-${promotion.value}%`;
+    }
+
+    return 'Precio especial';
   }
 
   comboSelectionLabel(group: PublicProductComboGroup): string {
