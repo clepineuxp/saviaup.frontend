@@ -333,6 +333,14 @@ export class TableOperationDialogComponent {
     const itemsToSummarize =
       pendingItems.length > 0 ? pendingItems : order.items.filter((i) => i.status !== 'CANCELLED');
     const subtotal = itemsToSummarize.reduce((sum, item) => sum + item.subtotal, 0);
+    const originalSubtotal = itemsToSummarize.reduce(
+      (sum, item) => sum + (item.originalUnitPrice ?? item.unitPrice) * item.quantity,
+      0,
+    );
+    const discountAmount = itemsToSummarize.reduce(
+      (sum, item) => sum + (item.discountAmount ?? 0),
+      0,
+    );
 
     const business = this.salesContext.business();
     const showTip = business?.showVoluntaryTip ?? true;
@@ -355,6 +363,8 @@ export class TableOperationDialogComponent {
       receiptType: 'PRE_BILLING',
       title: 'RESUMEN DE CUENTA (PRE-FACTURA)',
       subtotalAmount: subtotal,
+      originalSubtotalAmount: originalSubtotal,
+      discountAmount,
       taxAmount: 0,
       tipAmount: suggestedTip,
       totalAmount: total,
@@ -598,8 +608,8 @@ export class TableOperationDialogComponent {
     const curr = this.configuredProduct();
     if (!curr) return 0;
     const basePrice = curr.selectedVariation
-      ? curr.selectedVariation.salePrice
-      : (curr.product.salePrice ?? 0);
+      ? (curr.selectedVariation.promotion?.finalUnitPrice ?? curr.selectedVariation.salePrice)
+      : (curr.product.promotion?.finalUnitPrice ?? curr.product.salePrice ?? 0);
     const adjustment = (curr.product.comboGroups ?? []).reduce(
       (total, group) =>
         total +
@@ -618,10 +628,37 @@ export class TableOperationDialogComponent {
   getProductDisplayPrice(product: Product): number {
     const activeVariationPrices = (product.variations ?? [])
       .filter((variation) => variation.isActive)
-      .map((variation) => variation.salePrice);
+      .map((variation) => variation.promotion?.finalUnitPrice ?? variation.salePrice);
     return activeVariationPrices.length > 0
       ? Math.min(...activeVariationPrices)
-      : (product.salePrice ?? 0);
+      : (product.promotion?.finalUnitPrice ?? product.salePrice ?? 0);
+  }
+
+  getProductOriginalDisplayPrice(product: Product): number {
+    const prices = (product.variations ?? [])
+      .filter((variation) => variation.isActive)
+      .map((variation) => variation.promotion?.originalUnitPrice ?? variation.salePrice);
+    return prices.length > 0
+      ? Math.min(...prices)
+      : (product.promotion?.originalUnitPrice ?? product.salePrice ?? 0);
+  }
+
+  hasProductPromotion(product: Product): boolean {
+    return Boolean(
+      product.promotion || (product.variations ?? []).some((variation) => variation.promotion),
+    );
+  }
+
+  getConfiguredOriginalUnitPrice(): number {
+    const current = this.configuredProduct();
+    if (!current) return 0;
+    return (
+      current.selectedVariation?.promotion?.originalUnitPrice ??
+      current.selectedVariation?.salePrice ??
+      current.product.promotion?.originalUnitPrice ??
+      current.product.salePrice ??
+      0
+    );
   }
 
   comboGroupSelectionTotal(groupId: string): number {
@@ -721,6 +758,7 @@ export class TableOperationDialogComponent {
 
     const item: DraftOrderItem = {
       productId: curr.product.id,
+      productVariationId: curr.selectedVariation?.id ?? null,
       productName,
       unitPrice,
       quantity: curr.quantity,

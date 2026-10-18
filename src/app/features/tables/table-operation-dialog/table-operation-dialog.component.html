@@ -171,10 +171,19 @@
                         @if (product.variations && product.variations.length > 0) {
                           <small class="price-from-label">Desde </small>
                         }
-                        {{
+                        @if (hasProductPromotion(product)) {
+                          <del>{{
+                            getProductOriginalDisplayPrice(product)
+                              | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                          }}</del>
+                        }
+                        <strong>{{
                           getProductDisplayPrice(product)
                             | currency: 'COP' : 'symbol-narrow' : '1.0-0'
-                        }}
+                        }}</strong>
+                        @if (hasProductPromotion(product)) {
+                          <small class="promotion-price-badge">PROMO</small>
+                        }
                       </span>
                     </div>
                   </button>
@@ -745,9 +754,18 @@
                         (click)="selectProductVariation(v)"
                       >
                         <span class="var-name">{{ v.name }}</span>
-                        <span class="var-price">{{
-                          v.salePrice | currency: 'COP' : 'symbol-narrow' : '1.0-0'
-                        }}</span>
+                        <span class="var-price">
+                          @if (v.promotion) {
+                            <del>{{
+                              v.promotion.originalUnitPrice
+                                | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                            }}</del>
+                          }
+                          {{
+                            v.promotion?.finalUnitPrice ?? v.salePrice
+                              | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                          }}
+                        </span>
                       </button>
                     }
                   }
@@ -757,6 +775,11 @@
 
             <div class="sub-modal-price">
               <span>Precio unitario:</span>
+              @if (getConfiguredOriginalUnitPrice() > getConfiguredUnitPrice()) {
+                <del>{{
+                  getConfiguredOriginalUnitPrice() | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                }}</del>
+              }
               <strong>{{
                 getConfiguredUnitPrice() | currency: 'COP' : 'symbol-narrow' : '1.0-0'
               }}</strong>

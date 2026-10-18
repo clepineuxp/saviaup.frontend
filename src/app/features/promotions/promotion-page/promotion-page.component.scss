@@ -1,0 +1,246 @@
+:host {
+  display: block;
+}
+.promotions-page {
+  padding: 2rem;
+  color: var(--color-text, #242b38);
+}
+.page-header,
+.card-head,
+.form-head,
+.form-actions,
+.toolbar,
+.target-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.page-header {
+  margin-bottom: 1.5rem;
+}
+.eyebrow,
+.promotion-badge {
+  color: var(--color-primary, #a45b35);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.page-title {
+  margin: 0.25rem 0;
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+}
+.page-subtitle,
+.description,
+.targets,
+.schedule {
+  color: #68717d;
+}
+.toolbar {
+  margin-bottom: 1.25rem;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid #d9dedf;
+  border-radius: 0.7rem;
+  padding: 0.72rem 0.8rem;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+}
+.toolbar input {
+  max-width: 23rem;
+}
+.promotion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 1rem;
+}
+.promotion-card {
+  border: 1px solid #e5e7e6;
+  border-radius: 1rem;
+  padding: 1.2rem;
+  background: #fff;
+  box-shadow: 0 8px 24px #1e2a3510;
+}
+.promotion-card.inactive {
+  opacity: 0.65;
+}
+.promotion-card h2 {
+  margin: 0.35rem 0 0;
+  font-size: 1.15rem;
+}
+.status {
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  background: #edf7ef;
+  color: #28753c;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.inactive .status {
+  background: #f1f1f1;
+  color: #777;
+}
+.promotion-value {
+  margin: 1rem 0 0.55rem;
+  color: var(--color-primary, #a45b35);
+  font-size: 1.7rem;
+  font-weight: 800;
+}
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+button {
+  cursor: pointer;
+  border: 0;
+  border-radius: 0.55rem;
+  padding: 0.6rem 0.75rem;
+  background: #f5f0ed;
+  color: #68402c;
+  font: inherit;
+}
+button.danger {
+  color: #a43c3c;
+}
+.empty-state {
+  border: 1px dashed #ced5d5;
+  border-radius: 1rem;
+  padding: 3rem;
+  text-align: center;
+}
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: #15202b66;
+}
+.promotion-form {
+  width: min(850px, 100%);
+  max-height: 92vh;
+  overflow: auto;
+  border-radius: 1.2rem;
+  padding: 1.5rem;
+  background: #fff;
+  box-shadow: 0 24px 70px #10182044;
+}
+.form-head {
+  margin-bottom: 1.2rem;
+}
+.form-head h2 {
+  margin: 0.2rem 0;
+}
+.form-head > button {
+  font-size: 1.5rem;
+  background: transparent;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.form-grid label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.form-grid textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+.week-days-field {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.week-days {
+  display: flex;
+  gap: 0.35rem;
+}
+.week-days button {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 50%;
+}
+.week-days button.selected {
+  background: var(--color-primary, #a45b35);
+  color: #fff;
+}
+.week-days-field small {
+  color: #68717d;
+  font-weight: 400;
+}
+.check {
+  display: flex !important;
+  align-items: center;
+}
+.check input {
+  width: auto;
+}
+.targets-editor {
+  margin-top: 1.5rem;
+  border-top: 1px solid #edf0f0;
+  padding-top: 1rem;
+}
+.targets-editor h3 {
+  margin: 0 0 0.75rem;
+}
+.target-entry {
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+.target-entry > * {
+  flex: 1 1 150px;
+}
+.target-entry button {
+  flex: 0 0 auto;
+}
+.target-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+.target-list span {
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  background: #f5f0ed;
+}
+.target-list button {
+  padding: 0 0.25rem;
+  background: transparent;
+}
+.form-actions {
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+.secondary {
+  background: #edf0f0;
+  color: #39434e;
+}
+@media (max-width: 700px) {
+  .promotions-page {
+    padding: 1rem;
+  }
+  .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

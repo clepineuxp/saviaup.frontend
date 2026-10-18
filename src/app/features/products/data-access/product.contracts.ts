@@ -44,6 +44,20 @@ export interface ProductVariationDto {
   readonly salePrice: number;
   readonly order: number;
   readonly isActive: boolean;
+  readonly promotion?: ProductPromotionDto | null;
+}
+
+export interface ProductPromotionDto {
+  readonly id: string;
+  readonly name: string;
+  readonly type: string;
+  readonly valueType: string;
+  readonly value: number;
+  readonly originalUnitPrice: number;
+  readonly finalUnitPrice: number;
+  readonly discountAmount: number;
+  readonly requiredQuantity?: number | null;
+  readonly discountedQuantity?: number | null;
 }
 
 export interface ProductComboOptionDto {
@@ -84,6 +98,7 @@ export interface ProductDto {
   readonly recipe?: readonly ProductRecipeItemDto[];
   readonly variations?: readonly ProductVariationDto[];
   readonly comboGroups?: readonly ProductComboGroupDto[];
+  readonly promotion?: ProductPromotionDto | null;
 }
 
 export interface ProductPageDto {

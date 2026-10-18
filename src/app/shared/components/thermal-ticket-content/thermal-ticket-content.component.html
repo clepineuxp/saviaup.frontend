@@ -73,8 +73,17 @@
       <div class="ticket-item-row" [style.font-size.px]="printTemplate.itemFontSize">
         <div class="t-item-name" [class.wrap-item-name]="printTemplate.wrapLongItemNames">
           {{ item.quantity }}x {{ item.productName }}
+          @if (item.promotionName) {
+            <small class="ticket-promotion">PROMO: {{ item.promotionName }}</small>
+          }
         </div>
         <div class="t-item-val">
+          @if ((item.discountAmount ?? 0) > 0 && (item.originalUnitPrice ?? 0) > 0) {
+            <del>{{
+              item.originalUnitPrice! * item.quantity | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+            }}</del
+            ><br />
+          }
           {{ item.subtotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
         </div>
       </div>
@@ -88,6 +97,12 @@
       <span>Subtotal (Sin {{ biz?.tipMessage || 'Servicio Voluntario' }}):</span>
       <span>{{ rcpt.subtotalAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
     </div>
+    @if ((rcpt.discountAmount ?? 0) > 0) {
+      <div class="ticket-total-line discount-line">
+        <span>Descuentos / promociones:</span>
+        <strong>-{{ rcpt.discountAmount | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+      </div>
+    }
 
     @if (printTemplate.voluntaryTipPosition === 'BEFORE_TOTAL') {
       @if (rcpt.receiptType === 'PRE_BILLING' && (biz?.showVoluntaryTip || rcpt.tipAmount > 0)) {
