@@ -289,6 +289,13 @@
               <strong>Total Comanda:</strong>
               {{ selectedOrder()!.totalAmount | currency: 'USD' : 'symbol' : '1.2-2' }}
             </p>
+            @if ((selectedOrder()!.discountAmount ?? 0) > 0) {
+              <p class="discount-summary">
+                <strong>Promociones aplicadas:</strong> -{{
+                  selectedOrder()!.discountAmount | currency: 'USD' : 'symbol' : '1.2-2'
+                }}
+              </p>
+            }
           </div>
 
           <h3>Comprobantes Generados ({{ selectedOrder()!.receipts.length }}):</h3>

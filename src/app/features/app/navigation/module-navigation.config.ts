@@ -19,6 +19,7 @@ export type ModuleIcon =
   | 'settings'
   | 'menu'
   | 'printing'
+  | 'promotions'
   | 'module';
 
 export interface ModuleNavigationDefinition {
@@ -47,6 +48,7 @@ export interface SectionNavigationItem {
 export const KNOWN_MODULE_NAVIGATION: readonly ModuleNavigationDefinition[] = [
   { code: 'orders', path: 'orders', icon: 'orders' },
   { code: 'tables', path: 'sell/tables', icon: 'tables' },
+  { code: 'promotions', path: 'promotions', icon: 'promotions' },
   { code: 'inventory', path: 'inventory', icon: 'inventory' },
   { code: 'products', path: 'products', icon: 'products' },
   { code: 'categories', path: 'categories', icon: 'categories' },
@@ -88,6 +90,7 @@ export const MODULE_ICON_GLYPHS: Readonly<Record<ModuleIcon, string>> = {
   settings: '⚙',
   menu: '🍽',
   printing: '▣',
+  promotions: '%',
   module: '◫',
 };
 

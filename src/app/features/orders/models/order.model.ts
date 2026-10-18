@@ -35,6 +35,10 @@ export interface OrderItem {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly comboSelections?: readonly OrderItemComboSelection[];
+  readonly originalUnitPrice?: number;
+  readonly discountAmount?: number;
+  readonly promotionId?: string | null;
+  readonly promotionName?: string | null;
 }
 
 export interface OrderItemReport {
@@ -58,6 +62,10 @@ export interface OrderItemReport {
   readonly createdByUserName: string;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly originalUnitPrice?: number;
+  readonly discountAmount?: number;
+  readonly promotionId?: string | null;
+  readonly promotionName?: string | null;
 }
 
 export interface Order {
@@ -84,6 +92,8 @@ export interface Order {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly items: readonly OrderItem[];
+  readonly originalSubtotalAmount?: number;
+  readonly discountAmount?: number;
 }
 
 export interface OrderQueryRequest {
@@ -104,6 +114,7 @@ export interface CreateOrderItem {
   readonly notes?: string | null;
   readonly isCustomSale: boolean;
   readonly comboSelections?: readonly CreateOrderItemComboSelection[];
+  readonly productVariationId?: string | null;
 }
 
 export interface CreateOrderItemComboSelection {
@@ -147,6 +158,9 @@ export interface OrderReceiptItem {
   readonly quantity: number;
   readonly unitPrice: number;
   readonly subtotal: number;
+  readonly originalUnitPrice?: number;
+  readonly discountAmount?: number;
+  readonly promotionName?: string | null;
 }
 
 export interface OrderReceipt {
@@ -167,4 +181,6 @@ export interface OrderReceipt {
   readonly issuedByUserName: string;
   readonly paidByUserName?: string | null;
   readonly createdAt: string;
+  readonly originalSubtotalAmount?: number;
+  readonly discountAmount?: number;
 }

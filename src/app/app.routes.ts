@@ -22,7 +22,8 @@ const knownModuleRoutes: Routes = KNOWN_MODULE_NAVIGATION.filter(
     code !== 'expenses' &&
     code !== 'suppliers' &&
     code !== 'printing' &&
-    code !== 'digital_menu',
+    code !== 'digital_menu' &&
+    code !== 'promotions',
 ).map(({ code, path }) => ({
   path,
   title: 'Savia Up',
@@ -124,6 +125,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/cash-registers/cash-register-page/cash-register-page.component').then(
             (m) => m.CashRegisterPageComponent,
+          ),
+      },
+      {
+        path: 'promotions',
+        title: 'Promociones · Savia Up',
+        loadChildren: () =>
+          import('./features/promotions/promotions.routes').then(
+            (routesFile) => routesFile.PROMOTION_ROUTES,
           ),
       },
       {
