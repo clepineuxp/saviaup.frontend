@@ -137,6 +137,7 @@ export interface EnabledPermission {
   readonly id: string;
   readonly code: string;
   readonly name: string;
+  readonly description: string;
 }
 export interface EnabledModulePermissions {
   readonly id: string;
