@@ -14,6 +14,8 @@ import {
   SettingsRole,
   UpdateOrganizationSettings,
   UpdateOrganizationUser,
+  CreatedOrganizationAccessLink,
+  OrganizationAccessLinkSummary,
 } from '../models/settings.model';
 
 export interface SettingsRepository {
@@ -48,6 +50,8 @@ export interface SettingsRepository {
   inviteUser(email: string, roleId: string): Observable<OrganizationUser>;
   updateUser(id: string, request: UpdateOrganizationUser): Observable<OrganizationUser>;
   deleteUser(id: string): Observable<void>;
+  createInvitationLink(roleId: string): Observable<CreatedOrganizationAccessLink>;
+  listInvitationLinks(): Observable<readonly OrganizationAccessLinkSummary[]>;
 }
 
 export const SETTINGS_REPOSITORY = new InjectionToken<SettingsRepository>('SETTINGS_REPOSITORY');

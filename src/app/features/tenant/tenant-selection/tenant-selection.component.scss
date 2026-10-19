@@ -130,6 +130,118 @@
   width: 35%;
   height: 0.55rem;
 }
+.join-modal-backdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(20 40 28 / 42%);
+  backdrop-filter: blur(4px);
+}
+.join-modal {
+  position: relative;
+  width: min(100%, 31rem);
+  border: 1px solid rgb(82 145 93 / 22%);
+  border-radius: 1.35rem;
+  padding: 2rem;
+  background: #fff;
+  box-shadow: 0 24px 70px rgb(20 40 28 / 24%);
+  color: var(--color-ink);
+  text-align: center;
+}
+.join-modal__close {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.8rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.join-modal__icon {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: 0 auto 1rem;
+  place-items: center;
+  border-radius: 1rem;
+  background: linear-gradient(145deg, var(--color-savia-100), #f0f6d9);
+  color: var(--color-savia-700);
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
+.join-modal__icon img {
+  width: 2.35rem;
+  height: 2.35rem;
+  object-fit: contain;
+}
+.join-modal .eyebrow {
+  margin-bottom: 0.45rem;
+}
+.join-modal h2 {
+  margin: 0;
+  font-size: 1.45rem;
+}
+.join-modal__message {
+  margin: 0.7rem auto 1.2rem;
+  max-width: 24rem;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+.join-modal__link {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.45rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.85rem;
+  background: #f8faf7;
+}
+.join-modal__link input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+.join-modal__link button,
+.join-modal__primary,
+.join-modal__secondary {
+  border-radius: 0.7rem;
+  padding: 0.65rem 0.85rem;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.join-modal__link button,
+.join-modal__primary {
+  border: 1px solid var(--color-savia-700);
+  background: var(--color-savia-700);
+  color: white;
+}
+.join-modal__actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-top: 1.25rem;
+}
+.join-modal__secondary {
+  border: 1px solid var(--color-border);
+  background: white;
+  color: var(--color-ink);
+}
+.join-modal > small {
+  display: block;
+  margin-top: 1rem;
+  color: var(--color-muted);
+}
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -148,5 +260,18 @@
   .tenant-card {
     min-height: 6rem;
     padding: 1rem;
+  }
+}
+@media (max-width: 480px) {
+  .join-modal {
+    padding: 1.6rem 1rem;
+  }
+  .join-modal__link {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .join-modal__link input {
+    width: 100%;
+    min-height: 2rem;
   }
 }

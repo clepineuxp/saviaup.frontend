@@ -17,6 +17,8 @@ import {
   UpdateOrganizationSettings,
   UpdateBusinessSettings,
   UpdateOrganizationUser,
+  CreatedOrganizationAccessLink,
+  OrganizationAccessLinkSummary,
 } from '../models/settings.model';
 import { SettingsRepository } from './settings.repository';
 
@@ -111,5 +113,11 @@ export class HttpSettingsRepository implements SettingsRepository {
   }
   deleteUser(id: string): Observable<void> {
     return this.api.delete(API_ENDPOINTS.settings.access.user(id));
+  }
+  createInvitationLink(roleId: string): Observable<CreatedOrganizationAccessLink> {
+    return this.api.post(API_ENDPOINTS.organizationLinks.invitations, { roleId });
+  }
+  listInvitationLinks(): Observable<readonly OrganizationAccessLinkSummary[]> {
+    return this.api.get(API_ENDPOINTS.organizationLinks.invitations);
   }
 }

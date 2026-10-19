@@ -6,7 +6,7 @@ import { TenantContext } from '../../../core/tenant/tenant-context.service';
 import { ApiError } from '../../../shared/http/api-error';
 import { RequestStatus } from '../../../shared/models/request-state.model';
 import { Tenant } from '../models/tenant.model';
-import { TENANT_REPOSITORY } from './tenant.repository';
+import { CreatedOrganizationAccessLink, TENANT_REPOSITORY } from './tenant.repository';
 
 @Injectable({ providedIn: 'root' })
 export class TenantStore {
@@ -63,6 +63,10 @@ export class TenantStore {
         switchMap((result) => this.authenticatedContext.load().pipe(map(() => result.tenant))),
       ),
     );
+  }
+
+  createJoinRequest(): Observable<CreatedOrganizationAccessLink> {
+    return this.track(this.repository.createJoinRequest());
   }
 
   private track<T>(request: Observable<T>): Observable<T> {

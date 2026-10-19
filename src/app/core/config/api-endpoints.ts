@@ -95,6 +95,12 @@ export const API_ENDPOINTS = {
     root: '/api/tenants',
     select: (tenantId: string) => `/api/tenants/${tenantId}/select`,
   },
+  organizationLinks: {
+    preview: (code: string) => `/api/organization-links/${encodeURIComponent(code)}`,
+    joinRequest: '/api/organization-links/join-requests',
+    invitations: '/api/organization-links/invitations',
+    accept: (code: string) => `/api/organization-links/${encodeURIComponent(code)}/accept`,
+  },
   cashRegisters: {
     root: '/api/cash-registers',
     detail: (cashRegisterId: string) => `/api/cash-registers/${cashRegisterId}`,

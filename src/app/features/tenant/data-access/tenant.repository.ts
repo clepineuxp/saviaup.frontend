@@ -12,6 +12,16 @@ export interface TenantRepository {
   list(): Observable<readonly Tenant[]>;
   create(name: string): Observable<TenantSessionResult>;
   select(tenantId: string): Observable<TenantSessionResult>;
+  createJoinRequest(): Observable<CreatedOrganizationAccessLink>;
+}
+
+export interface CreatedOrganizationAccessLink {
+  readonly code: string;
+  readonly url: string;
+  readonly kind: string;
+  readonly organizationName: string | null;
+  readonly roleName: string | null;
+  readonly expiresAt: string;
 }
 
 export const TENANT_REPOSITORY = new InjectionToken<TenantRepository>('TENANT_REPOSITORY');
