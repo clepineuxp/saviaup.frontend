@@ -177,6 +177,24 @@ export interface OrganizationUser {
   readonly createdAt: string;
 }
 
+export interface CreatedOrganizationAccessLink {
+  readonly code: string;
+  readonly url: string;
+  readonly kind: string;
+  readonly organizationName: string | null;
+  readonly roleName: string | null;
+  readonly expiresAt: string;
+}
+
+export interface OrganizationAccessLinkSummary {
+  readonly id: string;
+  readonly kind: string;
+  readonly organizationName: string | null;
+  readonly roleName: string | null;
+  readonly expiresAt: string;
+  readonly url: string | null;
+}
+
 export interface UpdateOrganizationUser {
   readonly disabledThroughDate?: string | null;
   readonly roleId: string;

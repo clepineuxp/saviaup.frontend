@@ -58,12 +58,12 @@ export class RegisterComponent {
       })
       .subscribe({
         next: (result) => {
-          const destination =
+          const destination = this.route.snapshot.queryParamMap.get('returnUrl') ?? (
             result.nextStep === 'login'
               ? '/login'
               : result.nextStep === 'tenant-selection'
                 ? '/select-tenant'
-                : '/app';
+                : '/app');
           void this.router.navigate([destination]);
         },
         error: () => undefined,

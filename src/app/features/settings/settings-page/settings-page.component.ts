@@ -10,9 +10,11 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DatePipe } from '@angular/common';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { LocalizationService } from '../../../shared/i18n/localization.service';
 import { SettingsStore } from '../data-access/settings-store.service';
+import { ShareLinkService } from '../../../shared/services/share-link.service';
 import { PrintingTemplateEditorComponent } from '../printing-template-editor/printing-template-editor.component';
 import {
   OrganizationUser,
@@ -26,7 +28,7 @@ import {
 
 @Component({
   selector: 'app-settings-page',
-  imports: [ReactiveFormsModule, TranslatePipe, PrintingTemplateEditorComponent],
+  imports: [ReactiveFormsModule, TranslatePipe, DatePipe, PrintingTemplateEditorComponent],
   templateUrl: './settings-page.component.html',
   styleUrl: './settings-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,6 +38,7 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly localization = inject(LocalizationService);
+  private readonly share = inject(ShareLinkService);
   readonly activeTab = signal<SettingsTab>('organization');
   readonly editingPaymentId = signal<string | null>(null);
   readonly selectedRoleId = signal<string | null>(null);
@@ -43,6 +46,8 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
   readonly selectedPermissions = signal<ReadonlySet<string>>(new Set());
   readonly logoUrl = signal<string | null>(null);
   readonly successKey = signal<string | null>(null);
+  readonly invitationLink = signal<string | null>(null);
+  readonly invitationModalOpen = signal(false);
   readonly isSystemRoleSelected = computed(() => {
     const id = this.selectedRoleId();
     if (!id) return false;
@@ -402,6 +407,39 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
         },
         error: () => undefined,
       });
+  }
+
+  createInvitationLink(): void {
+    const roleId = this.inviteForm.controls.roleId.value;
+    if (!roleId) return this.inviteForm.controls.roleId.markAsTouched();
+    this.store.createInvitationLink(roleId).subscribe({
+      next: (link) => {
+        this.invitationLink.set(link.url);
+        this.invitationModalOpen.set(true);
+      },
+      error: () => undefined,
+    });
+  }
+
+  closeInvitationModal(): void {
+    this.invitationModalOpen.set(false);
+  }
+
+  openPendingInvitation(url: string | null): void {
+    if (!url) return;
+    this.invitationLink.set(url);
+    this.invitationModalOpen.set(true);
+  }
+
+  async copyInvitationLink(): Promise<void> {
+    const link = this.invitationLink();
+    if (link) await navigator.clipboard.writeText(link);
+  }
+
+  async shareInvitationLink(): Promise<void> {
+    const link = this.invitationLink();
+    if (!link) return;
+    try { await this.share.share('Invitación a Savia Up', 'Esta es una invitación para pertenecer a la organización.', link); } catch { /* user cancelled share */ }
   }
   updateUserRole(user: OrganizationUser, roleId: string): void {
     if (!user.membershipId) return;

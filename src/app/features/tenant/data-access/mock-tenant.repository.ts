@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { delay, Observable, of } from 'rxjs';
+import { delay, Observable, of, throwError } from 'rxjs';
 import { Tenant } from '../models/tenant.model';
 import { TenantRepository } from './tenant.repository';
 import { TenantSessionResult } from './tenant.repository';
@@ -34,6 +34,10 @@ export class MockTenantRepository implements TenantRepository {
   select(tenantId: string): Observable<TenantSessionResult> {
     const tenant = this.tenants.find((value) => value.id === tenantId) ?? this.tenants[0];
     return of({ tenant, tokens: this.tokens() }).pipe(delay(450));
+  }
+
+  createJoinRequest(): Observable<never> {
+    return throwError(() => new Error('Join requests require the real API'));
   }
 
   private tokens() {

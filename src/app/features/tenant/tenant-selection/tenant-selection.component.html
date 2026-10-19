@@ -55,5 +55,47 @@
       >
       <span class="tenant-card__arrow" aria-hidden="true">→</span>
     </a>
+    <button class="tenant-card tenant-card--create" type="button" (click)="createJoinRequest()" [disabled]="tenantStore.loading()">
+      <span class="tenant-card__add" aria-hidden="true">↗</span>
+      <span class="tenant-card__copy"><strong>Solicitar unirme a una organización</strong></span>
+      <span class="tenant-card__arrow" aria-hidden="true">→</span>
+    </button>
   </div>
+  @if (joinModalOpen() && joinLink(); as link) {
+    <div class="join-modal-backdrop" role="presentation" (click)="closeJoinModal()">
+      <section
+        class="join-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="join-modal-title"
+        (click)="$event.stopPropagation()"
+      >
+        <button class="join-modal__close" type="button" aria-label="Cerrar" (click)="closeJoinModal()">
+          ×
+        </button>
+        <div class="join-modal__icon" aria-hidden="true">
+          <img src="logo/Logo-96.png" alt="" />
+        </div>
+        <p class="eyebrow">SAVIA UP</p>
+        <h2 id="join-modal-title">Solicitud creada</h2>
+        <p class="join-modal__message">
+          Comparte este enlace con el administrador de la organización a la que quieres unirte.
+        </p>
+        <div class="join-modal__link">
+          <input [value]="link.url" readonly aria-label="Enlace de solicitud" />
+          <button type="button" (click)="copyLink(link.url)">Copiar link</button>
+        </div>
+        <div class="join-modal__actions">
+          <button class="join-modal__secondary" type="button" (click)="closeJoinModal()">
+            Ahora no
+          </button>
+          <button class="join-modal__primary" type="button" (click)="shareLink(link.url)">
+            Compartir
+          </button>
+        </div>
+        <small>El enlace estará vigente durante 12 horas.</small>
+      </section>
+    </div>
+  }
+  @if (joinLinkError(); as error) { <app-ui-alert [message]="error" /> }
 </section>
