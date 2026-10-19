@@ -856,6 +856,7 @@ export class TableOperationDialogComponent {
       .addItems(this.table().id, {
         items: items.map((item) => ({
           productId: item.productId,
+          productVariationId: item.productVariationId,
           productName: item.productName,
           unitPrice: item.unitPrice,
           quantity: item.quantity,
