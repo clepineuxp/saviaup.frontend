@@ -42,6 +42,11 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'organization-links/:code',
+    title: 'Invitación · Savia Up',
+    loadComponent: () => import('./features/organization-links/organization-link-page.component').then((m) => m.OrganizationLinkPageComponent),
+  },
+  {
     path: '',
     loadChildren: () =>
       import('./features/auth/auth.routes').then((routesFile) => routesFile.AUTH_ROUTES),

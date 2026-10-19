@@ -137,6 +137,7 @@ export interface EnabledPermission {
   readonly id: string;
   readonly code: string;
   readonly name: string;
+  readonly description: string;
 }
 export interface EnabledModulePermissions {
   readonly id: string;
@@ -174,6 +175,24 @@ export interface OrganizationUser {
   readonly status: OrganizationUserStatus;
   readonly disabledUntil: string | null;
   readonly createdAt: string;
+}
+
+export interface CreatedOrganizationAccessLink {
+  readonly code: string;
+  readonly url: string;
+  readonly kind: string;
+  readonly organizationName: string | null;
+  readonly roleName: string | null;
+  readonly expiresAt: string;
+}
+
+export interface OrganizationAccessLinkSummary {
+  readonly id: string;
+  readonly kind: string;
+  readonly organizationName: string | null;
+  readonly roleName: string | null;
+  readonly expiresAt: string;
+  readonly url: string | null;
 }
 
 export interface UpdateOrganizationUser {

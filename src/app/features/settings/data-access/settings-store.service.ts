@@ -29,6 +29,8 @@ import {
   UpdateBusinessSettings,
   UpdateOrganizationSettings,
   UpdateOrganizationUser,
+  CreatedOrganizationAccessLink,
+  OrganizationAccessLinkSummary,
 } from '../models/settings.model';
 import { SETTINGS_REPOSITORY } from './settings.repository';
 
@@ -44,6 +46,7 @@ export class SettingsStore {
   private readonly paymentMethodsState = signal<readonly PaymentMethod[]>([]);
   private readonly rolesState = signal<readonly SettingsRole[]>([]);
   private readonly usersState = signal<readonly OrganizationUser[]>([]);
+  private readonly invitationLinksState = signal<readonly OrganizationAccessLinkSummary[]>([]);
   private readonly permissionCatalogState = signal<readonly EnabledModulePermissions[]>([]);
   private readonly userPermissionsState = signal<ReadonlySet<string>>(new Set());
   private readonly statusState = signal<RequestStatus>('idle');
@@ -57,6 +60,7 @@ export class SettingsStore {
   readonly paymentMethods = this.paymentMethodsState.asReadonly();
   readonly roles = this.rolesState.asReadonly();
   readonly users = this.usersState.asReadonly();
+  readonly invitationLinks = this.invitationLinksState.asReadonly();
   readonly permissionCatalog = this.permissionCatalogState.asReadonly();
   readonly status = this.statusState.asReadonly();
   readonly error = this.errorState.asReadonly();
@@ -108,6 +112,7 @@ export class SettingsStore {
           roles: can(SETTINGS_PERMISSIONS.rolesRead) ? this.repository.listRoles() : of([]),
           catalog: can(SETTINGS_PERMISSIONS.rolesRead) ? this.repository.listPermissions() : of([]),
           users: can(SETTINGS_PERMISSIONS.usersRead) ? this.repository.listUsers() : of([]),
+          invitationLinks: can(SETTINGS_PERMISSIONS.usersRead) ? this.repository.listInvitationLinks() : of([]),
         });
       }),
       tap((data) => {
@@ -119,6 +124,7 @@ export class SettingsStore {
         this.rolesState.set(data.roles);
         this.permissionCatalogState.set(data.catalog);
         this.usersState.set(data.users);
+        this.invitationLinksState.set(data.invitationLinks);
         this.statusState.set('success');
       }),
       map(() => undefined),
@@ -239,6 +245,11 @@ export class SettingsStore {
   deleteUser(id: string): Observable<void> {
     return this.mutate(this.repository.deleteUser(id)).pipe(
       tap(() => this.usersState.update((items) => items.filter((item) => item.id !== id))),
+    );
+  }
+  createInvitationLink(roleId: string): Observable<CreatedOrganizationAccessLink> {
+    return this.mutate(this.repository.createInvitationLink(roleId)).pipe(
+      tap(() => this.repository.listInvitationLinks().subscribe((links) => this.invitationLinksState.set(links))),
     );
   }
   clearError(): void {
