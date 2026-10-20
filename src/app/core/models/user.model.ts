@@ -4,6 +4,7 @@ export interface User {
   readonly lastName: string;
   readonly email: string;
   readonly permissions: readonly string[];
+  readonly isSupportUser?: boolean;
 }
 
 export const getUserDisplayName = (user: User): string =>
