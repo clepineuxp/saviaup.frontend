@@ -9,6 +9,7 @@ export const mapUserDto = (dto: UserDto): User => ({
   lastName: dto.lastName,
   email: dto.email,
   permissions: dto.permissions ?? [],
+  isSupportUser: dto.isSupportUser ?? false,
 });
 
 export const mapTokens = (dto: RefreshTokenResponse): SessionTokens => ({

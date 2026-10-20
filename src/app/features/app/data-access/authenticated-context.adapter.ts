@@ -19,14 +19,15 @@ export const mapUserInfoDto = (dto: UserInfoDto): UserInfo => ({
   organization: {
     id: dto.organization.id,
     name: dto.organization.name,
-    timeZoneId: dto.organization.timeZoneId,
+    ...(dto.organization.timeZoneId ? { timeZoneId: dto.organization.timeZoneId } : {}),
   },
   role: {
     id: dto.role.id,
     code: dto.role.code,
     name: dto.role.name,
-    description: dto.role.description,
+    ...(dto.role.description ? { description: dto.role.description } : {}),
   },
+  ...(dto.isSupportUser ? { isSupportUser: true } : {}),
 });
 
 const mapAvailableModuleDto = (dto: AvailableModuleDto): AvailableModule => ({
