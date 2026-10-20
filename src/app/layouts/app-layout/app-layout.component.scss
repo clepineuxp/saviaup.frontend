@@ -90,6 +90,18 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.support-user-badge {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 0.18rem;
+  border-radius: 999px;
+  padding: 0.16rem 0.45rem;
+  background: var(--color-savia-100);
+  color: var(--color-savia-700);
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 800;
+}
 .account-menu__panel {
   position: absolute;
   z-index: 20;

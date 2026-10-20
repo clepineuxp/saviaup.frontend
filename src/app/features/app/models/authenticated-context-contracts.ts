@@ -16,6 +16,7 @@ export interface UserInfoDto {
   readonly lastName: string;
   readonly organization: OrganizationDto;
   readonly role: RoleDto;
+  readonly isSupportUser?: boolean;
 }
 
 export interface AvailableModuleDto {
