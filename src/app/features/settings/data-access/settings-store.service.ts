@@ -112,7 +112,9 @@ export class SettingsStore {
           roles: can(SETTINGS_PERMISSIONS.rolesRead) ? this.repository.listRoles() : of([]),
           catalog: can(SETTINGS_PERMISSIONS.rolesRead) ? this.repository.listPermissions() : of([]),
           users: can(SETTINGS_PERMISSIONS.usersRead) ? this.repository.listUsers() : of([]),
-          invitationLinks: can(SETTINGS_PERMISSIONS.usersRead) ? this.repository.listInvitationLinks() : of([]),
+          invitationLinks: can(SETTINGS_PERMISSIONS.usersRead)
+            ? this.repository.listInvitationLinks()
+            : of([]),
         });
       }),
       tap((data) => {
@@ -249,7 +251,11 @@ export class SettingsStore {
   }
   createInvitationLink(roleId: string): Observable<CreatedOrganizationAccessLink> {
     return this.mutate(this.repository.createInvitationLink(roleId)).pipe(
-      tap(() => this.repository.listInvitationLinks().subscribe((links) => this.invitationLinksState.set(links))),
+      tap(() =>
+        this.repository
+          .listInvitationLinks()
+          .subscribe((links) => this.invitationLinksState.set(links)),
+      ),
     );
   }
   clearError(): void {

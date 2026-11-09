@@ -54,7 +54,9 @@ export class TenantSelectionComponent implements OnInit {
       },
       error: (error: unknown) =>
         this.joinLinkError.set(
-          error instanceof ApiError ? error.message : 'No pudimos crear la solicitud. Intenta de nuevo.',
+          error instanceof ApiError
+            ? error.message
+            : 'No pudimos crear la solicitud. Intenta de nuevo.',
         ),
     });
   }

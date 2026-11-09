@@ -24,7 +24,7 @@ export class HttpSupplierRepository implements SupplierRepository {
     search?: string,
     isActive?: boolean,
     page: number = 1,
-    pageSize: number = 20
+    pageSize: number = 20,
   ): Observable<SupplierPageResult> {
     const queryParams: Record<string, string | number | boolean> = {
       page,
@@ -47,7 +47,7 @@ export class HttpSupplierRepository implements SupplierRepository {
           pageSize: dto.pageSize,
           totalCount: dto.totalCount,
           totalPages: dto.totalPages,
-        }))
+        })),
       );
   }
 
@@ -65,19 +65,15 @@ export class HttpSupplierRepository implements SupplierRepository {
 
   update(supplierId: string, payload: UpdateSupplierPayload): Observable<Supplier> {
     return this.api
-      .put<SupplierDto, UpdateSupplierPayload>(
-        API_ENDPOINTS.suppliers.detail(supplierId),
-        payload
-      )
+      .put<SupplierDto, UpdateSupplierPayload>(API_ENDPOINTS.suppliers.detail(supplierId), payload)
       .pipe(map(mapSupplierDtoToModel));
   }
 
   setStatus(supplierId: string, isActive: boolean): Observable<Supplier> {
     return this.api
-      .patch<SupplierDto, SetSupplierStatusPayload>(
-        API_ENDPOINTS.suppliers.status(supplierId),
-        { isActive }
-      )
+      .patch<SupplierDto, SetSupplierStatusPayload>(API_ENDPOINTS.suppliers.status(supplierId), {
+        isActive,
+      })
       .pipe(map(mapSupplierDtoToModel));
   }
 }

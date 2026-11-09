@@ -25,3 +25,22 @@ La pestaña de negocio muestra un toggle SaviaUp para esta política. Consultarl
 ## Total de turnos de caja
 
 El historial de `/app/cash-registers` incluye una columna **Inicial** y consume `totalInCashAmount` para **Total en Caja**. La cifra proviene del backend y representa recaudo de ventas + fondo inicial - gastos; el mismo valor se usa en el resumen del detalle/cierre.
+
+## Módulo de Reportes
+
+La sección de `/app/reports` permite configurar, generar y descargar informes en formato Excel (`.xlsx`) de forma asíncrona:
+
+- **Selector de tipo de informe**: tarjetas visuales para _Estadísticas_, _Gastos_, _Ventas / Pedidos_, _Ventas y Gastos_ y _Cajas_.
+- **Filtros de fecha y agrupación por períodos**:
+  - Selector de rango (`Desde` y `Hasta`) con botones de acceso rápido (_Hoy_, _Esta semana_, _Este mes_, _Mes anterior_).
+  - Selector segmentado de agrupación: _Sin agrupar_ (`NONE`), _Por semanas_ (`WEEKLY`) y _Por meses_ (`MONTHLY`).
+  - Previsualización dinámica de los períodos incluidos en el rango seleccionado (e.g. `Semana 1 (01/01 - 07/01)`, `Enero 2026 (01/01 - 31/01)`), calculada de forma reactiva con `computed` Signals.
+- **Opciones dinámicas según tipo**:
+  - _Estadísticas_: selección de secciones opcionales (productos más vendidos, mesas, meseros y categorías).
+  - _Gastos_: control segmentado para incluir todos los gastos, solo salidas de caja o sin salidas de caja.
+  - _Ventas_: selector de nivel de detalle por comandas o por productos.
+  - _Ventas y Gastos_: agrupación de ventas y detalle de gastos con responsable y fecha/hora.
+  - _Cajas_: detalle completo de turnos y discriminación por medios de pago.
+- **Polling y descarga automática**: `ReportStoreService` envía `POST /api/reports`, muestra banner de generación en segundo plano y realiza polling cada 1.5s hasta estado `COMPLETED` o `FAILED`. Al finalizar exitosamente, dispara de inmediato la descarga del archivo `.xlsx`.
+- **Historial de reportes**: tabla con solicitudes previas, etiquetas de configuración, estado en tiempo real (`En cola`, `Generando…`, `Completado`, `Fallido`), tamaño de archivo y botón directo de descarga.
+- **Arquitectura y pruebas**: implementado bajo el patrón Repository con `HttpReportRepository` y `MockReportRepository`, store reactivo con Signals y pruebas unitarias en `report-store.service.spec.ts`, `http-report.repository.spec.ts` y `reports-page.component.spec.ts`.

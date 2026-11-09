@@ -44,7 +44,10 @@ export const routes: Routes = [
   {
     path: 'organization-links/:code',
     title: 'Invitación · Savia Up',
-    loadComponent: () => import('./features/organization-links/organization-link-page.component').then((m) => m.OrganizationLinkPageComponent),
+    loadComponent: () =>
+      import('./features/organization-links/organization-link-page.component').then(
+        (m) => m.OrganizationLinkPageComponent,
+      ),
   },
   {
     path: '',
@@ -187,8 +190,11 @@ export const routes: Routes = [
       },
       {
         path: 'reports',
-        pathMatch: 'full',
-        redirectTo: 'statistics',
+        title: 'Reportes · Savia Up',
+        loadChildren: () =>
+          import('./features/reports/reports.routes').then(
+            (routesFile) => routesFile.REPORTS_ROUTES,
+          ),
       },
       {
         path: 'billing',

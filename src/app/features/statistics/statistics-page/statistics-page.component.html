@@ -35,7 +35,9 @@
       @if (period() === 'custom_range') {
         <div class="range-fields">
           <div class="field-item">
-            <label for="statistics-from-date">{{ 'statistics.period.fromDate' | translate }}:</label>
+            <label for="statistics-from-date"
+              >{{ 'statistics.period.fromDate' | translate }}:</label
+            >
             <input
               id="statistics-from-date"
               type="date"
@@ -82,10 +84,13 @@
         <div class="kpi-icon">💰</div>
         <div class="kpi-content">
           <span class="kpi-label">{{ 'statistics.kpi.totalSales' | translate }}</span>
-          <strong class="kpi-value">{{ dash.summary.totalSales | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+          <strong class="kpi-value">{{
+            dash.summary.totalSales | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+          }}</strong>
           <span class="kpi-subtext">
             @if (includeTips()) {
-              (Incluye {{ dash.summary.totalTips | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} propinas)
+              (Incluye
+              {{ dash.summary.totalTips | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} propinas)
             } @else {
               (Sin incluir propinas)
             }
@@ -97,7 +102,9 @@
         <div class="kpi-icon">💸</div>
         <div class="kpi-content">
           <span class="kpi-label">{{ 'statistics.kpi.totalExpenses' | translate }}</span>
-          <strong class="kpi-value">{{ dash.summary.totalExpenses | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+          <strong class="kpi-value">{{
+            dash.summary.totalExpenses | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+          }}</strong>
           <span class="kpi-subtext">Gastos del período</span>
         </div>
       </article>
@@ -111,9 +118,18 @@
         <div class="kpi-icon">⚖️</div>
         <div class="kpi-content">
           <span class="kpi-label">{{ 'statistics.kpi.balance' | translate }}</span>
-          <strong class="kpi-value">{{ balance() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+          <strong class="kpi-value">{{
+            balance() | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+          }}</strong>
           <span class="kpi-subtext">
-            {{ (balance() > 0 ? 'statistics.kpi.balancePositive' : balance() < 0 ? 'statistics.kpi.balanceNegative' : 'statistics.kpi.balanceNeutral') | translate }}
+            {{
+              (balance() > 0
+                ? 'statistics.kpi.balancePositive'
+                : balance() < 0
+                  ? 'statistics.kpi.balanceNegative'
+                  : 'statistics.kpi.balanceNeutral'
+              ) | translate
+            }}
           </span>
         </div>
       </article>
@@ -131,7 +147,9 @@
         <div class="kpi-icon">📊</div>
         <div class="kpi-content">
           <span class="kpi-label">{{ 'statistics.kpi.avgTicket' | translate }}</span>
-          <strong class="kpi-value">{{ dash.summary.averageTicket | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+          <strong class="kpi-value">{{
+            dash.summary.averageTicket | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+          }}</strong>
           <span class="kpi-subtext">Promedio por orden</span>
         </div>
       </article>
@@ -140,7 +158,9 @@
         <div class="kpi-icon">🤝</div>
         <div class="kpi-content">
           <span class="kpi-label">{{ 'statistics.kpi.totalTips' | translate }}</span>
-          <strong class="kpi-value">{{ dash.summary.totalTips | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+          <strong class="kpi-value">{{
+            dash.summary.totalTips | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+          }}</strong>
           <span class="kpi-subtext">Propina voluntaria</span>
         </div>
       </article>
@@ -152,7 +172,10 @@
             <span class="kpi-label">{{ 'statistics.kpi.topSeller' | translate }}</span>
             <strong class="kpi-value">{{ top.name }}</strong>
             <span class="kpi-subtext">
-              {{ top.totalSales | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} ({{ top.ordersCount }} órdenes)
+              {{ top.totalSales | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} ({{
+                top.ordersCount
+              }}
+              órdenes)
             </span>
           </div>
         </article>
@@ -166,12 +189,18 @@
         <header class="card-header">
           <div>
             <h2>{{ 'statistics.charts.salesTrend' | translate }}</h2>
-            <p>{{ 'statistics.charts.salesTrendSubtitle' | translate }} (Haz clic en un punto de la gráfica para ver detalles)</p>
+            <p>
+              {{ 'statistics.charts.salesTrendSubtitle' | translate }} (Haz clic en un punto de la
+              gráfica para ver detalles)
+            </p>
           </div>
 
           @if (selectedPointDetail(); as detail) {
             <div class="selected-point-badge">
-              <strong>{{ detail.title }}:</strong> {{ detail.sales | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} ({{ detail.subtitle }})
+              <strong>{{ detail.title }}:</strong>
+              {{ detail.sales | currency: 'COP' : 'symbol-narrow' : '1.0-0' }} ({{
+                detail.subtitle
+              }})
             </div>
           }
         </header>
@@ -256,20 +285,26 @@
                   }
                 </div>
                 <div class="user-stats">
-                  <span class="sales-amount">{{ user.totalSales | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+                  <span class="sales-amount">{{
+                    user.totalSales | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                  }}</span>
                   <span class="orders-count">{{ user.ordersCount }} comandas</span>
                 </div>
 
                 <div class="progress-bar-container">
                   <div
                     class="progress-fill"
-                    [style.width.%]="salesByUserMax() > 0 ? (user.totalSales / salesByUserMax()) * 100 : 0"
+                    [style.width.%]="
+                      salesByUserMax() > 0 ? (user.totalSales / salesByUserMax()) * 100 : 0
+                    "
                   ></div>
                 </div>
               </div>
             </div>
           } @empty {
-            <p class="empty-state">No hay datos de ventas registrados por usuarios en el período seleccionado.</p>
+            <p class="empty-state">
+              No hay datos de ventas registrados por usuarios en el período seleccionado.
+            </p>
           }
         </div>
       </section>

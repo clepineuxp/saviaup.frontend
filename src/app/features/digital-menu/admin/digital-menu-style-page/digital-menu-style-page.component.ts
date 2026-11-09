@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DigitalMenuStore } from '../../data-access/digital-menu.store';
@@ -87,8 +81,16 @@ export class DigitalMenuStylePageComponent {
     {
       name: 'Platos Fuertes',
       products: [
-        { name: 'Hamburguesa Artesanal', desc: 'Carne angus, queso cheddar y salsa especial', price: 28000 },
-        { name: 'Costillas BBQ', desc: 'Bañadas en salsa ahumada con papas rústicas', price: 36000 },
+        {
+          name: 'Hamburguesa Artesanal',
+          desc: 'Carne angus, queso cheddar y salsa especial',
+          price: 28000,
+        },
+        {
+          name: 'Costillas BBQ',
+          desc: 'Bañadas en salsa ahumada con papas rústicas',
+          price: 36000,
+        },
       ],
     },
     {
@@ -182,11 +184,15 @@ export class DigitalMenuStylePageComponent {
 
   selectPreviewCategory(categoryName: string): void {
     if (!this.previewUsesCollapsibleCategories()) return;
-    this.previewExpandedCategory.update((current) => (current === categoryName ? null : categoryName));
+    this.previewExpandedCategory.update((current) =>
+      current === categoryName ? null : categoryName,
+    );
   }
 
   isPreviewCategoryOpen(categoryName: string): boolean {
-    return !this.previewUsesCollapsibleCategories() || this.previewExpandedCategory() === categoryName;
+    return (
+      !this.previewUsesCollapsibleCategories() || this.previewExpandedCategory() === categoryName
+    );
   }
 
   openPreviewProduct(name: string): void {

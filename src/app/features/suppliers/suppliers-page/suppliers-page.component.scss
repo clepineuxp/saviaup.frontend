@@ -291,12 +291,16 @@
   &.edit-btn {
     background: var(--color-savia-50, #edf7f0);
     color: var(--color-savia-700, #245d3b);
-    &:hover { background: var(--color-savia-100, #d7ebdc); }
+    &:hover {
+      background: var(--color-savia-100, #d7ebdc);
+    }
   }
 
   &.status-btn {
     background: #f1f5f9;
-    &:hover { background: #e2e8f0; }
+    &:hover {
+      background: #e2e8f0;
+    }
   }
 }
 

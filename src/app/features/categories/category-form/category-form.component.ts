@@ -13,7 +13,10 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UiAlertComponent } from '../../../shared/components/ui-alert/ui-alert.component';
 import { UiButtonComponent } from '../../../shared/components/ui-button/ui-button.component';
-import { ImageSelectorComponent, ImageSelectionResult } from '../../../shared/components/image-selector/image-selector.component';
+import {
+  ImageSelectorComponent,
+  ImageSelectionResult,
+} from '../../../shared/components/image-selector/image-selector.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import {
   imageUrlValidator,
@@ -25,7 +28,13 @@ import { Category, CreateCategoryRequest } from '../models/category.model';
 
 @Component({
   selector: 'app-category-form',
-  imports: [ReactiveFormsModule, UiAlertComponent, UiButtonComponent, ImageSelectorComponent, TranslatePipe],
+  imports: [
+    ReactiveFormsModule,
+    UiAlertComponent,
+    UiButtonComponent,
+    ImageSelectorComponent,
+    TranslatePipe,
+  ],
   templateUrl: './category-form.component.html',
   styleUrl: './category-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -88,9 +88,8 @@ export class HttpCashRegisterRepository implements CashRegisterRepository {
     if (request.cashRegisterId) params['cashRegisterId'] = request.cashRegisterId;
     if (request.status) params['status'] = request.status;
 
-    return this.api.get<PagedResponse<CashRegisterShift>>(
-      API_ENDPOINTS.cashRegisters.shiftsPage,
-      { params },
-    );
+    return this.api.get<PagedResponse<CashRegisterShift>>(API_ENDPOINTS.cashRegisters.shiftsPage, {
+      params,
+    });
   }
 }

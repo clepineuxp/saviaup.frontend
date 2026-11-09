@@ -180,7 +180,9 @@
   font-weight: 750;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .organization-link-button:hover:not(:disabled) {
@@ -248,7 +250,9 @@
 }
 
 @keyframes organization-link-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 480px) {

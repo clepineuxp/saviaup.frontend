@@ -439,7 +439,15 @@ export class SettingsPageComponent implements OnInit, OnDestroy {
   async shareInvitationLink(): Promise<void> {
     const link = this.invitationLink();
     if (!link) return;
-    try { await this.share.share('Invitación a Savia Up', 'Esta es una invitación para pertenecer a la organización.', link); } catch { /* user cancelled share */ }
+    try {
+      await this.share.share(
+        'Invitación a Savia Up',
+        'Esta es una invitación para pertenecer a la organización.',
+        link,
+      );
+    } catch {
+      /* user cancelled share */
+    }
   }
   updateUserRole(user: OrganizationUser, roleId: string): void {
     if (!user.membershipId) return;

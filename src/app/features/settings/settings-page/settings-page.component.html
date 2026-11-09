@@ -429,11 +429,13 @@
                   }
                 }
               </select>
-              @if (inviteForm.controls.roleId.touched && inviteForm.controls.roleId.hasError('required')) {
+              @if (
+                inviteForm.controls.roleId.touched &&
+                inviteForm.controls.roleId.hasError('required')
+              ) {
                 <small class="field-error">Debes seleccionar un rol para crear el enlace.</small>
               }
-            </label
-            >
+            </label>
             <button class="button primary" type="submit">
               {{ 'settings.users.invite' | translate }}
             </button>
@@ -443,7 +445,11 @@
           </form>
         }
         @if (invitationModalOpen() && invitationLink(); as link) {
-          <div class="invitation-modal-backdrop" role="presentation" (click)="closeInvitationModal()">
+          <div
+            class="invitation-modal-backdrop"
+            role="presentation"
+            (click)="closeInvitationModal()"
+          >
             <section
               class="invitation-modal"
               role="dialog"
@@ -451,7 +457,14 @@
               aria-labelledby="invitation-modal-title"
               (click)="$event.stopPropagation()"
             >
-              <button class="invitation-modal__close" type="button" aria-label="Cerrar" (click)="closeInvitationModal()">×</button>
+              <button
+                class="invitation-modal__close"
+                type="button"
+                aria-label="Cerrar"
+                (click)="closeInvitationModal()"
+              >
+                ×
+              </button>
               <div class="invitation-modal__icon" aria-hidden="true">
                 <img src="logo/Logo-96.png" alt="" />
               </div>
@@ -465,8 +478,20 @@
                 <button type="button" (click)="copyInvitationLink()">Copiar link</button>
               </div>
               <div class="invitation-modal__actions">
-                <button class="invitation-modal__secondary" type="button" (click)="closeInvitationModal()">Ahora no</button>
-                <button class="invitation-modal__primary" type="button" (click)="shareInvitationLink()">Compartir</button>
+                <button
+                  class="invitation-modal__secondary"
+                  type="button"
+                  (click)="closeInvitationModal()"
+                >
+                  Ahora no
+                </button>
+                <button
+                  class="invitation-modal__primary"
+                  type="button"
+                  (click)="shareInvitationLink()"
+                >
+                  Compartir
+                </button>
               </div>
               <small>Este enlace es válido durante 12 horas y solo puede usarse una vez.</small>
             </section>
@@ -481,10 +506,14 @@
             (click)="openPendingInvitation(pendingLink.url)"
             (keydown.enter)="openPendingInvitation(pendingLink.url)"
           >
-            <div><strong>Invitación abierta pendiente</strong><small>{{ pendingLink.roleName }}</small></div>
+            <div>
+              <strong>Invitación abierta pendiente</strong><small>{{ pendingLink.roleName }}</small>
+            </div>
             <div class="pending-invitation-card__meta">
               <span class="badge">Expira {{ pendingLink.expiresAt | date: 'short' }}</span>
-              @if (pendingLink.url) { <span class="pending-invitation-card__hint">Copiar o compartir</span> }
+              @if (pendingLink.url) {
+                <span class="pending-invitation-card__hint">Copiar o compartir</span>
+              }
             </div>
           </article>
         }
