@@ -54,7 +54,7 @@ export const KNOWN_MODULE_NAVIGATION: readonly ModuleNavigationDefinition[] = [
   { code: 'categories', path: 'categories', icon: 'categories' },
   { code: 'kitchen', path: 'kitchen', icon: 'kitchen' },
   { code: 'statistics', path: 'statistics', icon: 'reports' },
-  { code: 'reports', path: 'statistics', icon: 'reports' },
+  { code: 'reports', path: 'reports', icon: 'reports' },
   { code: 'billing', path: 'billing', icon: 'billing' },
   { code: 'cash_registers', path: 'cash-registers', icon: 'billing' },
   { code: 'expenses', path: 'expenses', icon: 'expenses' },

@@ -121,6 +121,11 @@ export const API_ENDPOINTS = {
     detail: (expenseId: string) => `/api/expenses/${expenseId}`,
     annul: (expenseId: string) => `/api/expenses/${expenseId}/annul`,
   },
+  reports: {
+    root: '/api/reports',
+    detail: (reportId: string) => `/api/reports/${reportId}`,
+    download: (reportId: string) => `/api/reports/${reportId}/download`,
+  },
   digitalMenu: {
     config: '/api/digital-menu/config',
     printCategoryImages: (categoryId: string) =>

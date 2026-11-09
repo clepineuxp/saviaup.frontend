@@ -7,7 +7,12 @@ import { AuthenticatedContext } from '../../../core/context/authenticated-contex
 import { TenantContext } from '../../../core/tenant/tenant-context.service';
 import { SessionTokens } from '../../../core/auth/session.model';
 import { Tenant } from '../models/tenant.model';
-import { CreatedOrganizationAccessLink, TENANT_REPOSITORY, TenantRepository, TenantSessionResult } from './tenant.repository';
+import {
+  CreatedOrganizationAccessLink,
+  TENANT_REPOSITORY,
+  TenantRepository,
+  TenantSessionResult,
+} from './tenant.repository';
 import { TenantStore } from './tenant-store.service';
 
 const tokens: SessionTokens = {
@@ -48,7 +53,14 @@ class FakeTenantRepository implements TenantRepository {
   }
 
   createJoinRequest(): Observable<CreatedOrganizationAccessLink> {
-    return of({ code: 'join', url: '/organization-links/join', kind: 'JOINREQUEST', organizationName: null, roleName: null, expiresAt: new Date().toISOString() });
+    return of({
+      code: 'join',
+      url: '/organization-links/join',
+      kind: 'JOINREQUEST',
+      organizationName: null,
+      roleName: null,
+      expiresAt: new Date().toISOString(),
+    });
   }
 }
 

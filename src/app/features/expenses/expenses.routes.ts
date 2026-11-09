@@ -4,8 +4,6 @@ export const EXPENSES_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./expenses-page/expenses-page.component').then(
-        (m) => m.ExpensesPageComponent
-      ),
+      import('./expenses-page/expenses-page.component').then((m) => m.ExpensesPageComponent),
   },
 ];

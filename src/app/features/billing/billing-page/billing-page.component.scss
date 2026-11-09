@@ -493,13 +493,17 @@
       &-secondary {
         background: #f1f5f9;
         color: #475569;
-        &:hover { background: #e2e8f0; }
+        &:hover {
+          background: #e2e8f0;
+        }
       }
 
       &-primary {
         background: var(--color-primary, #6366f1);
         color: #ffffff;
-        &:hover { opacity: 0.9; }
+        &:hover {
+          opacity: 0.9;
+        }
       }
     }
   }
@@ -542,7 +546,8 @@
     font-size: 0.82rem;
     border-collapse: collapse;
 
-    th, td {
+    th,
+    td {
       padding: 0.25rem 0;
     }
   }
@@ -571,9 +576,15 @@
   }
 }
 
-.text-center { text-align: center; }
-.text-left { text-align: left; }
-.text-right { text-align: right; }
+.text-center {
+  text-align: center;
+}
+.text-left {
+  text-align: left;
+}
+.text-right {
+  text-align: right;
+}
 
 .order-summary-box {
   background: #f8fafc;
@@ -608,7 +619,8 @@
       flex-direction: column;
       gap: 0.15rem;
 
-      .rcpt-date, .rcpt-issuer {
+      .rcpt-date,
+      .rcpt-issuer {
         font-size: 0.78rem;
         color: #64748b;
       }
@@ -633,7 +645,8 @@
   body * {
     visibility: hidden;
   }
-  .printable-area, .printable-area * {
+  .printable-area,
+  .printable-area * {
     visibility: visible;
   }
   .printable-area {

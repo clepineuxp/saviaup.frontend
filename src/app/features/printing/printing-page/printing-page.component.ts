@@ -121,10 +121,7 @@ export class PrintingPageComponent implements OnInit {
       if (firstAgent && this.canShowAgents())
         this.store.loadAvailablePrinters(firstAgent).subscribe();
       if (this.canManageAgents())
-        this.store
-          .watchDiscoveredAgents()
-          .pipe(takeUntilDestroyed(this.destroyRef))
-          .subscribe();
+        this.store.watchDiscoveredAgents().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
     });
   }
 

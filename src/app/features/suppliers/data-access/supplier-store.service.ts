@@ -31,7 +31,7 @@ export class SupplierStoreService {
   loadPage(
     page: number = this.page(),
     search: string = this.searchFilter(),
-    isActive: boolean | undefined = this.activeFilter()
+    isActive: boolean | undefined = this.activeFilter(),
   ): void {
     this.loading.set(true);
     this.error.set(null);

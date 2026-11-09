@@ -82,6 +82,25 @@ describe('module navigation configuration', () => {
     });
   });
 
+  it('maps the reports module to its dedicated reports route', () => {
+    const [section] = createSectionNavigation([
+      {
+        code: 'operation',
+        name: 'Operación',
+        order: 1,
+        isGrouped: false,
+        modules: [{ id: 'reports', code: 'reports', name: 'Reportes', order: 1 }],
+        options: [],
+      },
+    ]);
+
+    expect(section.items[0]).toMatchObject({
+      code: 'reports',
+      route: '/app/reports',
+      icon: 'reports',
+    });
+  });
+
   it('renders future options and resolves their route and icon through moduleCode', () => {
     const [section] = createSectionNavigation([
       {

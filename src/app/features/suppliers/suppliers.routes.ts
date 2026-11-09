@@ -4,8 +4,6 @@ export const SUPPLIERS_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./suppliers-page/suppliers-page.component').then(
-        (m) => m.SuppliersPageComponent
-      ),
+      import('./suppliers-page/suppliers-page.component').then((m) => m.SuppliersPageComponent),
   },
 ];

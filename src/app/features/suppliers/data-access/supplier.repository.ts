@@ -11,7 +11,12 @@ export interface SupplierPageResult {
 }
 
 export abstract class SupplierRepository {
-  abstract getPage(search?: string, isActive?: boolean, page?: number, pageSize?: number): Observable<SupplierPageResult>;
+  abstract getPage(
+    search?: string,
+    isActive?: boolean,
+    page?: number,
+    pageSize?: number,
+  ): Observable<SupplierPageResult>;
   abstract getLookup(): Observable<SupplierLookup[]>;
   abstract create(payload: CreateSupplierPayload): Observable<Supplier>;
   abstract update(supplierId: string, payload: UpdateSupplierPayload): Observable<Supplier>;

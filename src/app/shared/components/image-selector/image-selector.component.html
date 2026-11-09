@@ -9,7 +9,12 @@
         <img [src]="previewUrl()" [alt]="fileName() || 'Vista previa'" class="preview-img" />
         <div class="preview-overlay">
           <span class="file-name-text">{{ fileName() }}</span>
-          <button type="button" class="btn-remove-image" (click)="clearImage($event)" title="Eliminar imagen">
+          <button
+            type="button"
+            class="btn-remove-image"
+            (click)="clearImage($event)"
+            title="Eliminar imagen"
+          >
             🗑️ Eliminar
           </button>
         </div>
@@ -39,8 +44,6 @@
   </div>
 
   @if (errorMessage()) {
-    <div class="error-alert">
-      ⚠️ {{ errorMessage() }}
-    </div>
+    <div class="error-alert">⚠️ {{ errorMessage() }}</div>
   }
 </div>

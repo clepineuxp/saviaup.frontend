@@ -121,7 +121,10 @@
                     [class.active]="supplier.isActive"
                     [class.inactive]="!supplier.isActive"
                   >
-                    {{ (supplier.isActive ? 'suppliers.status.active' : 'suppliers.status.inactive') | translate }}
+                    {{
+                      (supplier.isActive ? 'suppliers.status.active' : 'suppliers.status.inactive')
+                        | translate
+                    }}
                   </span>
                 </td>
                 @if (store.canManage()) {
@@ -166,7 +169,9 @@
           >
             ← Anterior
           </button>
-          <span class="page-number">Página {{ store.page() }} de {{ store.totalPages() || 1 }}</span>
+          <span class="page-number"
+            >Página {{ store.page() }} de {{ store.totalPages() || 1 }}</span
+          >
           <button
             type="button"
             class="pag-btn"

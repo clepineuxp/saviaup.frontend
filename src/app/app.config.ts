@@ -45,6 +45,12 @@ import { PRODUCT_REPOSITORY } from './features/products/data-access/product.repo
 import { HttpSettingsRepository } from './features/settings/data-access/http-settings.repository';
 import { SettingsStore } from './features/settings/data-access/settings-store.service';
 import { SETTINGS_REPOSITORY } from './features/settings/data-access/settings.repository';
+import { HttpReportRepository } from './features/reports/data-access/http-report.repository';
+import { MockReportRepository } from './features/reports/data-access/mock-report.repository';
+import {
+  REPORT_REPOSITORY,
+  ReportRepository,
+} from './features/reports/data-access/report.repository';
 
 const authRepositoryFactory = (): AuthRepository =>
   inject(APP_ENVIRONMENT).useMockApi ? inject(MockAuthRepository) : inject(HttpAuthRepository);
@@ -61,6 +67,9 @@ const authenticatedContextRepositoryFactory = (): AuthenticatedContextRepository
   inject(APP_ENVIRONMENT).useMockApi
     ? inject(MockAuthenticatedContextRepository)
     : inject(HttpAuthenticatedContextRepository);
+
+const reportRepositoryFactory = (): ReportRepository =>
+  inject(APP_ENVIRONMENT).useMockApi ? inject(MockReportRepository) : inject(HttpReportRepository);
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -81,6 +90,8 @@ export const appConfig: ApplicationConfig = {
     MockTenantRepository,
     HttpTranslationRepository,
     MockTranslationRepository,
+    HttpReportRepository,
+    MockReportRepository,
     { provide: AUTH_REPOSITORY, useFactory: authRepositoryFactory },
     {
       provide: AUTHENTICATED_CONTEXT_REPOSITORY,
@@ -91,6 +102,7 @@ export const appConfig: ApplicationConfig = {
     { provide: ORDER_REPOSITORY, useClass: HttpOrderRepository },
     { provide: PRODUCT_REPOSITORY, useClass: HttpProductRepository },
     { provide: SETTINGS_REPOSITORY, useClass: HttpSettingsRepository },
+    { provide: REPORT_REPOSITORY, useFactory: reportRepositoryFactory },
     SettingsStore,
     provideAppInitializer(() => {
       inject(PwaUpdateService);
