@@ -58,8 +58,9 @@ export class RegisterComponent {
       })
       .subscribe({
         next: (result) => {
-          const destination = this.route.snapshot.queryParamMap.get('returnUrl') ?? (
-            result.nextStep === 'login'
+          const destination =
+            this.route.snapshot.queryParamMap.get('returnUrl') ??
+            (result.nextStep === 'login'
               ? '/login'
               : result.nextStep === 'tenant-selection'
                 ? '/select-tenant'

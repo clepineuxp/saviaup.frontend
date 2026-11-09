@@ -11,7 +11,11 @@
     <header class="supplier-modal__header">
       <div>
         <p class="eyebrow">{{ 'suppliers.eyebrow' | translate }}</p>
-        <h2>{{ (supplier() ? 'suppliers.modal.editTitle' : 'suppliers.modal.createTitle') | translate }}</h2>
+        <h2>
+          {{
+            (supplier() ? 'suppliers.modal.editTitle' : 'suppliers.modal.createTitle') | translate
+          }}
+        </h2>
       </div>
       <button
         class="modal-close"

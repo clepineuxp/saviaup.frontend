@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DigitalMenuStore } from '../../data-access/digital-menu.store';
@@ -67,7 +61,9 @@ export class DigitalMenuProductsPageComponent {
 
   canMoveCategory(targetId: string, direction: 'up' | 'down'): boolean {
     const index = this.store.categories().findIndex((category) => category.targetId === targetId);
-    return direction === 'up' ? index > 0 : index >= 0 && index < this.store.categories().length - 1;
+    return direction === 'up'
+      ? index > 0
+      : index >= 0 && index < this.store.categories().length - 1;
   }
 
   toggleProduct(targetId: string): void {

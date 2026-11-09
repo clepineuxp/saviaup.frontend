@@ -52,7 +52,7 @@ Chart.register(
   DoughnutController,
   ArcElement,
   BarController,
-  BarElement
+  BarElement,
 );
 
 const COLOR_PALETTE = [
@@ -93,7 +93,12 @@ export class StatisticsPageComponent implements OnInit {
   readonly productMetricMode = signal<'quantity' | 'value'>('quantity');
 
   readonly dashboardData = signal<StatisticsDashboardData | null>(null);
-  readonly selectedPointDetail = signal<{ title: string; subtitle: string; sales: number; count: number } | null>(null);
+  readonly selectedPointDetail = signal<{
+    title: string;
+    subtitle: string;
+    sales: number;
+    count: number;
+  } | null>(null);
   readonly isCustomRangeValid = computed(() => {
     const fromDate = this.fromDate();
     const toDate = this.toDate();
@@ -320,7 +325,9 @@ export class StatisticsPageComponent implements OnInit {
     const items = isQty ? data.topProductsByQuantity : data.topProductsByValue;
 
     const labels = items.map((i) => i.name);
-    const values = items.map((i) => (isQty ? (i as ProductQuantityPoint).quantity : (i as ProductValuePoint).amount));
+    const values = items.map((i) =>
+      isQty ? (i as ProductQuantityPoint).quantity : (i as ProductValuePoint).amount,
+    );
     const percentages = items.map((i) => i.percentage);
 
     this.productsChartInstance = new Chart(ctx, {

@@ -36,8 +36,9 @@ export class LoginComponent {
     const { email, password, rememberMe } = this.form.getRawValue();
     this.authStore.login({ email: email.trim(), password }, rememberMe).subscribe({
       next: (result) => {
-        const destination = this.route.snapshot.queryParamMap.get('returnUrl') ?? (
-          result.nextStep === 'login'
+        const destination =
+          this.route.snapshot.queryParamMap.get('returnUrl') ??
+          (result.nextStep === 'login'
             ? '/login'
             : result.nextStep === 'tenant-selection'
               ? '/select-tenant'

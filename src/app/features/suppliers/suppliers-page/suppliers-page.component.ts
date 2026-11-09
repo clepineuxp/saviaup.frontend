@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiAlertComponent } from '../../../shared/components/ui-alert/ui-alert.component';
@@ -47,8 +41,8 @@ export class SuppliersPageComponent implements OnInit {
       this.filterStatus() === 'ACTIVE'
         ? true
         : this.filterStatus() === 'INACTIVE'
-        ? false
-        : undefined;
+          ? false
+          : undefined;
 
     this.store.setFilters(this.searchInput(), activeVal);
   }
@@ -77,12 +71,10 @@ export class SuppliersPageComponent implements OnInit {
     const current = this.selectedSupplier();
     if (current) {
       this.store.updateSupplier(current.id, payload as UpdateSupplierPayload, () =>
-        this.closeDialog()
+        this.closeDialog(),
       );
     } else {
-      this.store.createSupplier(payload as CreateSupplierPayload, () =>
-        this.closeDialog()
-      );
+      this.store.createSupplier(payload as CreateSupplierPayload, () => this.closeDialog());
     }
   }
 

@@ -33,7 +33,12 @@ export class ImageService {
 
   uploadFile(file: File, module: string, entityId?: string | null): Observable<StoredImageDto> {
     if (file.size > 2 * 1024 * 1024) {
-      return throwError(() => new Error(`La imagen supera el límite de 2 MB (${(file.size / 1024 / 1024).toFixed(2)} MB cargados).`));
+      return throwError(
+        () =>
+          new Error(
+            `La imagen supera el límite de 2 MB (${(file.size / 1024 / 1024).toFixed(2)} MB cargados).`,
+          ),
+      );
     }
 
     const formData = new FormData();
@@ -60,7 +65,11 @@ export class ImageService {
   fileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       if (file.size > 2 * 1024 * 1024) {
-        reject(new Error(`La imagen supera el límite de 2 MB (${(file.size / 1024 / 1024).toFixed(2)} MB cargados).`));
+        reject(
+          new Error(
+            `La imagen supera el límite de 2 MB (${(file.size / 1024 / 1024).toFixed(2)} MB cargados).`,
+          ),
+        );
         return;
       }
 

@@ -16,9 +16,7 @@ export class StatisticsService {
     fromDate?: string,
     toDate?: string,
   ): Observable<StatisticsDashboardData> {
-    let params = new HttpParams()
-      .set('period', period)
-      .set('includeTips', includeTips.toString());
+    let params = new HttpParams().set('period', period).set('includeTips', includeTips.toString());
 
     if (fromDate) params = params.set('fromDate', fromDate);
     if (toDate) params = params.set('toDate', toDate);

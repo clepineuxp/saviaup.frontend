@@ -1,0 +1,514 @@
+<div class="reports-page">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-titles">
+      <span class="eyebrow">{{ 'reports.eyebrow' | translate }}</span>
+      <h1 class="title">{{ 'reports.title' | translate }}</h1>
+      <p class="subtitle">{{ 'reports.subtitle' | translate }}</p>
+    </div>
+  </header>
+
+  <!-- Notifications -->
+  @if (store.errorMessage(); as error) {
+    <app-ui-alert [message]="error" type="error" />
+  }
+
+  @if (store.successMessage(); as success) {
+    <app-ui-alert [message]="success" type="success" />
+  }
+
+  <!-- Active Async Generation Progress Banner -->
+  @if (store.hasActiveJob()) {
+    <div class="progress-card" role="status">
+      <div class="progress-card__spinner"></div>
+      <div class="progress-card__content">
+        <strong class="progress-card__title">{{ 'reports.action.generating' | translate }}</strong>
+        <p class="progress-card__desc">{{ 'reports.job.processing' | translate }}</p>
+      </div>
+    </div>
+  }
+
+  <!-- Configuration Card -->
+  <section class="card config-card">
+    <!-- Step 1: Select Report Type -->
+    <div class="section-block">
+      <h2 class="section-title">{{ 'reports.step1' | translate }}</h2>
+      <div class="types-grid" role="radiogroup">
+        @for (item of reportTypes; track item.type) {
+          <button
+            type="button"
+            class="type-card"
+            [class.type-card--selected]="store.selectedReportType() === item.type"
+            [disabled]="store.isRequesting() || store.hasActiveJob()"
+            (click)="onSelectType(item.type)"
+          >
+            <span class="type-card__icon" aria-hidden="true">{{ item.icon }}</span>
+            <div class="type-card__info">
+              <strong class="type-card__name">{{ item.labelKey | translate }}</strong>
+              <p class="type-card__desc">{{ item.descKey | translate }}</p>
+            </div>
+            @if (store.selectedReportType() === item.type) {
+              <span class="type-card__badge" aria-hidden="true">✓</span>
+            }
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Step 2: Date Filters & Custom Options -->
+    <div class="section-block">
+      <h2 class="section-title">{{ 'reports.step2' | translate }}</h2>
+
+      <!-- Date Range Filter -->
+      <div class="date-section">
+        <span class="filter-label">{{ 'reports.filter.dateRange' | translate }}</span>
+
+        <div class="presets-row">
+          <button
+            type="button"
+            class="btn-preset"
+            (click)="onPresetClick('today')"
+            [disabled]="store.isRequesting() || store.hasActiveJob()"
+          >
+            {{ 'reports.filter.today' | translate }}
+          </button>
+          <button
+            type="button"
+            class="btn-preset"
+            (click)="onPresetClick('thisWeek')"
+            [disabled]="store.isRequesting() || store.hasActiveJob()"
+          >
+            {{ 'reports.filter.thisWeek' | translate }}
+          </button>
+          <button
+            type="button"
+            class="btn-preset"
+            (click)="onPresetClick('thisMonth')"
+            [disabled]="store.isRequesting() || store.hasActiveJob()"
+          >
+            {{ 'reports.filter.thisMonth' | translate }}
+          </button>
+          <button
+            type="button"
+            class="btn-preset"
+            (click)="onPresetClick('lastMonth')"
+            [disabled]="store.isRequesting() || store.hasActiveJob()"
+          >
+            {{ 'reports.filter.lastMonth' | translate }}
+          </button>
+        </div>
+
+        <div class="dates-inputs-row">
+          <div class="field-item">
+            <label for="reportFromDate">{{ 'reports.filter.from' | translate }}:</label>
+            <input
+              id="reportFromDate"
+              type="date"
+              class="date-input"
+              [ngModel]="store.fromDate()"
+              [max]="store.toDate()"
+              (ngModelChange)="store.fromDate.set($event)"
+              [disabled]="store.isRequesting() || store.hasActiveJob()"
+            />
+          </div>
+          <div class="field-item">
+            <label for="reportToDate">{{ 'reports.filter.to' | translate }}:</label>
+            <input
+              id="reportToDate"
+              type="date"
+              class="date-input"
+              [ngModel]="store.toDate()"
+              [min]="store.fromDate()"
+              (ngModelChange)="store.toDate.set($event)"
+              [disabled]="store.isRequesting() || store.hasActiveJob()"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Period Grouping Section -->
+      <div class="period-section">
+        <span class="filter-label">{{ 'reports.filter.periodGrouping' | translate }}</span>
+        <div class="segmented-control">
+          <button
+            type="button"
+            class="segmented-btn"
+            [class.segmented-btn--active]="store.periodGrouping() === 'NONE'"
+            (click)="onPeriodGroupingChange('NONE')"
+            [disabled]="store.isRequesting() || store.hasActiveJob()"
+          >
+            {{ 'reports.filter.groupingNone' | translate }}
+          </button>
+          <button
+            type="button"
+            class="segmented-btn"
+            [class.segmented-btn--active]="store.periodGrouping() === 'WEEKLY'"
+            (click)="onPeriodGroupingChange('WEEKLY')"
+            [disabled]="store.isRequesting() || store.hasActiveJob()"
+          >
+            {{ 'reports.filter.groupingWeekly' | translate }}
+          </button>
+          <button
+            type="button"
+            class="segmented-btn"
+            [class.segmented-btn--active]="store.periodGrouping() === 'MONTHLY'"
+            (click)="onPeriodGroupingChange('MONTHLY')"
+            [disabled]="store.isRequesting() || store.hasActiveJob()"
+          >
+            {{ 'reports.filter.groupingMonthly' | translate }}
+          </button>
+        </div>
+
+        @if (store.periodGrouping() !== 'NONE') {
+          <div class="periods-preview">
+            <span class="periods-preview__label">
+              {{ 'reports.filter.includedPeriods' | translate }} ({{
+                store.includedPeriods().length
+              }}):
+            </span>
+            <div class="periods-preview__chips">
+              @for (period of store.includedPeriods(); track period.label) {
+                <span class="period-chip">
+                  <span class="period-chip__badge">📅</span>
+                  <span class="period-chip__text">{{ period.label }}</span>
+                </span>
+              }
+              @if (store.includedPeriods().length === 0) {
+                <span class="period-chip period-chip--empty">
+                  {{ 'reports.filter.noPeriodsInRange' | translate }}
+                </span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Specific Type Customization Options -->
+      @switch (store.selectedReportType()) {
+        @case ('STATISTICS') {
+          <div class="options-section">
+            <span class="filter-label">{{ 'reports.filter.statisticsOptions' | translate }}</span>
+            <div class="checkbox-grid">
+              <label class="checkbox-item">
+                <input
+                  type="checkbox"
+                  [ngModel]="store.includeProducts()"
+                  (ngModelChange)="store.includeProducts.set($event)"
+                  [disabled]="store.isRequesting() || store.hasActiveJob()"
+                />
+                <span>{{ 'reports.filter.includeProducts' | translate }}</span>
+              </label>
+              <label class="checkbox-item">
+                <input
+                  type="checkbox"
+                  [ngModel]="store.includeTables()"
+                  (ngModelChange)="store.includeTables.set($event)"
+                  [disabled]="store.isRequesting() || store.hasActiveJob()"
+                />
+                <span>{{ 'reports.filter.includeTables' | translate }}</span>
+              </label>
+              <label class="checkbox-item">
+                <input
+                  type="checkbox"
+                  [ngModel]="store.includeWaiters()"
+                  (ngModelChange)="store.includeWaiters.set($event)"
+                  [disabled]="store.isRequesting() || store.hasActiveJob()"
+                />
+                <span>{{ 'reports.filter.includeWaiters' | translate }}</span>
+              </label>
+              <label class="checkbox-item">
+                <input
+                  type="checkbox"
+                  [ngModel]="store.includeCategories()"
+                  (ngModelChange)="store.includeCategories.set($event)"
+                  [disabled]="store.isRequesting() || store.hasActiveJob()"
+                />
+                <span>{{ 'reports.filter.includeCategories' | translate }}</span>
+              </label>
+            </div>
+          </div>
+        }
+
+        @case ('EXPENSES') {
+          <div class="options-section">
+            <span class="filter-label">{{ 'reports.filter.cashFilter' | translate }}</span>
+            <div class="segmented-control">
+              <button
+                type="button"
+                class="segmented-btn"
+                [class.segmented-btn--active]="store.cashFilter() === 'ALL'"
+                (click)="onCashFilterChange('ALL')"
+                [disabled]="store.isRequesting() || store.hasActiveJob()"
+              >
+                {{ 'reports.filter.cashAll' | translate }}
+              </button>
+              <button
+                type="button"
+                class="segmented-btn"
+                [class.segmented-btn--active]="store.cashFilter() === 'ONLY_CASH_OUT'"
+                (click)="onCashFilterChange('ONLY_CASH_OUT')"
+                [disabled]="store.isRequesting() || store.hasActiveJob()"
+              >
+                {{ 'reports.filter.cashOnlyOut' | translate }}
+              </button>
+              <button
+                type="button"
+                class="segmented-btn"
+                [class.segmented-btn--active]="store.cashFilter() === 'NO_CASH_OUT'"
+                (click)="onCashFilterChange('NO_CASH_OUT')"
+                [disabled]="store.isRequesting() || store.hasActiveJob()"
+              >
+                {{ 'reports.filter.cashNoOut' | translate }}
+              </button>
+            </div>
+          </div>
+        }
+
+        @case ('SALES') {
+          <div class="options-section">
+            <span class="filter-label">{{ 'reports.filter.salesGroupBy' | translate }}</span>
+            <div class="options-grid">
+              <button
+                type="button"
+                class="option-card"
+                [class.option-card--active]="store.groupBy() === 'COMMANDAS'"
+                (click)="onGroupByChange('COMMANDAS')"
+                [disabled]="store.isRequesting() || store.hasActiveJob()"
+              >
+                <strong class="option-title"
+                  >📋 {{ 'reports.filter.byComandas' | translate }}</strong
+                >
+              </button>
+              <button
+                type="button"
+                class="option-card"
+                [class.option-card--active]="store.groupBy() === 'PRODUCTS'"
+                (click)="onGroupByChange('PRODUCTS')"
+                [disabled]="store.isRequesting() || store.hasActiveJob()"
+              >
+                <strong class="option-title"
+                  >📦 {{ 'reports.filter.byProducts' | translate }}</strong
+                >
+              </button>
+            </div>
+          </div>
+        }
+
+        @case ('SALES_AND_EXPENSES') {
+          <div class="options-section">
+            <span class="filter-label">{{ 'reports.filter.salesGroupBy' | translate }}</span>
+            <div class="options-grid">
+              <button
+                type="button"
+                class="option-card"
+                [class.option-card--active]="store.groupBy() === 'COMMANDAS'"
+                (click)="onGroupByChange('COMMANDAS')"
+                [disabled]="store.isRequesting() || store.hasActiveJob()"
+              >
+                <strong class="option-title"
+                  >📋 {{ 'reports.filter.byComandas' | translate }}</strong
+                >
+              </button>
+              <button
+                type="button"
+                class="option-card"
+                [class.option-card--active]="store.groupBy() === 'PRODUCTS'"
+                (click)="onGroupByChange('PRODUCTS')"
+                [disabled]="store.isRequesting() || store.hasActiveJob()"
+              >
+                <strong class="option-title"
+                  >📦 {{ 'reports.filter.byProducts' | translate }}</strong
+                >
+              </button>
+            </div>
+            <div class="info-note">
+              <span>ℹ️ {{ 'reports.filter.salesAndExpensesInfo' | translate }}</span>
+            </div>
+          </div>
+        }
+
+        @case ('CASH_REGISTERS') {
+          <div class="options-section">
+            <div class="info-note">
+              <span>🏦 {{ 'reports.filter.cashRegistersInfo' | translate }}</span>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Generate Action -->
+    <div class="form-actions">
+      <app-ui-button
+        type="button"
+        [loading]="store.isRequesting() || store.hasActiveJob()"
+        [disabled]="store.isRequesting() || store.hasActiveJob()"
+        (click)="generateReport()"
+      >
+        <span class="action-btn-content">
+          <span>📊</span>
+          <span>{{
+            (store.hasActiveJob() ? 'reports.action.generating' : 'reports.action.generate')
+              | translate
+          }}</span>
+        </span>
+      </app-ui-button>
+    </div>
+  </section>
+
+  <!-- Report History Section -->
+  <section class="card history-card">
+    <div class="history-header">
+      <div class="history-title-block">
+        <h2 class="section-title">{{ 'reports.history.title' | translate }}</h2>
+        <span class="count-badge">{{ store.reports().length }}</span>
+      </div>
+      <button
+        type="button"
+        class="btn-refresh"
+        [disabled]="store.isLoadingReports()"
+        (click)="refreshList()"
+      >
+        <span>🔄</span>
+        <span>{{ 'reports.action.refresh' | translate }}</span>
+      </button>
+    </div>
+
+    @if (store.isLoadingReports() && store.reports().length === 0) {
+      <div class="state-container">
+        <div class="spinner"></div>
+        <p>Cargando lista de reportes…</p>
+      </div>
+    } @else if (store.reports().length === 0) {
+      <div class="state-container state-container--empty">
+        <span class="empty-icon" aria-hidden="true">📊</span>
+        <h3>{{ 'reports.history.empty' | translate }}</h3>
+        <p>{{ 'reports.history.emptyDesc' | translate }}</p>
+      </div>
+    } @else {
+      <div class="table-container">
+        <table class="reports-table">
+          <thead>
+            <tr>
+              <th>{{ 'reports.history.requestedAt' | translate }}</th>
+              <th>{{ 'reports.history.type' | translate }}</th>
+              <th>{{ 'reports.history.period' | translate }}</th>
+              <th>{{ 'reports.history.details' | translate }}</th>
+              <th>{{ 'reports.history.status' | translate }}</th>
+              <th>{{ 'reports.history.file' | translate }}</th>
+              <th class="col-actions">{{ 'reports.history.actions' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (report of store.reports(); track report.id) {
+              <tr [class.row--active]="store.generatingReportId() === report.id">
+                <td class="col-date">
+                  <span class="cell-primary">{{
+                    report.createdAtUtc | organizationDate: 'dd/MM/yyyy HH:mm'
+                  }}</span>
+                </td>
+                <td class="col-type">
+                  <span class="type-badge type-badge--{{ report.reportType.toLowerCase() }}">
+                    @switch (report.reportType) {
+                      @case ('STATISTICS') {
+                        📊 Estadísticas
+                      }
+                      @case ('EXPENSES') {
+                        💸 Gastos
+                      }
+                      @case ('SALES') {
+                        🛒 Ventas
+                      }
+                      @case ('SALES_AND_EXPENSES') {
+                        ⚖️ Ventas y Gastos
+                      }
+                      @case ('CASH_REGISTERS') {
+                        🏦 Cajas
+                      }
+                      @default {
+                        {{ report.reportType }}
+                      }
+                    }
+                  </span>
+                </td>
+                <td class="col-period">
+                  @if (report.fromDate || report.toDate) {
+                    <span class="cell-period">
+                      {{ (report.fromDate | organizationDate: 'dd/MM/yyyy') || 'Inicio' }}
+                      —
+                      {{ (report.toDate | organizationDate: 'dd/MM/yyyy') || 'Hoy' }}
+                    </span>
+                  } @else {
+                    <span class="cell-muted">Histórico</span>
+                  }
+                </td>
+                <td class="col-tags">
+                  <div class="tags-list">
+                    @for (tag of getParameterTags(report); track tag) {
+                      <span class="param-tag">{{ tag }}</span>
+                    }
+                  </div>
+                </td>
+                <td class="col-status">
+                  <span class="status-badge status-badge--{{ report.status.toLowerCase() }}">
+                    @switch (report.status) {
+                      @case ('PENDING') {
+                        <span class="status-dot"></span>
+                        {{ 'reports.status.pending' | translate }}
+                      }
+                      @case ('PROCESSING') {
+                        <span class="status-spinner"></span>
+                        {{ 'reports.status.processing' | translate }}
+                      }
+                      @case ('COMPLETED') {
+                        ✓ {{ 'reports.status.completed' | translate }}
+                      }
+                      @case ('FAILED') {
+                        ✕ {{ 'reports.status.failed' | translate }}
+                      }
+                    }
+                  </span>
+                </td>
+                <td class="col-file">
+                  @if (report.fileName) {
+                    <div class="file-info">
+                      <span class="file-name" [title]="report.fileName">{{ report.fileName }}</span>
+                      <span class="file-size">{{ formatFileSize(report.fileSizeBytes) }}</span>
+                    </div>
+                  } @else {
+                    <span class="cell-muted">—</span>
+                  }
+                </td>
+                <td class="col-actions">
+                  @if (report.status === 'COMPLETED') {
+                    <button
+                      type="button"
+                      class="btn-download"
+                      [disabled]="store.isDownloadingId() === report.id"
+                      (click)="downloadReport(report)"
+                      title="Descargar archivo Excel"
+                    >
+                      @if (store.isDownloadingId() === report.id) {
+                        <span class="btn-spinner"></span>
+                        <span>{{ 'reports.action.downloading' | translate }}</span>
+                      } @else {
+                        <span>📥</span>
+                        <span>{{ 'reports.action.download' | translate }}</span>
+                      }
+                    </button>
+                  } @else if (report.status === 'FAILED') {
+                    <span class="error-hint" [title]="report.errorMessage ?? 'Error desconocido'">
+                      ⚠️ Error
+                    </span>
+                  } @else {
+                    <span class="processing-hint">⏳ Generando…</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</div>

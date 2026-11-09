@@ -162,9 +162,7 @@ export class PrintingStore {
     if (!this.hasPermission('printing.agents.manage')) return of([]);
     return timer(intervalMilliseconds, intervalMilliseconds).pipe(
       switchMap(() =>
-        this.repository.discoveredAgents().pipe(
-          catchError(() => of(this.discoveredAgentsState())),
-        ),
+        this.repository.discoveredAgents().pipe(catchError(() => of(this.discoveredAgentsState()))),
       ),
       tap((agents) => this.discoveredAgentsState.set(agents)),
     );

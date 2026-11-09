@@ -8,7 +8,11 @@ import {
   TenantDto,
   TenantSessionResponseDto,
 } from '../models/tenant.model';
-import { CreatedOrganizationAccessLink, TenantRepository, TenantSessionResult } from './tenant.repository';
+import {
+  CreatedOrganizationAccessLink,
+  TenantRepository,
+  TenantSessionResult,
+} from './tenant.repository';
 
 const mapTenant = (tenant: TenantDto): Tenant => ({ ...tenant });
 
@@ -38,9 +42,11 @@ export class HttpTenantRepository implements TenantRepository {
   }
 
   createJoinRequest(): Observable<CreatedOrganizationAccessLink> {
-    return this.api.post<{ link: CreatedOrganizationAccessLink }, Record<string, never>>(
-      API_ENDPOINTS.organizationLinks.joinRequest,
-      {},
-    ).pipe(map((response) => response.link));
+    return this.api
+      .post<{ link: CreatedOrganizationAccessLink }, Record<string, never>>(
+        API_ENDPOINTS.organizationLinks.joinRequest,
+        {},
+      )
+      .pipe(map((response) => response.link));
   }
 }

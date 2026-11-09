@@ -11,7 +11,11 @@
     <header class="annul-modal__header">
       <div>
         <p class="eyebrow">{{ 'expenses.eyebrow' | translate }}</p>
-        <h2>{{ 'expenses.annul.title' | translate }} #EXP-{{ expense().consecutiveNumber.toString().padStart(4, '0') }}</h2>
+        <h2>
+          {{ 'expenses.annul.title' | translate }} #EXP-{{
+            expense().consecutiveNumber.toString().padStart(4, '0')
+          }}
+        </h2>
       </div>
       <button
         class="modal-close"
@@ -29,7 +33,9 @@
     }
 
     <p class="warning-text">
-      ¿Estás seguro de que deseas anular el gasto <strong>"{{ expense().name }}"</strong> por valor de <strong>${{ expense().amount | number:'1.2-2' }}</strong>? Esta acción no se puede deshacer.
+      ¿Estás seguro de que deseas anular el gasto <strong>"{{ expense().name }}"</strong> por valor
+      de <strong>${{ expense().amount | number: '1.2-2' }}</strong
+      >? Esta acción no se puede deshacer.
     </p>
 
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate>

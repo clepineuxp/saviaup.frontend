@@ -84,7 +84,9 @@ export class ImageSelectorComponent {
       },
       error: (err) => {
         this.isUploading.set(false);
-        this.errorMessage.set(err?.error?.message || 'No se pudo guardar la imagen en el servidor.');
+        this.errorMessage.set(
+          err?.error?.message || 'No se pudo guardar la imagen en el servidor.',
+        );
       },
     });
   }
