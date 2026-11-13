@@ -31,8 +31,9 @@ describe('HttpReportRepository', () => {
     const request: CreateReportRequest = {
       reportType: 'SALES',
       groupBy: 'COMMANDAS',
-      fromDate: '2026-11-01',
-      toDate: '2026-11-08',
+      fromLocalDate: '2026-11-01',
+      toLocalDate: '2026-11-08',
+      includeTips: true,
     };
 
     apiMock.post.mockReturnValue(
@@ -55,6 +56,11 @@ describe('HttpReportRepository', () => {
         reportType: 'SALES',
         groupBy: 'COMMANDAS',
         periodGrouping: 'NONE',
+        fromLocalDate: '2026-11-01',
+        toLocalDate: '2026-11-08',
+        fromDate: undefined,
+        toDate: undefined,
+        includeTips: true,
       }),
     );
     expect(resultReportId).toBe('report-123');

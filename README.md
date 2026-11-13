@@ -387,3 +387,7 @@ Se conserva la opción **Recordarme** y aparece activada de forma predeterminada
 - **Historial de caja (`/app/cash-registers`)**: muestra el fondo inicial de cada turno y presenta el total en caja calculado por el backend como recaudo de ventas + inicial - gastos.
 - **Facturación (`/app/billing`)**: consulta y filtro por fecha de comprobantes de pago emitidos, con modal de vista previa e impresión de tirilla térmica de 80mm.
 - **Estadísticas (`/app/statistics`)**: panel interactivo desarrollado con Chart.js para visualización de ventas del período, gráfico comparativo agrupado Ventas vs Gastos, métodos de pago más usados, productos top y recaudación.
+
+### Comparar reportes y estadísticas
+
+El formulario de reportes envía `fromLocalDate`/`toLocalDate` como fechas civiles inclusivas (`yyyy-MM-dd`); el backend las convierte según la zona horaria de la organización. Los accesos rápidos calculan semana y mes desde ese calendario, independientemente de la zona del navegador. En estadísticas, la opción de incluir propinas inicia desactivada, igual que en la pantalla de estadísticas. Para comparar los totales hay que seleccionar el mismo rango y la misma opción de propinas y generar un reporte nuevo.

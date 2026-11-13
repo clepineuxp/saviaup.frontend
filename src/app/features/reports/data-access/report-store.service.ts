@@ -136,6 +136,7 @@ export class ReportStoreService {
   readonly groupBy = signal<ReportGroupBy>('COMMANDAS');
   readonly cashFilter = signal<ReportCashFilter>('ALL');
   readonly periodGrouping = signal<ReportPeriodGrouping>('NONE');
+  readonly includeTips = signal<boolean>(false);
   readonly includeProducts = signal<boolean>(true);
   readonly includeTables = signal<boolean>(true);
   readonly includeWaiters = signal<boolean>(true);
@@ -196,38 +197,24 @@ export class ReportStoreService {
   }
 
   setDateRangePreset(preset: 'today' | 'thisWeek' | 'thisMonth' | 'lastMonth'): void {
-    const now = new Date();
-    const todayStr = this.organizationTime.localDate(now);
-
-    if (preset === 'today') {
-      this.fromDate.set(todayStr);
-      this.toDate.set(todayStr);
-      return;
-    }
-
+    const todayStr = this.organizationTime.localDate();
+    // Perform calendar arithmetic on civil dates, independent of the browser zone.
+    const today = new Date(`${todayStr}T00:00:00Z`);
+    const isoDate = (date: Date) => date.toISOString().slice(0, 10);
+    let from = todayStr;
+    let to = todayStr;
     if (preset === 'thisWeek') {
-      const dayOfWeek = now.getDay() || 7; // Monday = 1, Sunday = 7
-      const monday = new Date(now);
-      monday.setDate(now.getDate() - dayOfWeek + 1);
-      this.fromDate.set(this.organizationTime.localDate(monday));
-      this.toDate.set(todayStr);
-      return;
+      today.setUTCDate(today.getUTCDate() - (today.getUTCDay() || 7) + 1);
+      from = isoDate(today);
+    } else if (preset === 'thisMonth') {
+      from = `${todayStr.slice(0, 7)}-01`;
+    } else if (preset === 'lastMonth') {
+      today.setUTCDate(0);
+      to = isoDate(today);
+      from = `${to.slice(0, 7)}-01`;
     }
-
-    if (preset === 'thisMonth') {
-      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-      this.fromDate.set(this.organizationTime.localDate(firstDay));
-      this.toDate.set(todayStr);
-      return;
-    }
-
-    if (preset === 'lastMonth') {
-      const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-      this.fromDate.set(this.organizationTime.localDate(firstDayLastMonth));
-      this.toDate.set(this.organizationTime.localDate(lastDayLastMonth));
-      return;
-    }
+    this.fromDate.set(from);
+    this.toDate.set(to);
   }
 
   requestReport(): void {
@@ -241,7 +228,7 @@ export class ReportStoreService {
     const from = this.fromDate();
     const to = this.toDate();
 
-    if (from && to && from > to) {
+    if (!from || !to || from > to) {
       this.errorMessage.set('La fecha inicial no puede ser posterior a la fecha final.');
       return;
     }
@@ -250,8 +237,9 @@ export class ReportStoreService {
 
     const requestPayload: CreateReportRequest = {
       reportType: this.selectedReportType(),
-      fromDate: from ? `${from}T00:00:00Z` : null,
-      toDate: to ? `${to}T23:59:59Z` : null,
+      fromLocalDate: from,
+      toLocalDate: to,
+      includeTips: this.includeTips(),
       groupBy:
         this.selectedReportType() === 'SALES' || this.selectedReportType() === 'SALES_AND_EXPENSES'
           ? this.groupBy()
