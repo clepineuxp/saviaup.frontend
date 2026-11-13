@@ -18,6 +18,9 @@ export interface CreateReportRequestDto {
   reportType: string;
   fromDate?: string | null;
   toDate?: string | null;
+  readonly fromLocalDate?: string | null;
+  readonly toLocalDate?: string | null;
+  readonly includeTips?: boolean;
   groupBy?: string | null;
   cashFilter?: string | null;
   periodGrouping?: string | null;

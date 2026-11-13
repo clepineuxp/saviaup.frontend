@@ -19,8 +19,11 @@ export class HttpReportRepository implements ReportRepository {
   requestReport(request: CreateReportRequest): Observable<GeneratedReport> {
     const payload: CreateReportRequestDto = {
       reportType: request.reportType,
-      fromDate: request.fromDate ? new Date(request.fromDate).toISOString() : null,
-      toDate: request.toDate ? new Date(request.toDate).toISOString() : null,
+      fromDate: request.fromDate ? new Date(request.fromDate).toISOString() : undefined,
+      toDate: request.toDate ? new Date(request.toDate).toISOString() : undefined,
+      fromLocalDate: request.fromLocalDate ?? null,
+      toLocalDate: request.toLocalDate ?? null,
+      includeTips: request.includeTips ?? false,
       groupBy: request.groupBy ?? null,
       cashFilter: request.cashFilter ?? null,
       periodGrouping: request.periodGrouping ?? 'NONE',
