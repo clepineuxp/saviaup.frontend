@@ -52,6 +52,7 @@ describe('ReportStoreService', () => {
     expect(store.selectedReportType()).toBe('STATISTICS');
     expect(store.hasActiveJob()).toBe(false);
     expect(store.toDate()).toBe('2026-11-08');
+    expect(store.fromDate()).toBe('2026-11-01');
   });
 
   it('loads reports from repository into signal', () => {
@@ -70,6 +71,14 @@ describe('ReportStoreService', () => {
     store.setDateRangePreset('today');
     expect(store.fromDate()).toBe('2026-11-08');
     expect(store.toDate()).toBe('2026-11-08');
+  });
+
+  it('calculates presets using the organization calendar', () => {
+    store.setDateRangePreset('thisWeek');
+    expect(store.fromDate()).toBe('2026-11-02');
+    store.setDateRangePreset('lastMonth');
+    expect(store.fromDate()).toBe('2026-10-01');
+    expect(store.toDate()).toBe('2026-10-31');
   });
 
   it('validates that fromDate <= toDate before requesting', () => {
@@ -92,6 +101,9 @@ describe('ReportStoreService', () => {
       expect.objectContaining({
         reportType: 'STATISTICS',
         periodGrouping: 'NONE',
+        fromLocalDate: '2026-11-01',
+        toLocalDate: '2026-11-08',
+        includeTips: false,
       }),
     );
     expect(store.successMessage()).toBe('¡Informe generado exitosamente!');

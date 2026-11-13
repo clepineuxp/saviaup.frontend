@@ -18,6 +18,9 @@ export interface CreateReportRequest {
   readonly reportType: ReportType;
   readonly fromDate?: string | null;
   readonly toDate?: string | null;
+  readonly fromLocalDate?: string | null;
+  readonly toLocalDate?: string | null;
+  readonly includeTips?: boolean;
   readonly groupBy?: ReportGroupBy | null;
   readonly cashFilter?: ReportCashFilter | null;
   readonly periodGrouping?: ReportPeriodGrouping | null;

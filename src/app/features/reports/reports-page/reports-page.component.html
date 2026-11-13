@@ -192,6 +192,15 @@
               <label class="checkbox-item">
                 <input
                   type="checkbox"
+                  [ngModel]="store.includeTips()"
+                  (ngModelChange)="store.includeTips.set($event)"
+                  [disabled]="store.isRequesting() || store.hasActiveJob()"
+                />
+                <span>{{ 'statistics.tips.include' | translate }}</span>
+              </label>
+              <label class="checkbox-item">
+                <input
+                  type="checkbox"
                   [ngModel]="store.includeProducts()"
                   (ngModelChange)="store.includeProducts.set($event)"
                   [disabled]="store.isRequesting() || store.hasActiveJob()"
